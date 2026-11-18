@@ -69,6 +69,17 @@ Vedi DEC-018 in [`docs/decision-log.md`](./docs/decision-log.md).
 - Commit in italiano: `tipo: descrizione` (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`).
 - `main` protetto: si lavora su branch e si integra con pull request a CI verde.
 
+## Protezione di `main` (da configurare una volta su GitHub)
+
+Settings → Rules → Rulesets → **New branch ruleset**, target `main`:
+
+- Restrict deletions e Block force pushes
+- Require a pull request before merging
+- Require status checks to pass: `Web (lint, typecheck, test, build)`, `API (build, test)`, `Docker image`, `Analyze (csharp)`, `Analyze (javascript-typescript)`, `Analyze (actions)`
+- Require branches to be up to date before merging
+
+Settings → Code security: attiva **Dependabot alerts**, **Dependabot security updates**, **Secret scanning** con **Push protection** e **Private vulnerability reporting**.
+
 ## Documentazione
 
 - [Project overview](./docs/project-overview.md)
