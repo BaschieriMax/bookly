@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/bin
+**/obj
+**/coverage
+**/.vite
+**/TestResults
+**/*.user
+.git
+.github
+docs
+**/.env
+**/.env.*
+apps/api/tests

@@ -1,0 +1,49 @@
+/*
+ * Design tokens — the ONLY place where colors, font families and radii are defined (DEC-018).
+ *
+ * To restyle the app, change the values below: components only use semantic
+ * Tailwind classes (bg-primary, text-muted, font-heading, rounded-card, ...)
+ * mapped to these variables in src/index.css.
+ *
+ * Tenant branding (DEC-016): the public tenant layout overrides the --bk-color-*
+ * variables at runtime on its root element, so every component inside it
+ * automatically picks up the tenant's colors.
+ */
+
+:root {
+  /* Brand */
+  --bk-color-primary: #0f766e;
+  --bk-color-primary-hover: #115e59;
+  --bk-color-primary-fg: #ffffff;
+  --bk-color-primary-soft: #f0fdfa;
+
+  /* Surfaces */
+  --bk-color-bg: #fafafa;
+  --bk-color-surface: #ffffff;
+  --bk-color-subtle: #f4f4f5;
+  --bk-color-border: #e4e4e7;
+  --bk-color-border-strong: #a1a1aa;
+
+  /* Text */
+  --bk-color-ink: #18181b;
+  --bk-color-muted: #52525b;
+
+  /* Feedback */
+  --bk-color-success: #15803d;
+  --bk-color-success-soft: #f0fdf4;
+  --bk-color-warning: #c2410c;
+  --bk-color-warning-soft: #fff7ed;
+  --bk-color-danger: #b42318;
+  --bk-color-danger-soft: #fef2f2;
+  --bk-color-focus: #0f766e;
+
+  /* Typography (families are loaded in fonts.css) */
+  --bk-font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bk-font-heading: 'Space Grotesk Variable', 'Inter Variable', system-ui, sans-serif;
+  --bk-font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Shape */
+  --bk-radius-control: 8px;
+  --bk-radius-card: 12px;
+  --bk-radius-pill: 9999px;
+}

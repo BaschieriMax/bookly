@@ -472,3 +472,30 @@ Menu configurabile senza deploy, unica sorgente dei permessi di visualizzazione,
 Status:
 Approved
 ```
+
+```text
+Decision:
+DEC-020 — TypeScript 6.0 + ESLint (invece di TypeScript 7 + oxlint del template Vite)
+
+Date:
+2026-11-18
+
+Context:
+A novembre 2026 il template ufficiale `create-vite` usa TypeScript 7 (compilatore nativo in Go)
+e oxlint al posto di ESLint. La preferenza permanente di Massimo è ESLint + Prettier.
+typescript-eslint 8.x supporta TypeScript fino a < 6.1.
+
+Decision:
+Mantengo ESLint + Prettier (preferenza di Massimo) e quindi fisso TypeScript ~6.0.
+La regola custom contro i colori hardcoded (DEC-018) è scritta in ESLint.
+
+Alternatives:
+TypeScript 7 + oxlint: type-check e lint molto più veloci, ma niente regole type-aware equivalenti
+a typescript-eslint e niente regola custom DEC-018 senza plugin JS.
+
+Motivation:
+Preferenza di Massimo, ecosistema di regole più maturo. Il passaggio a TS 7 è tracciato in TD-004.
+
+Status:
+Approved (preferenza permanente) — alternativa da rivalutare
+```
