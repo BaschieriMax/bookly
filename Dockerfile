@@ -9,7 +9,7 @@ COPY apps/web/ ./
 RUN npm run build
 
 # 2) Publish the API with the SPA inside wwwroot (single origin, DEC-010)
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS api
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS api
 WORKDIR /src/apps/api
 COPY apps/api/Directory.Build.props apps/api/Directory.Packages.props ./
 COPY apps/api/src/Bookly.Api/Bookly.Api.csproj src/Bookly.Api/
