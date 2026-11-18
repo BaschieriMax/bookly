@@ -1,0 +1,26 @@
+{
+  "title": "I tuoi appuntamenti",
+  "upcoming": "Prossimi",
+  "past": "Passati",
+  "empty": "Nessun appuntamento.",
+  "emptyUpcoming": "Non hai appuntamenti in programma.",
+  "cancel": "Disdici",
+  "cancelTitle": "Disdire l'appuntamento?",
+  "cancelText": "{{service}} da {{tenant}}, {{when}} alle {{time}}. Lo slot tornerà libero per altri clienti.",
+  "cancelConfirm": "Sì, disdici",
+  "keep": "No, tienilo",
+  "cancelled": "Appuntamento disdetto.",
+  "tooLate": "Mancano meno di {{hours}} ore: per disdire chiama l'attività.",
+  "callBusiness": "Chiama",
+  "status": {
+    "Confirmed": "Confermato",
+    "CancelledByCustomer": "Disdetto",
+    "CancelledByBusiness": "Annullato dall'attività",
+    "Completed": "Completato",
+    "NoShow": "Non presentato"
+  },
+  "errors": {
+    "booking.cancellation_window_passed": "Non è più possibile disdire online: contatta l'attività.",
+    "booking.not_cancellable": "Questo appuntamento non si può più disdire."
+  }
+}

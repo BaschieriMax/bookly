@@ -8,7 +8,7 @@ public sealed record CreateAppointmentRequest(
     [Required] DateTimeOffset Start,
     [MaxLength(500)] string? Note);
 
-public sealed record AppointmentTenantDto(string Slug, string Name, string? Phone, string? Address, string? PrimaryColor);
+public sealed record AppointmentTenantDto(string Slug, string Name, string? Phone, string? Address, string? PrimaryColor, string TimeZone);
 
 /// <summary>Appointment as seen by its customer. Times are in the tenant's local offset.</summary>
 public sealed record MyAppointmentDto(

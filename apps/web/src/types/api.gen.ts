@@ -966,6 +966,7 @@ export interface components {
             phone: null | string;
             address: null | string;
             primaryColor: null | string;
+            timeZone: string;
         };
         ConfirmEmailRequest: {
             /** Format: uuid */
