@@ -47,11 +47,18 @@ public sealed record WorkingIntervalDto(
 
 public sealed record SaveWorkingHoursRequest([Required, MaxLength(70)] IReadOnlyList<WorkingIntervalDto> Intervals);
 
+/// <summary>Time off with instants expressed in the tenant's offset (e.g. 2027-03-02T09:00:00+01:00).</summary>
 public sealed record TimeOffDto(Guid Id, DateTimeOffset Start, DateTimeOffset End, string? Reason);
 
+/// <summary>
+/// Time off in the tenant's local wall-clock time: the server converts it to UTC per date (DST-safe).
+/// Without times it covers whole days, from the start date at 00:00 to the end of the end date.
+/// </summary>
 public sealed record CreateTimeOffRequest(
-    [Required] DateTimeOffset Start,
-    [Required] DateTimeOffset End,
+    [Required] DateOnly StartDate,
+    TimeOnly? StartTime,
+    [Required] DateOnly EndDate,
+    TimeOnly? EndTime,
     [MaxLength(200)] string? Reason);
 
 /// <summary>Created time off plus how many confirmed appointments it overlaps (the owner should move them).</summary>

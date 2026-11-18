@@ -152,15 +152,47 @@ public sealed class AdminCatalogTests(PostgresFixture database) : IDisposable
 
         using var session = await TestUsers.LoginAsync(_factory, shop.Owner);
         var path = $"/api/admin/staff/{shop.Staff.Id}/time-off";
-        using var created = await session.PostAsync(path, new { start = "2027-03-02T00:00:00+01:00", end = "2027-03-03T00:00:00+01:00", reason = "Ferie" });
+        using var created = await session.PostAsync(path, new { startDate = "2027-03-02", endDate = "2027-03-02", reason = "Ferie" });
 
         Assert.Equal(HttpStatusCode.Created, created.StatusCode);
         var body = await JsonAsync(created);
         Assert.Equal(1, body.GetProperty("conflictingAppointments").GetInt32());
+        Assert.Equal("2027-03-02T00:00:00+01:00", body.GetProperty("timeOff").GetProperty("start").GetString());
+        Assert.Equal("2027-03-03T00:00:00+01:00", body.GetProperty("timeOff").GetProperty("end").GetString());
 
         var id = body.GetProperty("timeOff").GetProperty("id").GetGuid();
         using var deleted = await session.SendAsync(HttpMethod.Delete, $"{path}/{id}");
         Assert.Equal(HttpStatusCode.NoContent, deleted.StatusCode);
+    }
+
+    [Fact]
+    public async Task Time_off_with_hours_is_converted_with_the_offset_of_its_date()
+    {
+        var shop = await ArrangeShopAsync();
+        using var session = await TestUsers.LoginAsync(_factory, shop.Owner);
+
+        // 28 March 2027: Italy switches to summer time (+02:00) during the night.
+        using var created = await session.PostAsync($"/api/admin/staff/{shop.Staff.Id}/time-off", new
+        {
+            startDate = "2027-03-27",
+            startTime = "15:00",
+            endDate = "2027-03-28",
+            endTime = "12:00",
+        });
+
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var timeOff = (await JsonAsync(created)).GetProperty("timeOff");
+        Assert.Equal("2027-03-27T15:00:00+01:00", timeOff.GetProperty("start").GetString());
+        Assert.Equal("2027-03-28T12:00:00+02:00", timeOff.GetProperty("end").GetString());
+
+        using var reversed = await session.PostAsync($"/api/admin/staff/{shop.Staff.Id}/time-off", new
+        {
+            startDate = "2027-03-28",
+            startTime = "12:00",
+            endDate = "2027-03-28",
+            endTime = "09:00",
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, reversed.StatusCode);
     }
 
     [Fact]
@@ -198,7 +230,7 @@ public sealed class AdminCatalogTests(PostgresFixture database) : IDisposable
         using var deleteService = await session.SendAsync(HttpMethod.Delete, $"/api/admin/services/{shop.Service.Id}");
         using var staff = await session.SendAsync(HttpMethod.Put, $"/api/admin/staff/{shop.Staff.Id}", new { displayName = "X", isActive = true, sortOrder = 0, serviceIds = Array.Empty<Guid>() });
         using var hours = await session.Client.GetAsync($"/api/admin/staff/{shop.Staff.Id}/working-hours");
-        using var timeOff = await session.PostAsync($"/api/admin/staff/{shop.Staff.Id}/time-off", new { start = "2027-03-02T00:00:00Z", end = "2027-03-03T00:00:00Z" });
+        using var timeOff = await session.PostAsync($"/api/admin/staff/{shop.Staff.Id}/time-off", new { startDate = "2027-03-02", endDate = "2027-03-02" });
 
         Assert.All([service, deleteService, staff, hours, timeOff], r => Assert.Equal(HttpStatusCode.NotFound, r.StatusCode));
 

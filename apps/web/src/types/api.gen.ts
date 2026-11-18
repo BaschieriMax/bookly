@@ -1691,10 +1691,14 @@ export interface components {
             conflictingAppointments: number;
         };
         CreateTimeOffRequest: {
-            /** Format: date-time */
-            start: string;
-            /** Format: date-time */
-            end: string;
+            /** Format: date */
+            startDate: string;
+            /** Format: time */
+            startTime: null | string;
+            /** Format: date */
+            endDate: string;
+            /** Format: time */
+            endTime: null | string;
             reason: null | string;
         };
         EmailRequest: {

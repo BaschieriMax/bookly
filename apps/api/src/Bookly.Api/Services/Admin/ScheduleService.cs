@@ -2,6 +2,7 @@ using Bookly.Api.Data;
 using Bookly.Api.DTOs.Admin;
 using Bookly.Api.Entities;
 using Bookly.Api.Infrastructure.Http;
+using Bookly.Api.Services.Availability;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bookly.Api.Services.Admin;
@@ -83,13 +84,13 @@ public sealed class ScheduleService(AppDbContext db, AdminContext admin, TimePro
         }
 
         var since = timeProvider.GetUtcNow().AddDays(-30);
+        var timeZone = await TenantTimeZoneAsync(cancellationToken);
         var items = await db.TimeOffs
             .AsNoTracking()
             .Where(t => t.StaffMemberId == staffId && t.EndUtc >= since)
             .OrderBy(t => t.StartUtc)
-            .Select(t => new TimeOffDto(t.Id, t.StartUtc, t.EndUtc, t.Reason))
             .ToListAsync(cancellationToken);
-        return ServiceResult<IReadOnlyList<TimeOffDto>>.Ok(items);
+        return ServiceResult<IReadOnlyList<TimeOffDto>>.Ok([.. items.Select(t => ToDto(t, timeZone))]);
     }
 
     public async Task<ServiceResult<CreatedTimeOffDto>> AddTimeOffAsync(Guid staffId, CreateTimeOffRequest request, CancellationToken cancellationToken)
@@ -100,8 +101,11 @@ public sealed class ScheduleService(AppDbContext db, AdminContext admin, TimePro
             return access;
         }
 
-        var start = request.Start.ToUniversalTime();
-        var end = request.End.ToUniversalTime();
+        var timeZone = await TenantTimeZoneAsync(cancellationToken);
+        var start = AvailabilityCalculator.ToUtc(request.StartDate, request.StartTime ?? TimeOnly.MinValue, timeZone, roundUpIfInvalid: true)!.Value;
+        var end = request.EndTime is { } endTime
+            ? AvailabilityCalculator.ToUtc(request.EndDate, endTime, timeZone, roundUpIfInvalid: true)!.Value
+            : AvailabilityCalculator.ToUtc(request.EndDate.AddDays(1), TimeOnly.MinValue, timeZone, roundUpIfInvalid: true)!.Value;
         if (end <= start || end - start > TimeSpan.FromDays(366))
         {
             return ServiceResult<CreatedTimeOffDto>.Fail(StatusCodes.Status400BadRequest, ErrorCodes.InvalidRange, "The end must be after the start (max one year).");
@@ -125,7 +129,7 @@ public sealed class ScheduleService(AppDbContext db, AdminContext admin, TimePro
             cancellationToken);
 
         return ServiceResult<CreatedTimeOffDto>.Ok(
-            new CreatedTimeOffDto(new TimeOffDto(timeOff.Id, start, end, timeOff.Reason), conflicts),
+            new CreatedTimeOffDto(ToDto(timeOff, timeZone), conflicts),
             StatusCodes.Status201Created);
     }
 
@@ -142,6 +146,18 @@ public sealed class ScheduleService(AppDbContext db, AdminContext admin, TimePro
             ? ServiceResult<bool>.Fail(StatusCodes.Status404NotFound, ErrorCodes.NotFound, "Not found.")
             : ServiceResult<bool>.Ok(true);
     }
+
+    private async Task<TimeZoneInfo> TenantTimeZoneAsync(CancellationToken cancellationToken)
+    {
+        var id = await db.Tenants.Where(t => t.Id == admin.TenantId).Select(t => t.TimeZone).SingleAsync(cancellationToken);
+        return TimeZoneInfo.FindSystemTimeZoneById(id);
+    }
+
+    private static TimeOffDto ToDto(TimeOff timeOff, TimeZoneInfo timeZone) => new(
+        timeOff.Id,
+        TimeZoneInfo.ConvertTime(timeOff.StartUtc, timeZone),
+        TimeZoneInfo.ConvertTime(timeOff.EndUtc, timeZone),
+        timeOff.Reason);
 
     /// <summary>Null when allowed; otherwise the failure to return (404 other tenant, 403 other staff).</summary>
     private async Task<ServiceResult<T>?> CheckAccessAsync<T>(Guid staffId, CancellationToken cancellationToken)

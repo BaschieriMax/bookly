@@ -1795,19 +1795,35 @@
       },
       "CreateTimeOffRequest": {
         "required": [
-          "start",
-          "end",
+          "startDate",
+          "startTime",
+          "endDate",
+          "endTime",
           "reason"
         ],
         "type": "object",
         "properties": {
-          "start": {
+          "startDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
           },
-          "end": {
+          "startTime": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "time"
+          },
+          "endDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date"
+          },
+          "endTime": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "time"
           },
           "reason": {
             "type": [
