@@ -198,7 +198,7 @@ public sealed partial class TenantProvisioningService(
         catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             // The membership stands: the invitation can be re-sent from the platform page.
-            logger.LogError(exception, "Sending email '{Subject}' failed", message.Subject);
+            logger.LogError(exception, "Sending email {EmailKind} failed", message.Kind);
         }
 
         return ServiceResult<PlatformTenantDto>.Ok(await GetAsync(tenantId, cancellationToken));

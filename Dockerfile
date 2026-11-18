@@ -6,6 +6,9 @@ WORKDIR /src/apps/web
 COPY apps/web/package.json apps/web/package-lock.json ./
 RUN npm ci
 COPY apps/web/ ./
+# Optional frontend error tracking (DEC-031): empty = disabled.
+ARG VITE_SENTRY_DSN=
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 RUN npm run build
 
 # 2) Publish the API with the SPA inside wwwroot (single origin, DEC-010)

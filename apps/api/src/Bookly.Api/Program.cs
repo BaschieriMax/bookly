@@ -5,6 +5,9 @@ using Bookly.Api.Data;
 using Bookly.Api.Infrastructure;
 using Bookly.Api.Infrastructure.Email;
 using Bookly.Api.Services;
+using Bookly.Api.Infrastructure.Monitoring;
+using Bookly.Api.Infrastructure.Security;
+using Bookly.Api.Infrastructure.Seo;
 using Bookly.Api.Services.Account;
 using Bookly.Api.Services.Admin;
 using Bookly.Api.Services.Availability;
@@ -51,6 +54,25 @@ builder.Services.AddScoped<TenantProvisioningService>();
 builder.Services.AddScoped<ReminderService>();
 builder.Services.AddScoped<RetentionService>();
 builder.Services.AddScoped<PrivacyService>();
+builder.Services.AddSingleton<IIndexHtmlProvider, WebRootIndexHtmlProvider>();
+builder.Services.AddOptions<SecurityOptions>().Bind(builder.Configuration.GetSection(SecurityOptions.Section));
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);
+    options.IncludeSubDomains = true;
+});
+
+// Error tracking (overview §20, DEC-031): only when a DSN is configured; no personal data sent.
+if (!string.IsNullOrWhiteSpace(builder.Configuration["Sentry:Dsn"]))
+{
+    builder.WebHost.UseSentry(options =>
+    {
+        options.SendDefaultPii = false;
+        options.MaxRequestBodySize = Sentry.Extensibility.RequestSize.None;
+        options.TracesSampleRate = 0;
+        options.SetBeforeSend(MonitoringScrubber.Scrub);
+    });
+}
 builder.Services.AddOptions<JobsOptions>()
     .Bind(builder.Configuration.GetSection(JobsOptions.Section))
     .Validate(o => o.Secret.Length is 0 or >= 32, "Jobs:Secret must be empty (disabled) or at least 32 characters.")
@@ -111,6 +133,10 @@ if (!BuildTime.IsOpenApiGeneration)
         app.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(SuperAdminBootstrapper)));
 }
 
+app.UseBooklySecurityHeaders(
+    app.Services.GetRequiredService<IOptions<SecurityOptions>>().Value,
+    app.Environment.IsDevelopment());
+
 app.UseStatusCodePages();
 
 // The React build is copied into wwwroot at image build time (DEC-010).
@@ -130,6 +156,9 @@ app.MapControllers();
 app.MapFallback("/api/{**rest}", () => Results.Problem(
     statusCode: StatusCodes.Status404NotFound,
     title: "Not Found"));
+
+// Public tenant pages get their own title and Open Graph tags (Q4, DEC-031).
+app.MapTenantPageMeta();
 
 // Client-side routes (/admin, /b/{slug}, ...) are served by the SPA.
 app.MapFallbackToFile("index.html");

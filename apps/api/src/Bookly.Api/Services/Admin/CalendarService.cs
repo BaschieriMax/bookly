@@ -358,7 +358,7 @@ public sealed class CalendarService(
         catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             // The change stands even if the email fails (booking-domain: notifications).
-            logger.LogError(exception, "Sending email '{Subject}' failed", message.Subject);
+            logger.LogError(exception, "Sending email {EmailKind} failed", message.Kind);
         }
     }
 }

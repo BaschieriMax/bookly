@@ -270,7 +270,7 @@ public sealed class BookingService(
         catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             // The booking stands even if the email fails (booking-domain: notifications).
-            logger.LogError(exception, "Sending email '{Subject}' failed", message.Subject);
+            logger.LogError(exception, "Sending email {EmailKind} failed", message.Kind);
         }
     }
 }
