@@ -667,3 +667,37 @@ Logo aggiornato subito, costo trascurabile (richiesta condizionale di pochi byte
 Status:
 Approved (dettaglio implementativo dello Step 8)
 ```
+
+```text
+Decision:
+DEC-027 — Calendario admin: regole delle azioni dell'attività e avvisi di disdetta
+
+Date:
+2026-11-18
+
+Context:
+Step 9: il titolare (e lo staff sui propri appuntamenti) sposta, annulla e chiude gli appuntamenti.
+La skill booking-domain chiede che ogni spostamento ripassi dalla validazione di disponibilità e
+lascia al tenant la scelta su come essere avvisato delle disdette dei clienti.
+
+Decision:
+- Sposta: stesso id, stessa durata e buffer; nuova data/ora locale convertita dal server; deve
+  stare negli orari di lavoro dell'operatore, fuori dalle assenze, nel futuro; la sovrapposizione
+  la blocca il vincolo del database (409). Preavviso minimo e orizzonte NON si applicano
+  all'attività. Il promemoria viene azzerato. Email al cliente.
+- Annulla: sempre possibile su un appuntamento confermato, con motivo facoltativo (mostrato al
+  cliente nell'email).
+- Completato / Non presentato: solo dopo l'inizio. Gli stati finali non tornano a Confermato.
+- Staff: vede e gestisce solo i propri appuntamenti; non può spostarli su un collega (403).
+- Disdetta del cliente: email al titolare e all'operatore con accesso, disattivabile nelle
+  impostazioni (Tenant.NotifyOnCustomerCancellation, default attivo).
+
+Alternatives:
+Permettere al titolare di forzare orari fuori turno (rimandato: si può aggiungere una fascia).
+
+Motivation:
+Stesse garanzie della prenotazione online, nessun appuntamento fuori orario per errore.
+
+Status:
+Approved (dettaglio implementativo dello Step 9)
+```

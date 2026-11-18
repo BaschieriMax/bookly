@@ -149,6 +149,10 @@ namespace Bookly.Api.Data.Migrations
                     b.Property<DateTimeOffset>("BlockedUntilUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -568,6 +572,9 @@ namespace Bookly.Api.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
+
+                    b.Property<bool>("NotifyOnCustomerCancellation")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(30)

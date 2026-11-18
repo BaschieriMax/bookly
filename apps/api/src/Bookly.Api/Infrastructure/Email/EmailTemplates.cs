@@ -52,6 +52,37 @@ internal static class EmailTemplates
         link: bookLink,
         footer: "Se non sei stato tu, contatta subito l'attività.");
 
+    public static EmailMessage AppointmentMovedByBusiness(
+        string to, string firstName, string tenantName, string serviceName, string oldWhen, string newWhen, string manageLink) => Build(
+        to,
+        subject: $"Appuntamento spostato: {tenantName}",
+        greeting: firstName,
+        paragraph: $"{tenantName} ha spostato il tuo appuntamento ({serviceName}) da {oldWhen} a {newWhen}.",
+        actionLabel: "Vedi le tue prenotazioni",
+        link: manageLink,
+        footer: "Se il nuovo orario non ti va bene, disdici dal link o contatta l'attività.");
+
+    public static EmailMessage AppointmentCancelledByBusiness(
+        string to, string firstName, string tenantName, string serviceName, string when, string? reason, string bookLink) => Build(
+        to,
+        subject: $"Appuntamento annullato: {tenantName}",
+        greeting: firstName,
+        paragraph: $"{tenantName} ha annullato il tuo appuntamento ({serviceName}, {when})"
+            + (string.IsNullOrWhiteSpace(reason) ? "." : $". Motivo: {reason}"),
+        actionLabel: "Prenota un altro orario",
+        link: bookLink,
+        footer: "Ci scusiamo per il disagio.");
+
+    public static EmailMessage CustomerCancelledNotice(
+        string to, string firstName, string customerName, string serviceName, string staffName, string when, string calendarLink) => Build(
+        to,
+        subject: $"Disdetta: {customerName}, {when}",
+        greeting: firstName,
+        paragraph: $"{customerName} ha disdetto online {serviceName} con {staffName}, {when}. L'orario è di nuovo prenotabile.",
+        actionLabel: "Apri il calendario",
+        link: calendarLink,
+        footer: "Puoi disattivare questi avvisi nelle impostazioni dell'attività.");
+
     private static EmailMessage Build(
         string to, string subject, string greeting, string paragraph, string actionLabel, string link, string footer)
     {

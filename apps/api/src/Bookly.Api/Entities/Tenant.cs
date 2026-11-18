@@ -28,6 +28,9 @@ public class Tenant
     /// <summary>How many days ahead customers can book.</summary>
     public int BookingHorizonDays { get; set; } = 60;
 
+    /// <summary>Email owners (and the staff member) when a customer cancels online.</summary>
+    public bool NotifyOnCustomerCancellation { get; set; } = true;
+
     /// <summary>Primary brand color as #RRGGBB; null means the Bookly default.</summary>
     public string? BrandPrimaryColor { get; set; }
 

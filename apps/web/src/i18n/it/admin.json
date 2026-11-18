@@ -21,10 +21,18 @@
       "overlapping_hours": "Controlla le fasce: ognuna deve finire dopo l'inizio e non sovrapporsi alle altre dello stesso giorno.",
       "invalid_time_zone": "Fuso orario non valido.",
       "invalid_logo": "Il logo deve essere un'immagine PNG o WebP di massimo 200 KB.",
-      "staff_scope": "Puoi gestire solo i tuoi orari."
+      "staff_scope": "Puoi gestire solo i tuoi orari.",
+      "staff_unavailable": "L'operatore non lavora in quell'orario (fuori orario o in assenza).",
+      "service_not_offered": "Questo operatore non offre il servizio.",
+      "invalid_status": "L'appuntamento non è più confermato: ricarica il calendario.",
+      "not_started": "Puoi segnarlo solo dopo l'inizio dell'appuntamento.",
+      "in_past": "Scegli un orario futuro."
     },
     "booking": {
-      "invalid_range": "La fine deve essere successiva all'inizio (massimo un anno)."
+      "invalid_range": "La fine deve essere successiva all'inizio (massimo un anno).",
+      "slot_unavailable": "C'è già un altro appuntamento in quell'orario.",
+      "concurrent_update": "L'appuntamento è stato modificato nel frattempo: ricarica e riprova.",
+      "appointment_not_found": "Appuntamento non trovato: forse è stato annullato."
     },
     "validation": {
       "required": "Campo obbligatorio.",
@@ -140,7 +148,9 @@
       "slotIntervalMinutes": "Intervallo tra gli orari proposti",
       "minNoticeMinutes": "Preavviso minimo (minuti)",
       "minNoticeHint": "Ad esempio 60: non si prenota per la prossima ora.",
-      "bookingHorizonDays": "Prenotabile fino a (giorni)"
+      "bookingHorizonDays": "Prenotabile fino a (giorni)",
+      "notifyOnCustomerCancellation": "Avvisami via email quando un cliente disdice",
+      "notifyHint": "L'email arriva al titolare e all'operatore con un accesso."
     },
     "minutes": "{{count}} minuti"
   },
@@ -190,5 +200,66 @@
       "night": "Notte",
       "graphite": "Grafite"
     }
+  },
+  "calendar": {
+    "title": "Calendario",
+    "today": "Oggi",
+    "previous": "Precedente",
+    "next": "Successivo",
+    "goToDate": "Vai alla data",
+    "views": {
+      "day": "Giorno",
+      "week": "Settimana"
+    },
+    "viewLabel": "Vista",
+    "allStaff": "Tutto lo staff",
+    "staffLabel": "Operatore",
+    "showCancelled": "Mostra annullati",
+    "empty": "Nessun appuntamento.",
+    "noStaff": "Nessun operatore: aggiungine uno nella pagina Staff.",
+    "timeOff": "Assenza",
+    "closed": "Chiuso",
+    "now": "Ora",
+    "appointmentLabel": "{{start}}–{{end}}, {{service}}, {{customer}}, {{staff}}, {{status}}",
+    "status": {
+      "Confirmed": "Confermato",
+      "Completed": "Completato",
+      "NoShow": "Non presentato",
+      "CancelledByCustomer": "Disdetto dal cliente",
+      "CancelledByBusiness": "Annullato dall'attività"
+    },
+    "details": {
+      "title": "Appuntamento",
+      "when": "Quando",
+      "staff": "Operatore",
+      "customer": "Cliente",
+      "price": "Prezzo",
+      "note": "Nota del cliente",
+      "reason": "Motivo dell'annullamento",
+      "bufferNote": "Più {{minutes}} min di pausa per l'operatore."
+    },
+    "actions": {
+      "complete": "Completato",
+      "noShow": "Non presentato",
+      "move": "Sposta",
+      "cancel": "Annulla appuntamento",
+      "back": "Indietro"
+    },
+    "move": {
+      "title": "Sposta appuntamento",
+      "date": "Nuova data",
+      "time": "Nuovo orario",
+      "staff": "Operatore",
+      "submit": "Sposta",
+      "hint": "Il cliente riceverà un'email con il nuovo orario.",
+      "done": "Appuntamento spostato."
+    },
+    "cancel": {
+      "reason": "Motivo (facoltativo, lo vedrà il cliente)",
+      "hint": "Il cliente riceverà un'email. L'operazione non si può annullare.",
+      "confirm": "Sì, annulla",
+      "done": "Appuntamento annullato."
+    },
+    "marked": "Stato aggiornato."
   }
 }

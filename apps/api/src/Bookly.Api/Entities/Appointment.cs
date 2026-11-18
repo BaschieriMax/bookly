@@ -23,6 +23,9 @@ public class Appointment : ITenantOwned
 
     public string? CustomerNote { get; set; }
 
+    /// <summary>Optional reason given by the business when it cancels (shown to the customer).</summary>
+    public string? CancellationReason { get; set; }
+
     public DateTimeOffset? ReminderSentAt { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
