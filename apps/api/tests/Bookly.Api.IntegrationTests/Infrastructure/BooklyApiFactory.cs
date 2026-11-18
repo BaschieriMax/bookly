@@ -11,6 +11,8 @@ namespace Bookly.Api.IntegrationTests.Infrastructure;
 /// <summary>Runs the real API against the fixture database, with production cookie settings and a fake mailbox.</summary>
 public sealed class BooklyApiFactory(PostgresFixture database, int loginPermitPerMinute = 1000) : WebApplicationFactory<Program>
 {
+    public const string JobSecret = "test-job-secret-0123456789abcdef0123";
+
     public FakeEmailSender Emails { get; } = new();
 
     /// <summary>Controllable clock. Default: Monday 1 March 2027, 08:00 in Rome.</summary>
@@ -28,6 +30,7 @@ public sealed class BooklyApiFactory(PostgresFixture database, int loginPermitPe
         builder.UseSetting("Auth:PasswordResetPermitPer15Minutes", "1000");
         builder.UseSetting("Auth:PublicPermitPerMinute", "100000");
         builder.UseSetting("Auth:BookingPermitPerMinute", "100000");
+        builder.UseSetting("Jobs:Secret", JobSecret);
 
         builder.ConfigureTestServices(services =>
         {

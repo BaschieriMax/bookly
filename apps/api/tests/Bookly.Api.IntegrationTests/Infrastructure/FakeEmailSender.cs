@@ -9,8 +9,16 @@ public sealed partial class FakeEmailSender : IEmailSender
 {
     private readonly ConcurrentQueue<EmailMessage> _messages = new();
 
+    /// <summary>Makes sending fail for matching messages (to test retries).</summary>
+    public Func<EmailMessage, bool>? FailWhen { get; set; }
+
     public Task SendAsync(EmailMessage message, CancellationToken cancellationToken = default)
     {
+        if (FailWhen?.Invoke(message) == true)
+        {
+            throw new InvalidOperationException("Simulated SMTP failure");
+        }
+
         _messages.Enqueue(message);
         return Task.CompletedTask;
     }

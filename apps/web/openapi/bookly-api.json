@@ -1452,6 +1452,35 @@
         }
       }
     },
+    "/api/jobs/send-reminders": {
+      "post": {
+        "tags": [
+          "Jobs"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReminderRunResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me/appointments": {
       "get": {
         "tags": [
@@ -3360,6 +3389,23 @@
           }
         }
       },
+      "ReminderRunResult": {
+        "required": [
+          "sent",
+          "failed"
+        ],
+        "type": "object",
+        "properties": {
+          "sent": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "failed": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "ResetPasswordRequest": {
         "required": [
           "email",
@@ -3803,6 +3849,9 @@
     },
     {
       "name": "Bookings"
+    },
+    {
+      "name": "Jobs"
     },
     {
       "name": "MyAppointments"

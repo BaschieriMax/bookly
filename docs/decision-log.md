@@ -738,3 +738,35 @@ Nessuna password condivisa: ogni titolare sceglie la propria, e il possesso dell
 Status:
 Approved (dettaglio implementativo dello Step 10)
 ```
+
+```text
+Decision:
+DEC-029 — Promemoria: regole d'invio e idempotenza
+
+Date:
+2026-11-18
+
+Context:
+Step 11: promemoria email ~24 h prima (booking-domain), eseguito da un cron di GitHub Actions
+ogni 15 minuti (DEC-012, TD-002), con run che possono ritardare, ripetersi o sovrapporsi.
+
+Decision:
+- Si invia per appuntamenti Confermati che iniziano entro le prossime 24 ore, di attività attive,
+  prenotati almeno 12 ore prima (altrimenti la conferma appena ricevuta basta).
+- Ogni appuntamento viene "prenotato" con un UPDATE condizionale su ReminderSentAt prima di
+  inviare l'email: due run sovrapposti non mandano mai due email. Se l'invio fallisce il campo
+  torna NULL e il run successivo riprova. Uno spostamento azzera ReminderSentAt (Step 9).
+- POST /api/jobs/send-reminders con segreto X-Job-Secret (≥ 32 caratteri, confronto a tempo
+  costante), senza antiforgery; senza segreto configurato l'endpoint risponde 404.
+- L'email indica fino a quando si può disdire online, oppure il telefono dell'attività se la
+  finestra di disdetta è già chiusa.
+
+Alternatives:
+BackgroundService con PeriodicTimer (non gira mentre l'istanza Render free è in pausa: TD-002).
+
+Motivation:
+Nessun doppio invio anche con run concorrenti, nessun promemoria perso per un errore SMTP.
+
+Status:
+Approved (dettaglio implementativo dello Step 11)
+```
