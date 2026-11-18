@@ -43,6 +43,26 @@ public static class TestData
         return service;
     }
 
+    public static async Task AddWorkingHoursAsync(AppDbContext db, Guid tenantId, Guid staffId, DayOfWeek day, TimeOnly start, TimeOnly end)
+    {
+        db.WorkingHours.Add(new WorkingHours
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            StaffMemberId = staffId,
+            DayOfWeek = day,
+            StartLocal = start,
+            EndLocal = end,
+        });
+        await db.SaveChangesAsync();
+    }
+
+    public static async Task EnableServiceAsync(AppDbContext db, Guid tenantId, Guid staffId, Guid serviceId)
+    {
+        db.StaffServices.Add(new StaffService { TenantId = tenantId, StaffMemberId = staffId, ServiceId = serviceId });
+        await db.SaveChangesAsync();
+    }
+
     public static async Task<AppUser> AddCustomerAsync(AppDbContext db)
     {
         var email = $"{Guid.NewGuid():N}@example.test";

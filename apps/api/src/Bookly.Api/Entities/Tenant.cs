@@ -22,6 +22,12 @@ public class Tenant
 
     public int SlotIntervalMinutes { get; set; } = 15;
 
+    /// <summary>Minimum notice before a slot can be booked online.</summary>
+    public int MinNoticeMinutes { get; set; } = 60;
+
+    /// <summary>How many days ahead customers can book.</summary>
+    public int BookingHorizonDays { get; set; } = 60;
+
     /// <summary>Primary brand color as #RRGGBB; null means the Bookly default.</summary>
     public string? BrandPrimaryColor { get; set; }
 

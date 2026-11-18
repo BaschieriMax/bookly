@@ -4,5 +4,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Bookly.Api.IntegrationTests/Bookly.Api.IntegrationTests.csproj" />
+    <Project Path="tests/Bookly.Api.UnitTests/Bookly.Api.UnitTests.csproj" />
   </Folder>
 </Solution>

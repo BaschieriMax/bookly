@@ -12,6 +12,9 @@ internal static class RateLimitPolicies
     /// <summary>Password reset requests.</summary>
     public const string PasswordReset = "password-reset";
 
+    /// <summary>Anonymous public pages: tenant info, services, availability.</summary>
+    public const string Public = "public";
+
     public static IServiceCollection AddBooklyRateLimiting(this IServiceCollection services)
     {
         services.AddRateLimiter(limiter =>
@@ -24,6 +27,17 @@ internal static class RateLimitPolicies
                 return RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => new FixedWindowRateLimiterOptions
                 {
                     PermitLimit = options.LoginPermitPerMinute,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0,
+                });
+            });
+
+            limiter.AddPolicy(Public, context =>
+            {
+                var options = context.RequestServices.GetRequiredService<IOptions<AuthOptions>>().Value;
+                return RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = options.PublicPermitPerMinute,
                     Window = TimeSpan.FromMinutes(1),
                     QueueLimit = 0,
                 });

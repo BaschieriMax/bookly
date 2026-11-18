@@ -15,4 +15,8 @@ internal static class ErrorCodes
     public const string InvalidToken = "auth.invalid_token";
     public const string InvalidAntiforgery = "auth.invalid_antiforgery";
     public const string ValidationFailed = "validation.failed";
+    public const string TenantNotFound = "tenant.not_found";
+    public const string ServiceNotFound = "booking.service_not_found";
+    public const string StaffNotFound = "booking.staff_not_found";
+    public const string InvalidRange = "booking.invalid_range";
 }

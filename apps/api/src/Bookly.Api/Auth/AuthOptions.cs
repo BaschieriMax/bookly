@@ -18,4 +18,7 @@ public sealed class AuthOptions
     public int LoginPermitPerMinute { get; set; } = 5;
 
     public int PasswordResetPermitPer15Minutes { get; set; } = 3;
+
+    /// <summary>Anonymous public endpoints (tenant page, availability) per IP.</summary>
+    public int PublicPermitPerMinute { get; set; } = 120;
 }
