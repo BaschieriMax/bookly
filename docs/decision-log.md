@@ -499,3 +499,57 @@ Preferenza di Massimo, ecosistema di regole più maturo. Il passaggio a TS 7 è 
 Status:
 Approved (preferenza permanente) — alternativa da rivalutare
 ```
+
+```text
+Decision:
+DEC-021 — Nessuna enumerazione degli account; niente login automatico dopo la registrazione
+
+Date:
+2026-11-18
+
+Context:
+Registrazione, login e recupero password non devono rivelare se un'email è già registrata
+(OWASP A07). Un login automatico dopo la registrazione renderebbe distinguibili i due casi.
+
+Decision:
+- register, forgot-password e resend-confirmation rispondono sempre 202.
+  Se l'email esiste già, il titolare riceve un'email "hai già un account" con il link di reset.
+- login risponde lo stesso 401 `auth.invalid_credentials` per email sconosciuta, password errata
+  e account bloccato (lockout dopo 5 tentativi per 15 minuti).
+- Dopo la registrazione l'utente conferma l'email e poi accede; il wizard conserva la selezione.
+- Il link di reset conferma anche l'email (dimostra il possesso della casella).
+
+Alternatives:
+Errore "email già in uso" + login automatico (UX più rapida, ma permette l'enumerazione).
+
+Motivation:
+Privacy dei clienti delle attività e resistenza ad attacchi di credential stuffing.
+
+Status:
+Approved (scelta tecnica di Claude nello Step 3, reversibile)
+```
+
+```text
+Decision:
+DEC-022 — Email via SMTP con MailKit (Mailpit in sviluppo, Resend SMTP in produzione)
+
+Date:
+2026-11-18
+
+Context:
+DEC-011 sceglie Resend. Resend offre anche un endpoint SMTP standard.
+
+Decision:
+Un unico IEmailSender SMTP (MailKit). Sviluppo: Mailpit (localhost:1025). Produzione:
+smtp.resend.com:465, utente "resend", password = API key. Timeout di 15 s; un errore di invio
+viene registrato nei log ma non interrompe il flusso (l'utente può chiedere un nuovo invio).
+
+Alternatives:
+SDK HTTP di Resend (dipendenza in più, codice diverso fra sviluppo e produzione).
+
+Motivation:
+Stesso codice in tutti gli ambienti, provider sostituibile cambiando solo la configurazione.
+
+Status:
+Approved (specifica DEC-011)
+```
