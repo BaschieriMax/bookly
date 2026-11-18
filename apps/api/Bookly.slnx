@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Bookly.Api/Bookly.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Bookly.Api.IntegrationTests/Bookly.Api.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

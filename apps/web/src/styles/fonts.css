@@ -1,0 +1,7 @@
+/*
+ * Self-hosted font families (no third-party requests, GDPR friendly).
+ * To change a font: install the @fontsource package, import it here and
+ * update --bk-font-* in tokens.css.
+ */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/space-grotesk';

@@ -42,6 +42,44 @@ Priorità:
 Bassa
 ```
 
+```text
+ID: TD-003
+Problema:
+npm audit segnala una vulnerabilità "high" (ReDoS, GHSA-fc5q-39xc-vjpf) in picomatch ≤ 4.0.7,
+usato da Vite, Vitest e typescript-eslint. Non esiste ancora una versione corretta.
+
+Motivo:
+È una dipendenza solo di sviluppo/build, sfruttabile solo con pattern glob controllati da un
+attaccante: non arriva nel bundle né sul server.
+
+Impatto:
+Nessuno a runtime. La CI verifica le sole dipendenze di produzione (`npm audit --omit=dev`).
+
+Soluzione futura:
+Aggiornare appena esce picomatch ≥ 4.0.8 (Dependabot) e riportare l'audit completo in CI.
+
+Priorità:
+Bassa
+```
+
+```text
+ID: TD-004
+Problema:
+Il frontend usa TypeScript 6.0 invece di TypeScript 7 (DEC-020).
+
+Motivo:
+typescript-eslint non supporta ancora TypeScript ≥ 6.1.
+
+Impatto:
+Type-check più lento rispetto al compilatore nativo; nessun impatto funzionale.
+
+Soluzione futura:
+Passare a TypeScript 7 quando typescript-eslint lo supporta, oppure se Massimo sceglie oxlint.
+
+Priorità:
+Bassa
+```
+
 ## Revisione
 
 Il log si rivede a ogni release e nella manutenzione mensile. Un debito con priorità `Alta` non può restare aperto alla release senza una decisione esplicita di Massimo registrata nel Decision Log.

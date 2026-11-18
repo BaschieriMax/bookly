@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+@import './styles/fonts.css';
+@import './styles/tokens.css';
+
+/*
+ * Tailwind theme = semantic aliases of the design tokens (DEC-018).
+ * The default Tailwind palette is removed on purpose: only these colors exist,
+ * so a palette change in tokens.css is reflected everywhere.
+ */
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --radius-*: initial;
+}
+
+@theme inline {
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #ffffff;
+
+  --color-primary: var(--bk-color-primary);
+  --color-primary-hover: var(--bk-color-primary-hover);
+  --color-primary-fg: var(--bk-color-primary-fg);
+  --color-primary-soft: var(--bk-color-primary-soft);
+
+  --color-bg: var(--bk-color-bg);
+  --color-surface: var(--bk-color-surface);
+  --color-subtle: var(--bk-color-subtle);
+  --color-border: var(--bk-color-border);
+  --color-border-strong: var(--bk-color-border-strong);
+
+  --color-ink: var(--bk-color-ink);
+  --color-muted: var(--bk-color-muted);
+
+  --color-success: var(--bk-color-success);
+  --color-success-soft: var(--bk-color-success-soft);
+  --color-warning: var(--bk-color-warning);
+  --color-warning-soft: var(--bk-color-warning-soft);
+  --color-danger: var(--bk-color-danger);
+  --color-danger-soft: var(--bk-color-danger-soft);
+  --color-focus: var(--bk-color-focus);
+
+  --font-sans: var(--bk-font-sans);
+  --font-heading: var(--bk-font-heading);
+  --font-mono: var(--bk-font-mono);
+
+  --radius-control: var(--bk-radius-control);
+  --radius-card: var(--bk-radius-card);
+  --radius-pill: var(--bk-radius-pill);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-bg font-sans text-ink antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--bk-color-focus);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
