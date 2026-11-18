@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # 1) Build the React app
-FROM node:22-alpine AS web
+FROM node:26-alpine AS web
 WORKDIR /src/apps/web
 COPY apps/web/package.json apps/web/package-lock.json ./
 RUN npm ci
