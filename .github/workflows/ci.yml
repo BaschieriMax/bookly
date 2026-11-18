@@ -82,7 +82,8 @@ jobs:
       # Same origin as production: the API serves the production build of the SPA (DEC-010).
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://localhost:5080
-      ConnectionStrings__Default: Host=localhost;Database=bookly;Username=bookly;Password=bookly_ci
+      # Throwaway CI database: the connection string is composed in the step that starts the API.
+      E2E_DB_PASSWORD: bookly_ci
       Auth__LoginPermitPerMinute: '1000'
       Email__Host: smtp.invalid
     steps:
@@ -107,6 +108,7 @@ jobs:
         working-directory: apps/api/src/Bookly.Api
         run: |
           dotnet build -c Release -p:OpenApiGenerateDocuments=false
+          export ConnectionStrings__Default="Host=localhost;Database=bookly;Username=bookly;Password=$E2E_DB_PASSWORD"
           nohup dotnet run -c Release --no-build --no-launch-profile > "$RUNNER_TEMP/api.log" 2>&1 &
           for i in $(seq 1 60); do curl -fsS http://localhost:5080/api/health/ready && exit 0; sleep 2; done
           cat "$RUNNER_TEMP/api.log"; exit 1
