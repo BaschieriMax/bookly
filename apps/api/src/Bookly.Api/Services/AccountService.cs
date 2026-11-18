@@ -1,4 +1,5 @@
 using System.Text;
+using Bookly.Api.Auth;
 using Bookly.Api.DTOs.Auth;
 using Bookly.Api.Entities;
 using Bookly.Api.Infrastructure;
@@ -111,6 +112,52 @@ public sealed class AccountService(
         await userManager.ResetAccessFailedCountAsync(user);
         await userManager.SetLockoutEndDateAsync(user, null);
         return result;
+    }
+
+    /// <summary>Invitation link for a user created without a password (DEC-028).</summary>
+    public async Task<string> BuildInvitationLinkAsync(AppUser user)
+    {
+        var token = Encode(await userManager.GenerateUserTokenAsync(
+            user, InvitationTokenProvider<AppUser>.ProviderName, InvitationTokenProvider<AppUser>.Purpose));
+        return $"{BaseUrl}/invito?userId={user.Id}&token={token}";
+    }
+
+    /// <summary>The invited user if the link is valid and still unused (no password yet), otherwise null.</summary>
+    public async Task<AppUser?> FindInvitedUserAsync(Guid userId, string token)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null || user.PasswordHash is not null || !TryDecode(token, out var decoded))
+        {
+            return null;
+        }
+
+        var valid = await userManager.VerifyUserTokenAsync(
+            user, InvitationTokenProvider<AppUser>.ProviderName, InvitationTokenProvider<AppUser>.Purpose, decoded);
+        return valid ? user : null;
+    }
+
+    /// <summary>
+    /// Sets the first password of an invited user. The link proves ownership of the mailbox, so the
+    /// email is confirmed; adding the password rotates the security stamp and invalidates the link.
+    /// </summary>
+    public async Task<(AppUser? User, IdentityResult Result)> AcceptInvitationAsync(AcceptInvitationRequest request)
+    {
+        var user = await FindInvitedUserAsync(request.UserId, request.Token);
+        if (user is null)
+        {
+            return (null, IdentityResult.Failed(userManager.ErrorDescriber.InvalidToken()));
+        }
+
+        var result = await userManager.AddPasswordAsync(user, request.Password);
+        if (!result.Succeeded)
+        {
+            return (null, result);
+        }
+
+        user.EmailConfirmed = true;
+        user.PrivacyAcceptedAt = timeProvider.GetUtcNow();
+        await userManager.UpdateAsync(user);
+        return (user, result);
     }
 
     private async Task SendConfirmationAsync(AppUser user, CancellationToken cancellationToken)

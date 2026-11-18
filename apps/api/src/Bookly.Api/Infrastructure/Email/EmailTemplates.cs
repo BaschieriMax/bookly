@@ -52,6 +52,24 @@ internal static class EmailTemplates
         link: bookLink,
         footer: "Se non sei stato tu, contatta subito l'attività.");
 
+    public static EmailMessage OwnerInvitation(string to, string firstName, string tenantName, string link) => Build(
+        to,
+        subject: $"Sei stato invitato a gestire {tenantName} su Bookly",
+        greeting: firstName,
+        paragraph: $"Sei il titolare di {tenantName} su Bookly. Scegli una password per attivare l'account e configurare servizi, staff e orari.",
+        actionLabel: "Attiva l'account",
+        link: link,
+        footer: "Il link scade tra 7 giorni. Se non ti aspettavi questo invito, ignora questa email.");
+
+    public static EmailMessage OwnerAdded(string to, string firstName, string tenantName, string link) => Build(
+        to,
+        subject: $"Ora gestisci {tenantName} su Bookly",
+        greeting: firstName,
+        paragraph: $"Il tuo account Bookly è stato aggiunto come titolare di {tenantName}. Accedi con le tue solite credenziali.",
+        actionLabel: "Apri l'area dell'attività",
+        link: link,
+        footer: "Se non ti aspettavi questa email, contatta il supporto di Bookly.");
+
     public static EmailMessage AppointmentMovedByBusiness(
         string to, string firstName, string tenantName, string serviceName, string oldWhen, string newWhen, string manageLink) => Build(
         to,

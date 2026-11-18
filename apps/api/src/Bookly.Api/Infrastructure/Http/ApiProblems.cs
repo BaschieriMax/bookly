@@ -36,4 +36,7 @@ internal static class ErrorCodes
     public const string InvalidStatus = "admin.invalid_status";
     public const string NotStarted = "admin.not_started";
     public const string InPast = "admin.in_past";
+    public const string SlugTaken = "platform.slug_taken";
+    public const string InvalidSlug = "platform.invalid_slug";
+    public const string AlreadyOwner = "platform.already_owner";
 }

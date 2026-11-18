@@ -36,3 +36,11 @@ public sealed record MeResponse(
     bool EmailConfirmed,
     IReadOnlyList<string> PlatformRoles,
     IReadOnlyList<MembershipDto> Memberships);
+
+public sealed record InvitationDto(string Email, string FirstName, string LastName, IReadOnlyList<string> Tenants);
+
+public sealed record AcceptInvitationRequest(
+    [Required] Guid UserId,
+    [Required, MaxLength(2048)] string Token,
+    [Required, MinLength(10), MaxLength(128)] string Password,
+    [Range(typeof(bool), "true", "true", ErrorMessage = "Privacy policy must be accepted.")] bool AcceptPrivacy);

@@ -163,6 +163,54 @@ public sealed class AuthController(
         return IdentityValidationProblem(result, passwordField: "newPassword");
     }
 
+    /// <summary>Who an invitation link is for (to greet the invitee); 400 when invalid, expired or used.</summary>
+    [HttpGet("invitation")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [ProducesResponseType<InvitationDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<IResult> Invitation([FromQuery] Guid userId, [FromQuery] string token, CancellationToken cancellationToken)
+    {
+        var user = await accounts.FindInvitedUserAsync(userId, token);
+        if (user is null)
+        {
+            return InvalidInvitation();
+        }
+
+        var tenants = await db.TenantMemberships
+            .IgnoreQueryFilters([AppDbContext.TenantFilter])
+            .Where(m => m.UserId == user.Id && m.Tenant.Status == TenantStatus.Active)
+            .OrderBy(m => m.Tenant.Name)
+            .Select(m => m.Tenant.Name)
+            .ToListAsync(cancellationToken);
+
+        return Results.Ok(new InvitationDto(user.Email!, user.FirstName, user.LastName, tenants));
+    }
+
+    /// <summary>Sets the first password of an invited owner and signs them in.</summary>
+    [HttpPost("accept-invitation")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AcceptInvitation(AcceptInvitationRequest request)
+    {
+        var (user, result) = await accounts.AcceptInvitationAsync(request);
+        if (user is not null)
+        {
+            await signInManager.SignInAsync(user, isPersistent: false);
+            return NoContent();
+        }
+
+        var invalidToken = userManager.ErrorDescriber.InvalidToken().Code;
+        return result.Errors.Any(e => e.Code == invalidToken)
+            ? new ResultActionResult(InvalidInvitation())
+            : IdentityValidationProblem(result, passwordField: "password");
+    }
+
+    private static IResult InvalidInvitation() =>
+        ApiProblems.Create(StatusCodes.Status400BadRequest, ErrorCodes.InvalidToken, "The invitation link is invalid, expired or already used.");
+
     private void IssueXsrfToken()
     {
         var tokens = antiforgery.GetAndStoreTokens(HttpContext);
