@@ -64,3 +64,12 @@ export function addDays(key: string, days: number): string {
   date.setDate(date.getDate() + days)
   return dateKey(date)
 }
+
+/** "mar 2 marzo" for a yyyy-MM-dd key (a calendar date, no time zone involved). */
+export function shortDateOfKey(key: string): string {
+  return new Intl.DateTimeFormat('it-IT', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'long',
+  }).format(fromDateKey(key))
+}

@@ -25,4 +25,10 @@ internal static class ErrorCodes
     public const string NotCancellable = "booking.not_cancellable";
     public const string CancellationWindowPassed = "booking.cancellation_window_passed";
     public const string ConcurrentUpdate = "booking.concurrent_update";
+    public const string NotFound = "admin.not_found";
+    public const string InUse = "admin.in_use";
+    public const string OverlappingHours = "admin.overlapping_hours";
+    public const string InvalidTimeZone = "admin.invalid_time_zone";
+    public const string InvalidLogo = "admin.invalid_logo";
+    public const string StaffScope = "admin.staff_scope";
 }

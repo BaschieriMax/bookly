@@ -42,5 +42,18 @@ public sealed class ApiSession : IDisposable
         return await Client.SendAsync(request);
     }
 
+    /// <summary>Unsafe request with a ready-made body (e.g. multipart) and the antiforgery header.</summary>
+    public async Task<HttpResponseMessage> SendContentAsync(HttpMethod method, string path, HttpContent content)
+    {
+        if (GetCookie("XSRF-TOKEN") is null)
+        {
+            (await MeAsync()).Dispose();
+        }
+
+        using var request = new HttpRequestMessage(method, path) { Content = content };
+        request.Headers.Add("X-XSRF-TOKEN", GetCookie("XSRF-TOKEN")!.Value);
+        return await Client.SendAsync(request);
+    }
+
     public void Dispose() => Client.Dispose();
 }

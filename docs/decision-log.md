@@ -613,3 +613,57 @@ Status:
 Approved (Massimo ha dato il via a shadcn per il calendario; questa è l'implementazione
 equivalente senza la CLI, reversibile)
 ```
+
+```text
+Decision:
+DEC-025 — Assenze inserite in ora locale del tenant, convertite in UTC dal server
+
+Date:
+2026-11-18
+
+Context:
+Le assenze dello staff (ferie, permessi) si inseriscono nell'area admin. Convertire nel browser
+un'ora locale del tenant in UTC richiede di calcolare l'offset per quella data (ora legale) e il
+browser può essere in un altro fuso (booking-domain, regole 3 e 6).
+
+Decision:
+L'API riceve data e ora locali (startDate, startTime?, endDate, endTime?): senza orari l'assenza
+copre giornate intere [inizio 00:00, giorno dopo la fine 00:00). Il server converte per data con
+lo stesso helper della disponibilità (AvailabilityCalculator.ToUtc) e restituisce gli istanti con
+l'offset del tenant.
+
+Alternatives:
+DateTimeOffset calcolato dal frontend (logica DST duplicata nel browser, rischio di errori con
+fusi diversi dal tenant).
+
+Motivation:
+Una sola implementazione della conversione, testata anche sul cambio d'ora di marzo.
+
+Status:
+Approved (dettaglio implementativo dello Step 8)
+```
+
+```text
+Decision:
+DEC-026 — Logo del tenant: cache con rivalidazione (no-cache + ETag)
+
+Date:
+2026-11-18
+
+Context:
+Il logo pubblico era servito con max-age=3600: dopo un nuovo caricamento la pagina pubblica
+avrebbe mostrato il logo vecchio fino a un'ora.
+
+Decision:
+Cache-Control "public, no-cache" con ETag: il browser rivalida a ogni visita e riceve 304 se il
+logo non è cambiato. L'area admin aggiunge anche un parametro di versione dopo l'upload.
+
+Alternatives:
+URL versionato (?v=) anche sulla pagina pubblica (richiede di esporre la data del logo nell'API).
+
+Motivation:
+Logo aggiornato subito, costo trascurabile (richiesta condizionale di pochi byte).
+
+Status:
+Approved (dettaglio implementativo dello Step 8)
+```

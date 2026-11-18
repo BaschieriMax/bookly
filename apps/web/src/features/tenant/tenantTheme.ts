@@ -24,10 +24,19 @@ const grounds = {
 } as const
 
 const headingFonts = {
-  Script: "'Great Vibes', cursive",
-  Serif: "'Fraunces Variable', Georgia, serif",
-  Sans: "'Space Grotesk Variable', 'Inter Variable', system-ui, sans-serif",
+  Script: 'var(--bk-font-brand-script)',
+  Serif: 'var(--bk-font-brand-serif)',
+  Sans: 'var(--bk-font-brand-sans)',
 } as const
+
+export const DEFAULT_PRIMARY = '#0f766e'
+
+/** Contrast of the brand color used as text on the chosen ground (WCAG AA needs 4.5:1). */
+export function primaryTextContrast(primaryColor: string | null, ground: string): number {
+  const background = ground === 'Dark' ? grounds.Dark : grounds.Light
+  const primary = isHexColor(primaryColor) ? primaryColor : DEFAULT_PRIMARY
+  return contrastRatio(primary, background['--bk-color-bg'])
+}
 
 /**
  * CSS variables that re-skin the public pages with the tenant brand (DEC-016, DEC-018).
@@ -35,7 +44,7 @@ const headingFonts = {
  */
 export function tenantThemeStyle(brand: PublicTenant['brand']): CSSProperties {
   const ground = brand.ground === 'Dark' ? grounds.Dark : grounds.Light
-  const primary = isHexColor(brand.primaryColor) ? brand.primaryColor : '#0f766e'
+  const primary = isHexColor(brand.primaryColor) ? brand.primaryColor : DEFAULT_PRIMARY
   const primaryText =
     contrastRatio(primary, ground['--bk-color-bg']) >= 4.5 ? primary : ground['--bk-color-ink']
   const heading = headingFonts[brand.headingFont as keyof typeof headingFonts] ?? headingFonts.Sans

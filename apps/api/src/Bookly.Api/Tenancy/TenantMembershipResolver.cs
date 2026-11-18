@@ -23,6 +23,9 @@ public sealed class TenantMembershipResolver(
     private bool _resolved;
     private ResolvedMembership? _membership;
 
+    /// <summary>The membership resolved earlier in this request (by the authorization policy), if any.</summary>
+    public ResolvedMembership? Current => _membership;
+
     public async Task<ResolvedMembership?> ResolveAsync(CancellationToken cancellationToken = default)
     {
         if (_resolved)

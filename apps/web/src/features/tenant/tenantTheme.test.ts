@@ -15,7 +15,7 @@ describe('tenantThemeStyle', () => {
     expect(style['--bk-color-primary']).toBe('#e8b05a')
     expect(style['--bk-color-primary-fg']).toBe('#1a1405')
     expect(style['--bk-color-primary-text']).toBe('#e8b05a')
-    expect(style['--bk-font-tenant-heading']).toContain('Great Vibes')
+    expect(style['--bk-font-tenant-heading']).toBe('var(--bk-font-brand-script)')
   })
 
   it('falls back to the ink color for text when the brand color is too light', () => {

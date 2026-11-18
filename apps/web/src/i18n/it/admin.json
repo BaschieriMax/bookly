@@ -1,0 +1,194 @@
+{
+  "actions": {
+    "add": "Aggiungi",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "save": "Salva",
+    "saveChanges": "Salva modifiche",
+    "cancel": "Annulla",
+    "close": "Chiudi",
+    "keep": "No, tieni"
+  },
+  "saved": "Modifiche salvate.",
+  "deleted": "Eliminato.",
+  "inactive": "Non attivo",
+  "errors": {
+    "load": "Impossibile caricare i dati. Riprova.",
+    "forbidden": "Questa sezione è riservata al titolare dell'attività.",
+    "admin": {
+      "not_found": "Elemento non trovato: forse è stato eliminato. Ricarica la pagina.",
+      "in_use": "Ha degli appuntamenti: invece di eliminarlo, disattivalo.",
+      "overlapping_hours": "Controlla le fasce: ognuna deve finire dopo l'inizio e non sovrapporsi alle altre dello stesso giorno.",
+      "invalid_time_zone": "Fuso orario non valido.",
+      "invalid_logo": "Il logo deve essere un'immagine PNG o WebP di massimo 200 KB.",
+      "staff_scope": "Puoi gestire solo i tuoi orari."
+    },
+    "booking": {
+      "invalid_range": "La fine deve essere successiva all'inizio (massimo un anno)."
+    },
+    "validation": {
+      "required": "Campo obbligatorio.",
+      "tooLong": "Testo troppo lungo.",
+      "number": "Inserisci un numero valido.",
+      "range": "Valore fuori dall'intervallo consentito ({{min}}–{{max}}).",
+      "price": "Inserisci un prezzo valido, ad esempio 25 o 12,50.",
+      "phone": "Numero di telefono non valido."
+    }
+  },
+  "services": {
+    "title": "Servizi",
+    "lead": "Le prestazioni che i clienti possono prenotare. La pausa dopo il servizio occupa l'operatore ma non è mostrata al cliente.",
+    "new": "Nuovo servizio",
+    "editTitle": "Modifica servizio",
+    "empty": "Nessun servizio. Aggiungi il primo per aprire le prenotazioni.",
+    "duration": "{{duration}} + {{buffer}} min di pausa",
+    "priceOnRequest": "Prezzo su richiesta",
+    "offeredBy": "Lo offrono: {{names}}",
+    "offeredByNobody": "Nessun operatore lo offre: abilitalo dalla pagina Staff.",
+    "deleteTitle": "Eliminare il servizio?",
+    "deleteText": "«{{name}}» non sarà più prenotabile. Se ha già appuntamenti non può essere eliminato: disattivalo.",
+    "fields": {
+      "name": "Nome",
+      "description": "Descrizione",
+      "durationMinutes": "Durata (minuti)",
+      "bufferMinutes": "Pausa dopo (minuti)",
+      "bufferHint": "Pulizia o preparazione: non visibile al cliente.",
+      "price": "Prezzo (€)",
+      "priceHint": "Lascia vuoto per «su richiesta».",
+      "priceIsFrom": "Prezzo «a partire da»",
+      "isActive": "Prenotabile",
+      "isActiveHint": "Se disattivato resta nello storico ma non compare ai clienti.",
+      "sortOrder": "Ordine"
+    }
+  },
+  "staff": {
+    "title": "Staff",
+    "lead": "Chi eroga i servizi. Gli orari e le assenze si gestiscono in «Orari e assenze».",
+    "new": "Nuovo operatore",
+    "editTitle": "Modifica operatore",
+    "empty": "Nessun operatore. Aggiungine uno per ricevere prenotazioni.",
+    "me": "Tu",
+    "hasLogin": "Ha un accesso",
+    "servicesCount_one": "{{count}} servizio",
+    "servicesCount_other": "{{count}} servizi",
+    "deleteTitle": "Eliminare l'operatore?",
+    "deleteText": "«{{name}}» verrà rimosso con i suoi orari. Se ha già appuntamenti non può essere eliminato: disattivalo.",
+    "fields": {
+      "displayName": "Nome visibile ai clienti",
+      "isActive": "Attivo",
+      "isActiveHint": "Se disattivato non riceve nuove prenotazioni.",
+      "sortOrder": "Ordine",
+      "services": "Servizi che offre",
+      "noServices": "Crea prima i servizi nella pagina Servizi."
+    }
+  },
+  "schedule": {
+    "title": "Orari e assenze",
+    "lead": "Orari settimanali e assenze, nel fuso orario dell'attività.",
+    "staffLabel": "Operatore",
+    "noStaff": "Nessun operatore da gestire.",
+    "weekTitle": "Orari settimanali",
+    "closed": "Chiuso",
+    "addInterval": "Aggiungi fascia",
+    "removeInterval": "Rimuovi fascia {{day}} {{start}}–{{end}}",
+    "from": "Dalle",
+    "to": "Alle",
+    "invalidDay": "Fasce non valide: ognuna deve finire dopo l'inizio e non sovrapporsi.",
+    "saveHours": "Salva orari",
+    "hoursSaved": "Orari salvati.",
+    "timeOffTitle": "Assenze",
+    "timeOffEmpty": "Nessuna assenza in programma.",
+    "addTimeOff": "Aggiungi assenza",
+    "timeOffAdded": "Assenza aggiunta.",
+    "timeOffConflicts_one": "Attenzione: c'è {{count}} appuntamento confermato in questo periodo. Spostalo o annullalo dal calendario.",
+    "timeOffConflicts_other": "Attenzione: ci sono {{count}} appuntamenti confermati in questo periodo. Spostali o annullali dal calendario.",
+    "deleteTimeOff": "Elimina assenza {{period}}",
+    "wholeDays": "Giornate intere",
+    "startDate": "Dal giorno",
+    "endDate": "Al giorno",
+    "startTime": "Dalle ore",
+    "endTime": "Alle ore",
+    "reason": "Motivo (facoltativo)",
+    "reasonHint": "Visibile solo allo staff. Non inserire dati sanitari.",
+    "periodDays": "dal {{start}} al {{end}}",
+    "periodDay": "{{start}}",
+    "periodTimes": "{{start}}, {{startTime}} → {{end}}, {{endTime}}",
+    "periodSameDay": "{{start}}, {{startTime}}–{{endTime}}",
+    "days": {
+      "0": "Domenica",
+      "1": "Lunedì",
+      "2": "Martedì",
+      "3": "Mercoledì",
+      "4": "Giovedì",
+      "5": "Venerdì",
+      "6": "Sabato"
+    }
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "lead": "Dati dell'attività e regole di prenotazione.",
+    "publicLink": "Pagina pubblica",
+    "business": "Attività",
+    "rules": "Regole di prenotazione",
+    "fields": {
+      "name": "Nome dell'attività",
+      "phone": "Telefono",
+      "address": "Indirizzo",
+      "timeZone": "Fuso orario",
+      "cancellationWindowHours": "Disdetta online fino a (ore prima)",
+      "cancellationWindowHint": "Oltre questo limite il cliente vede il tuo telefono.",
+      "slotIntervalMinutes": "Intervallo tra gli orari proposti",
+      "minNoticeMinutes": "Preavviso minimo (minuti)",
+      "minNoticeHint": "Ad esempio 60: non si prenota per la prossima ora.",
+      "bookingHorizonDays": "Prenotabile fino a (giorni)"
+    },
+    "minutes": "{{count}} minuti"
+  },
+  "brand": {
+    "title": "Brand",
+    "lead": "Colore, sfondo, carattere dei titoli e logo della tua pagina pubblica.",
+    "color": "Colore principale",
+    "defaultColor": "Predefinito",
+    "customColor": "Colore personalizzato",
+    "hex": "Codice esadecimale",
+    "hexInvalid": "Usa il formato #RRGGBB, ad esempio #2f6b4f.",
+    "ground": "Sfondo",
+    "grounds": {
+      "Light": "Chiaro",
+      "Dark": "Scuro"
+    },
+    "font": "Carattere dei titoli",
+    "fonts": {
+      "Script": "Calligrafico",
+      "Serif": "Classico",
+      "Sans": "Moderno"
+    },
+    "contrast": {
+      "ok": "Contrasto del testo {{ratio}}:1 — leggibile.",
+      "low": "Contrasto {{ratio}}:1: troppo basso per i testi su questo sfondo. Per i testi useremo il colore del testo; i pulsanti restano leggibili."
+    },
+    "logo": "Logo",
+    "logoHint": "PNG o WebP, quadrato, massimo 200 KB.",
+    "uploadLogo": "Carica logo",
+    "replaceLogo": "Sostituisci logo",
+    "removeLogo": "Rimuovi logo",
+    "logoSaved": "Logo aggiornato.",
+    "logoRemoved": "Logo rimosso.",
+    "preview": "Anteprima",
+    "previewHero": "Prenota il tuo appuntamento",
+    "previewService": "Taglio",
+    "previewBook": "Prenota",
+    "unsaved": "Modifiche non salvate",
+    "swatches": {
+      "teal": "Ottanio",
+      "forest": "Bosco",
+      "ochre": "Ocra",
+      "terracotta": "Terracotta",
+      "bordeaux": "Bordeaux",
+      "oldRose": "Rosa antico",
+      "plum": "Prugna",
+      "night": "Notte",
+      "graphite": "Grafite"
+    }
+  }
+}

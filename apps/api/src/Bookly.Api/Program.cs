@@ -4,6 +4,7 @@ using Bookly.Api.Data;
 using Bookly.Api.Infrastructure;
 using Bookly.Api.Infrastructure.Email;
 using Bookly.Api.Services;
+using Bookly.Api.Services.Admin;
 using Bookly.Api.Services.Availability;
 using Bookly.Api.Services.Booking;
 using Bookly.Api.Tenancy;
@@ -37,6 +38,10 @@ builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<PublicTenantResolver>();
 builder.Services.AddScoped<AvailabilityService>();
 builder.Services.AddScoped<BookingService>();
+builder.Services.AddScoped<AdminContext>();
+builder.Services.AddScoped<CatalogService>();
+builder.Services.AddScoped<ScheduleService>();
+builder.Services.AddScoped<TenantSettingsService>();
 
 // Behind the hosting proxy (Render): trust only the last hop, so clients cannot spoof their IP
 // to dodge rate limits. Enabled with ReverseProxy__Enabled=true in production.

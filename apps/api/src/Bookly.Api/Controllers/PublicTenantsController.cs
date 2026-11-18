@@ -64,7 +64,8 @@ public sealed class PublicTenantsController(
         }
 
         var etag = new EntityTagHeaderValue($"\"{logo.UpdatedAt.UtcTicks:x}\"");
-        Response.Headers.CacheControl = "public, max-age=3600";
+        // Revalidate every time (cheap 304 via ETag) so a new logo shows up immediately.
+        Response.Headers.CacheControl = "public, no-cache";
         if (Request.Headers.IfNoneMatch.ToString() == etag.Tag.ToString())
         {
             return StatusCode(StatusCodes.Status304NotModified);

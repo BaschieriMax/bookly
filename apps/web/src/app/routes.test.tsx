@@ -63,7 +63,7 @@ describe('routes', () => {
       'Impostazioni',
     ])
     expect(screen.getByRole('link', { name: 'Servizi' })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('heading', { name: 'Servizi' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Servizi' })).toBeInTheDocument()
   })
 
   it('blocks the platform area for users who are not super-admins', async () => {
