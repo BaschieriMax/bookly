@@ -52,6 +52,28 @@ internal static class EmailTemplates
         link: bookLink,
         footer: "Se non sei stato tu, contatta subito l'attività.");
 
+    public static EmailMessage AppointmentReminder(
+        string to,
+        string firstName,
+        string tenantName,
+        string serviceName,
+        string staffName,
+        string when,
+        string? address,
+        string? cancelDeadline,
+        string? tenantPhone,
+        string manageLink) => Build(
+        to,
+        subject: $"Promemoria: {serviceName} da {tenantName}",
+        greeting: firstName,
+        paragraph: $"Ti ricordiamo il tuo appuntamento da {tenantName}: {serviceName} con {staffName}, {when}"
+            + (address is null ? "." : $", {address}."),
+        actionLabel: "Gestisci la prenotazione",
+        link: manageLink,
+        footer: cancelDeadline is not null
+            ? $"Se non puoi venire, disdici online entro {cancelDeadline}: libererai il posto per un altro cliente."
+            : "Se non puoi venire, avvisa l'attività" + (tenantPhone is null ? "." : $" al numero {tenantPhone}."));
+
     public static EmailMessage OwnerInvitation(string to, string firstName, string tenantName, string link) => Build(
         to,
         subject: $"Sei stato invitato a gestire {tenantName} su Bookly",

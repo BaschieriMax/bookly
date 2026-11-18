@@ -7,6 +7,7 @@ using Bookly.Api.Infrastructure.Email;
 using Bookly.Api.Services;
 using Bookly.Api.Services.Admin;
 using Bookly.Api.Services.Availability;
+using Bookly.Api.Services.Jobs;
 using Bookly.Api.Services.Platform;
 using Bookly.Api.Services.Booking;
 using Bookly.Api.Tenancy;
@@ -46,6 +47,11 @@ builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddScoped<TenantSettingsService>();
 builder.Services.AddScoped<CalendarService>();
 builder.Services.AddScoped<TenantProvisioningService>();
+builder.Services.AddScoped<ReminderService>();
+builder.Services.AddOptions<JobsOptions>()
+    .Bind(builder.Configuration.GetSection(JobsOptions.Section))
+    .Validate(o => o.Secret.Length is 0 or >= 32, "Jobs:Secret must be empty (disabled) or at least 32 characters.")
+    .ValidateOnStartUnlessBuildTime();
 builder.Services.AddOptions<PlatformOptions>().Bind(builder.Configuration.GetSection(PlatformOptions.Section));
 
 // Behind the hosting proxy (Render): trust only the last hop, so clients cannot spoof their IP

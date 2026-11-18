@@ -76,6 +76,20 @@ poi `npm run gen:api` (in `apps/web`) rigenera `src/types/api.gen.ts`. La CI fal
 3. All'avvio l'API ti assegna il ruolo SuperAdmin (solo se l'email è confermata, DEC-028). Da
    `/platform/tenant` crei le attività e inviti i titolari.
 
+## Promemoria email
+
+Il workflow `.github/workflows/reminders.yml` chiama ogni 15 minuti `POST /api/jobs/send-reminders`
+(segreto nell'header `X-Job-Secret`). Il promemoria parte circa 24 ore prima, una sola volta, e non
+viene inviato per prenotazioni fatte a meno di 12 ore dall'appuntamento. Per attivarlo:
+
+1. genera un segreto di almeno 32 caratteri (`openssl rand -base64 48`);
+2. impostalo come `Jobs__Secret` sul servizio;
+3. su GitHub aggiungi il secret `BOOKLY_JOB_SECRET` (stesso valore) e la variabile
+   `BOOKLY_BASE_URL`.
+
+Senza segreto configurato l'endpoint risponde 404. Per provarlo in locale:
+`curl -X POST localhost:5080/api/jobs/send-reminders -H "X-Job-Secret: <segreto>"`.
+
 ## Personalizzare stili e font
 
 Colori, font e raggi stanno **solo** in `apps/web/src/styles/tokens.css` (variabili `--bk-*`).
