@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { z } from 'zod'
 import { Button } from '@/components/ui/Button'
+import { CheckboxField } from '@/components/ui/CheckboxField'
 import { SelectField } from '@/components/ui/SelectField'
 import { TextField } from '@/components/ui/TextField'
 import type { TenantSettings } from '@/types/api'
@@ -31,6 +32,7 @@ const schema = z.object({
   slotIntervalMinutes: intField(5, 120),
   minNoticeMinutes: intField(0, 10_080),
   bookingHorizonDays: intField(1, 365),
+  notifyOnCustomerCancellation: z.boolean(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -127,6 +129,11 @@ function SettingsForm({ settings }: { settings: TenantSettings }) {
             {...register('bookingHorizonDays', { valueAsNumber: true })}
           />
         </div>
+        <CheckboxField
+          label={t('settings.fields.notifyOnCustomerCancellation')}
+          description={t('settings.fields.notifyHint')}
+          {...register('notifyOnCustomerCancellation')}
+        />
       </Panel>
 
       <div className="flex justify-end">

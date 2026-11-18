@@ -8,7 +8,15 @@ const knownCodes = [
   'admin.invalid_time_zone',
   'admin.invalid_logo',
   'admin.staff_scope',
+  'admin.staff_unavailable',
+  'admin.service_not_offered',
+  'admin.invalid_status',
+  'admin.not_started',
+  'admin.in_past',
   'booking.invalid_range',
+  'booking.slot_unavailable',
+  'booking.concurrent_update',
+  'booking.appointment_not_found',
 ] as const
 
 type KnownCode = (typeof knownCodes)[number]

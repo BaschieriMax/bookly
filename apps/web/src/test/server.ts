@@ -199,6 +199,7 @@ export const adminSettings: TenantSettings = {
   slotIntervalMinutes: 15,
   minNoticeMinutes: 60,
   bookingHorizonDays: 60,
+  notifyOnCustomerCancellation: true,
 }
 
 export const adminBrand: TenantBrandSettings = {

@@ -23,6 +23,7 @@ const TenantPage = lazy(() => import('@/features/tenant/TenantPage'))
 const BookingPage = lazy(() => import('@/features/booking/BookingPage'))
 const AccountLayout = lazy(() => import('@/features/account/AccountLayout'))
 const MyAppointmentsPage = lazy(() => import('@/features/account/MyAppointmentsPage'))
+const CalendarPage = lazy(() => import('@/features/admin/calendar/CalendarPage'))
 const ServicesPage = lazy(() => import('@/features/admin/ServicesPage'))
 const StaffPage = lazy(() => import('@/features/admin/StaffPage'))
 const SchedulePage = lazy(() => import('@/features/admin/SchedulePage'))
@@ -78,7 +79,7 @@ export const routes: RouteObject[] = [
       {
         element: withSuspense(<AdminLayout />),
         children: [
-          { path: paths.admin.calendar, element: placeholder('calendar') },
+          { path: paths.admin.calendar, element: withSuspense(<CalendarPage />) },
           { path: paths.admin.services, element: withSuspense(<ServicesPage />) },
           { path: paths.admin.staff, element: withSuspense(<StaffPage />) },
           { path: paths.admin.schedule, element: withSuspense(<SchedulePage />) },
