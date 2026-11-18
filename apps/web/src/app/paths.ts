@@ -6,6 +6,7 @@ export const paths = {
   forgotPassword: '/password-dimenticata',
   resetPassword: '/reimposta-password',
   confirmEmail: '/conferma-email',
+  invitation: '/invito',
   privacy: '/privacy',
   tenant: '/b/:slug',
   booking: '/b/:slug/prenota',

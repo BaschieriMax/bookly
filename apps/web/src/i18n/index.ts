@@ -6,10 +6,11 @@ import auth from './it/auth.json'
 import booking from './it/booking.json'
 import common from './it/common.json'
 import nav from './it/nav.json'
+import platform from './it/platform.json'
 
 /** Italian only for now; texts live in JSON so English can be added without refactoring (DEC-015). */
 export const resources = {
-  it: { common, nav, auth, booking, account, admin },
+  it: { common, nav, auth, booking, account, admin, platform },
 } as const
 
 void i18n.use(initReactI18next).init({
@@ -17,7 +18,7 @@ void i18n.use(initReactI18next).init({
   lng: 'it',
   fallbackLng: 'it',
   defaultNS: 'common',
-  ns: ['common', 'nav', 'auth', 'booking', 'account', 'admin'],
+  ns: ['common', 'nav', 'auth', 'booking', 'account', 'admin', 'platform'],
   interpolation: { escapeValue: false },
   returnNull: false,
 })

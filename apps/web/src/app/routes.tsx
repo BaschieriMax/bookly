@@ -1,8 +1,6 @@
 import { lazy } from 'react'
 import type { RouteObject } from 'react-router'
 import { PlaceholderPage } from '@/components/ui/PlaceholderPage'
-import i18n from '@/i18n'
-import type nav from '@/i18n/it/nav.json'
 import { RedirectIfAuthenticated } from './guards/RedirectIfAuthenticated'
 import { RequireAuth } from './guards/RequireAuth'
 import { PublicLayout } from './layouts/PublicLayout'
@@ -17,6 +15,7 @@ const RegisterPage = lazy(() => import('@/features/auth/RegisterPage'))
 const ConfirmEmailPage = lazy(() => import('@/features/auth/ConfirmEmailPage'))
 const ForgotPasswordPage = lazy(() => import('@/features/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'))
+const AcceptInvitationPage = lazy(() => import('@/features/auth/AcceptInvitationPage'))
 // Public tenant pages: their own chunk, with the tenant fonts.
 const TenantLayout = lazy(() => import('@/features/tenant/TenantLayout'))
 const TenantPage = lazy(() => import('@/features/tenant/TenantPage'))
@@ -24,6 +23,8 @@ const BookingPage = lazy(() => import('@/features/booking/BookingPage'))
 const AccountLayout = lazy(() => import('@/features/account/AccountLayout'))
 const MyAppointmentsPage = lazy(() => import('@/features/account/MyAppointmentsPage'))
 const CalendarPage = lazy(() => import('@/features/admin/calendar/CalendarPage'))
+const TenantsPage = lazy(() => import('@/features/platform/TenantsPage'))
+const NavigationAdminPage = lazy(() => import('@/features/platform/NavigationAdminPage'))
 const ServicesPage = lazy(() => import('@/features/admin/ServicesPage'))
 const StaffPage = lazy(() => import('@/features/admin/StaffPage'))
 const SchedulePage = lazy(() => import('@/features/admin/SchedulePage'))
@@ -36,9 +37,6 @@ const AdminLayout = lazy(() =>
 const PlatformLayout = lazy(() =>
   import('./layouts/PlatformLayout').then((m) => ({ default: m.PlatformLayout })),
 )
-
-type NavKey = keyof typeof nav
-const placeholder = (key: NavKey) => <PlaceholderPage title={i18n.t(key, { ns: 'nav' })} />
 
 export const routes: RouteObject[] = [
   {
@@ -56,6 +54,7 @@ export const routes: RouteObject[] = [
       },
       { path: paths.confirmEmail, element: withSuspense(<ConfirmEmailPage />) },
       { path: paths.resetPassword, element: withSuspense(<ResetPasswordPage />) },
+      { path: paths.invitation, element: withSuspense(<AcceptInvitationPage />) },
       { path: paths.privacy, element: <PlaceholderPage title="Informativa privacy" /> },
     ],
   },
@@ -90,8 +89,8 @@ export const routes: RouteObject[] = [
       {
         element: withSuspense(<PlatformLayout />),
         children: [
-          { path: paths.platform.tenants, element: placeholder('tenants') },
-          { path: paths.platform.navigation, element: placeholder('navigation') },
+          { path: paths.platform.tenants, element: withSuspense(<TenantsPage />) },
+          { path: paths.platform.navigation, element: withSuspense(<NavigationAdminPage />) },
         ],
       },
     ],

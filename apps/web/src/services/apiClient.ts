@@ -23,6 +23,29 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
+const SAFE_METHODS = new Set(['get', 'head', 'options'])
+let xsrfPriming: Promise<unknown> | null = null
+
+const hasXsrfCookie = () => document.cookie.split('; ').some((c) => c.startsWith('XSRF-TOKEN='))
+
+/**
+ * Pages opened straight from an email link (confirm email, reset password, invitation) may send
+ * a POST before anything called GET /auth/me, which issues the XSRF-TOKEN cookie. Prime it once.
+ */
+apiClient.interceptors.request.use(async (config) => {
+  const method = (config.method ?? 'get').toLowerCase()
+  if (!SAFE_METHODS.has(method) && !hasXsrfCookie()) {
+    xsrfPriming ??= axios
+      .get('/api/auth/me', { withCredentials: true })
+      .catch(() => undefined)
+      .finally(() => {
+        xsrfPriming = null
+      })
+    await xsrfPriming
+  }
+  return config
+})
+
 /** Normalised API error: HTTP status, stable error code (translated by the UI) and field errors. */
 export class ApiError extends Error {
   readonly status: number

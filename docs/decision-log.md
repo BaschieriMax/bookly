@@ -701,3 +701,40 @@ Stesse garanzie della prenotazione online, nessun appuntamento fuori orario per 
 Status:
 Approved (dettaglio implementativo dello Step 9)
 ```
+
+```text
+Decision:
+DEC-028 — Piattaforma: creazione attività, inviti ai titolari e primo super-admin
+
+Date:
+2026-11-18
+
+Context:
+Step 10: il super-admin crea le attività e ne invita i titolari; serve anche un modo sicuro per
+avere il primo super-admin in produzione senza accesso a una shell (Render free).
+
+Decision:
+- Nuova attività = tenant + invito del titolare. Email nuova: account senza password e link
+  /invito valido 7 giorni (token Identity dedicato "Invitation", legato al security stamp: smette
+  di valere appena la password è impostata). Il link conferma l'email; all'attivazione si accetta
+  l'informativa e si entra direttamente nell'area dell'attività. Email già registrata: diventa
+  titolare e riceve un avviso. Reinvitare un titolare in attesa re-invia il link.
+- Slug: 3–40 caratteri a-z 0-9 e trattini, parole riservate escluse, unico (409).
+- Sospensione: pagina pubblica 404, prenotazioni bloccate, area admin non accessibile; dati
+  conservati; riattivabile.
+- Il super-admin vede solo dati aggregati (operatori, servizi), mai appuntamenti o clienti.
+- Primo super-admin: Platform__SuperAdminEmails in configurazione. All'avvio il ruolo viene dato
+  solo ad account esistenti con email confermata (registrarsi con quell'indirizzo non basta);
+  il ruolo non viene mai tolto automaticamente.
+
+Alternatives:
+Comando CLI one-off (non disponibile senza shell sul piano gratuito); seed con password in
+configurazione (segreto in più da gestire).
+
+Motivation:
+Nessuna password condivisa: ogni titolare sceglie la propria, e il possesso della casella email
+è sempre verificato.
+
+Status:
+Approved (dettaglio implementativo dello Step 10)
+```
