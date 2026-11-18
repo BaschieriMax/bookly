@@ -4,6 +4,260 @@
  */
 
 export interface paths {
+    "/api/admin/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    from?: string;
+                    to?: string;
+                    staffId?: string;
+                    includeCancelled?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CalendarDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/appointments/{id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MoveAppointmentRequest"];
+                    "text/json": components["schemas"]["MoveAppointmentRequest"];
+                    "application/*+json": components["schemas"]["MoveAppointmentRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminAppointmentDto"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/appointments/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CancelAppointmentByBusinessRequest"];
+                    "text/json": components["schemas"]["CancelAppointmentByBusinessRequest"];
+                    "application/*+json": components["schemas"]["CancelAppointmentByBusinessRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminAppointmentDto"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/appointments/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminAppointmentDto"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/appointments/{id}/no-show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminAppointmentDto"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/services": {
         parameters: {
             query?: never;
@@ -1635,6 +1889,31 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AdminAppointmentDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            staffId: string;
+            /** Format: uuid */
+            serviceId: string;
+            serviceName: string;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            /** Format: date-time */
+            blockedUntil: string;
+            status: string;
+            customerNote: null | string;
+            cancellationReason: null | string;
+            /** Format: int32 */
+            priceCents: null | number;
+            priceIsFrom: boolean;
+            customer: components["schemas"]["CalendarCustomerDto"];
+            canMove: boolean;
+            canCancel: boolean;
+            canMark: boolean;
+        };
         AdminServiceDto: {
             /** Format: uuid */
             id: string;
@@ -1670,6 +1949,54 @@ export interface components {
             address: null | string;
             primaryColor: null | string;
             timeZone: string;
+        };
+        CalendarCustomerDto: {
+            firstName: string;
+            lastName: string;
+            email: null | string;
+            phone: null | string;
+        };
+        CalendarDto: {
+            timeZone: string;
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            staff: components["schemas"]["CalendarStaffDto"][];
+            workingHours: components["schemas"]["CalendarHoursDto"][];
+            timeOff: components["schemas"]["CalendarTimeOffDto"][];
+            appointments: components["schemas"]["AdminAppointmentDto"][];
+        };
+        CalendarHoursDto: {
+            /** Format: uuid */
+            staffId: string;
+            /** Format: int32 */
+            dayOfWeek: number;
+            /** Format: time */
+            start: string;
+            /** Format: time */
+            end: string;
+        };
+        CalendarStaffDto: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            isActive: boolean;
+            isMe: boolean;
+        };
+        CalendarTimeOffDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            staffId: string;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            reason: null | string;
+        };
+        CancelAppointmentByBusinessRequest: {
+            reason: null | string;
         };
         ConfirmEmailRequest: {
             /** Format: uuid */
@@ -1727,6 +2054,14 @@ export interface components {
             emailConfirmed: boolean;
             platformRoles: string[];
             memberships: components["schemas"]["MembershipDto"][];
+        };
+        MoveAppointmentRequest: {
+            /** Format: date */
+            date: string;
+            /** Format: time */
+            time: string;
+            /** Format: uuid */
+            staffId: null | string;
         };
         MyAppointmentDto: {
             /** Format: uuid */
@@ -1877,6 +2212,7 @@ export interface components {
             minNoticeMinutes: number;
             /** Format: int32 */
             bookingHorizonDays: number;
+            notifyOnCustomerCancellation: boolean;
         };
         SaveWorkingHoursRequest: {
             intervals: components["schemas"]["WorkingIntervalDto"][];
@@ -1907,6 +2243,7 @@ export interface components {
             minNoticeMinutes: number;
             /** Format: int32 */
             bookingHorizonDays: number;
+            notifyOnCustomerCancellation: boolean;
         };
         TimeOffDto: {
             /** Format: uuid */

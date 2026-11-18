@@ -5,6 +5,278 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/admin/calendar": {
+      "get": {
+        "tags": [
+          "AdminAppointments"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "staffId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "includeCancelled",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/appointments/{id}/move": {
+      "post": {
+        "tags": [
+          "AdminAppointments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveAppointmentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveAppointmentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveAppointmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/appointments/{id}/cancel": {
+      "post": {
+        "tags": [
+          "AdminAppointments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelAppointmentByBusinessRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelAppointmentByBusinessRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelAppointmentByBusinessRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/appointments/{id}/complete": {
+      "post": {
+        "tags": [
+          "AdminAppointments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/appointments/{id}/no-show": {
+      "post": {
+        "tags": [
+          "AdminAppointments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/services": {
       "get": {
         "tags": [
@@ -1586,6 +1858,93 @@
   },
   "components": {
     "schemas": {
+      "AdminAppointmentDto": {
+        "required": [
+          "id",
+          "staffId",
+          "serviceId",
+          "serviceName",
+          "start",
+          "end",
+          "blockedUntil",
+          "status",
+          "customerNote",
+          "cancellationReason",
+          "priceCents",
+          "priceIsFrom",
+          "customer",
+          "canMove",
+          "canCancel",
+          "canMark"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "staffId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "blockedUntil": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "customerNote": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cancellationReason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "priceCents": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "priceIsFrom": {
+            "type": "boolean"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CalendarCustomerDto"
+          },
+          "canMove": {
+            "type": "boolean"
+          },
+          "canCancel": {
+            "type": "boolean"
+          },
+          "canMark": {
+            "type": "boolean"
+          }
+        }
+      },
       "AdminServiceDto": {
         "required": [
           "id",
@@ -1726,6 +2085,183 @@
           },
           "timeZone": {
             "type": "string"
+          }
+        }
+      },
+      "CalendarCustomerDto": {
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "phone"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CalendarDto": {
+        "required": [
+          "timeZone",
+          "from",
+          "to",
+          "staff",
+          "workingHours",
+          "timeOff",
+          "appointments"
+        ],
+        "type": "object",
+        "properties": {
+          "timeZone": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string",
+            "format": "date"
+          },
+          "to": {
+            "type": "string",
+            "format": "date"
+          },
+          "staff": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarStaffDto"
+            }
+          },
+          "workingHours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarHoursDto"
+            }
+          },
+          "timeOff": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarTimeOffDto"
+            }
+          },
+          "appointments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAppointmentDto"
+            }
+          }
+        }
+      },
+      "CalendarHoursDto": {
+        "required": [
+          "staffId",
+          "dayOfWeek",
+          "start",
+          "end"
+        ],
+        "type": "object",
+        "properties": {
+          "staffId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dayOfWeek": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "start": {
+            "type": "string",
+            "format": "time"
+          },
+          "end": {
+            "type": "string",
+            "format": "time"
+          }
+        }
+      },
+      "CalendarStaffDto": {
+        "required": [
+          "id",
+          "displayName",
+          "isActive",
+          "isMe"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isMe": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CalendarTimeOffDto": {
+        "required": [
+          "id",
+          "staffId",
+          "start",
+          "end",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "staffId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CancelAppointmentByBusinessRequest": {
+        "required": [
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -1930,6 +2466,31 @@
             "items": {
               "$ref": "#/components/schemas/MembershipDto"
             }
+          }
+        }
+      },
+      "MoveAppointmentRequest": {
+        "required": [
+          "date",
+          "time",
+          "staffId"
+        ],
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "time": {
+            "type": "string",
+            "format": "time"
+          },
+          "staffId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
@@ -2458,7 +3019,8 @@
           "cancellationWindowHours",
           "slotIntervalMinutes",
           "minNoticeMinutes",
-          "bookingHorizonDays"
+          "bookingHorizonDays",
+          "notifyOnCustomerCancellation"
         ],
         "type": "object",
         "properties": {
@@ -2495,6 +3057,9 @@
           "bookingHorizonDays": {
             "type": "integer",
             "format": "int32"
+          },
+          "notifyOnCustomerCancellation": {
+            "type": "boolean"
           }
         }
       },
@@ -2574,7 +3139,8 @@
           "cancellationWindowHours",
           "slotIntervalMinutes",
           "minNoticeMinutes",
-          "bookingHorizonDays"
+          "bookingHorizonDays",
+          "notifyOnCustomerCancellation"
         ],
         "type": "object",
         "properties": {
@@ -2614,6 +3180,9 @@
           "bookingHorizonDays": {
             "type": "integer",
             "format": "int32"
+          },
+          "notifyOnCustomerCancellation": {
+            "type": "boolean"
           }
         }
       },
@@ -2738,6 +3307,9 @@
     }
   },
   "tags": [
+    {
+      "name": "AdminAppointments"
+    },
     {
       "name": "AdminServices"
     },

@@ -177,7 +177,41 @@ public sealed class BookingService(
             DateFormatting.LongItalian(appointment.StartUtc, timeZone),
             $"{BaseUrl}/b/{tenant.Slug}"), cancellationToken);
 
+        if (tenant.NotifyOnCustomerCancellation)
+        {
+            await NotifyBusinessOfCancellationAsync(appointment, tenant, customer, timeZone, cancellationToken);
+        }
+
         return ServiceResult<MyAppointmentDto>.Ok(ToDto(appointment, tenant, appointment.Service, appointment.StaffMember.DisplayName, timeZone, now));
+    }
+
+    /// <summary>Owners and the staff member's own login get an email (booking-domain: notifications).</summary>
+    private async Task NotifyBusinessOfCancellationAsync(
+        Appointment appointment, Tenant tenant, AppUser customer, TimeZoneInfo timeZone, CancellationToken cancellationToken)
+    {
+        var staffUserId = appointment.StaffMember.UserId;
+        var ownerIds = db.TenantMemberships
+            .IgnoreQueryFilters([AppDbContext.TenantFilter])
+            .Where(m => m.TenantId == tenant.Id && m.Role == TenantRole.Owner)
+            .Select(m => m.UserId);
+        var recipients = await db.Users
+            .AsNoTracking()
+            .Where(u => u.Email != null && (u.Id == staffUserId || ownerIds.Contains(u.Id)))
+            .Select(u => new { u.Email, u.FirstName })
+            .ToListAsync(cancellationToken);
+
+        var when = DateFormatting.LongItalian(appointment.StartUtc, timeZone);
+        foreach (var recipient in recipients)
+        {
+            await TrySendAsync(EmailTemplates.CustomerCancelledNotice(
+                recipient.Email!,
+                recipient.FirstName,
+                $"{customer.FirstName} {customer.LastName}",
+                appointment.Service.Name,
+                appointment.StaffMember.DisplayName,
+                when,
+                $"{BaseUrl}/admin"), cancellationToken);
+        }
     }
 
     private async Task<Guid> LeastBusyAsync(IReadOnlyList<Guid> candidates, DateOnly localDate, TimeZoneInfo timeZone, CancellationToken cancellationToken)

@@ -42,6 +42,7 @@ builder.Services.AddScoped<AdminContext>();
 builder.Services.AddScoped<CatalogService>();
 builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddScoped<TenantSettingsService>();
+builder.Services.AddScoped<CalendarService>();
 
 // Behind the hosting proxy (Render): trust only the last hop, so clients cannot spoof their IP
 // to dodge rate limits. Enabled with ReverseProxy__Enabled=true in production.

@@ -13,6 +13,7 @@ internal sealed class AppointmentConfiguration : IEntityTypeConfiguration<Appoin
     {
         builder.Property(a => a.Status).HasConversion<string>().HasMaxLength(30);
         builder.Property(a => a.CustomerNote).HasMaxLength(500);
+        builder.Property(a => a.CancellationReason).HasMaxLength(200);
 
         // Npgsql maps a uint row version to the PostgreSQL xmin system column.
         builder.Property(a => a.Version).IsRowVersion();

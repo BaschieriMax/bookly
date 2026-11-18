@@ -31,4 +31,9 @@ internal static class ErrorCodes
     public const string InvalidTimeZone = "admin.invalid_time_zone";
     public const string InvalidLogo = "admin.invalid_logo";
     public const string StaffScope = "admin.staff_scope";
+    public const string StaffUnavailable = "admin.staff_unavailable";
+    public const string ServiceNotOffered = "admin.service_not_offered";
+    public const string InvalidStatus = "admin.invalid_status";
+    public const string NotStarted = "admin.not_started";
+    public const string InPast = "admin.in_past";
 }
