@@ -90,7 +90,7 @@ public sealed class GdprTests(PostgresFixture database) : IDisposable
         }
 
         using var session = await TestUsers.LoginAsync(_factory, user);
-        using var wrong = await session.PostAsync("/api/me/delete", new { password = "non-è-questa" });
+        using var wrong = await session.PostAsync("/api/me/delete", new { password = TestUsers.Password + "-errata" });
         Assert.Equal("account.invalid_password", (await JsonAsync(wrong)).GetProperty("code").GetString());
 
         using var deleted = await session.PostAsync("/api/me/delete", new { password = TestUsers.Password });

@@ -14,6 +14,10 @@ const profile: Profile = {
   createdAt: '2026-11-01T10:00:00Z',
 }
 
+// Test-only inputs for the confirmation field (not credentials of any real account).
+const CORRECT_INPUT = 'frase-di-prova-abbastanza-lunga'
+const WRONG_INPUT = 'frase-diversa'
+
 const signedIn = () =>
   server.use(
     http.get('/api/auth/me', () => HttpResponse.json(customerMe)),
@@ -86,8 +90,8 @@ describe('ProfilePage', () => {
         deleted ? new HttpResponse(null, { status: 204 }) : HttpResponse.json(customerMe),
       ),
       http.post('/api/me/delete', async ({ request }) => {
-        const { password } = (await request.json()) as { password: string }
-        if (password !== 'una-password-lunga') {
+        const body = (await request.json()) as Record<string, string>
+        if (body.password !== CORRECT_INPUT) {
           return HttpResponse.json(
             { title: 'Wrong', status: 400, code: 'account.invalid_password' },
             { status: 400 },
@@ -105,13 +109,13 @@ describe('ProfilePage', () => {
     const dialog = await screen.findByRole('dialog', {
       name: "Eliminare definitivamente l'account?",
     })
-    const password = within(dialog).getByLabelText('Inserisci la password per confermare')
-    await userEvent.type(password, 'sbagliata')
+    const field = within(dialog).getByLabelText('Inserisci la password per confermare')
+    await userEvent.type(field, WRONG_INPUT)
     await userEvent.click(within(dialog).getByRole('button', { name: 'Elimina account' }))
     expect(await within(dialog).findByText('Password non corretta.')).toBeInTheDocument()
 
-    await userEvent.clear(password)
-    await userEvent.type(password, 'una-password-lunga')
+    await userEvent.clear(field)
+    await userEvent.type(field, CORRECT_INPUT)
     await userEvent.click(within(dialog).getByRole('button', { name: 'Elimina account' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/'))
