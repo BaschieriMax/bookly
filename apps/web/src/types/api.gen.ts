@@ -522,6 +522,269 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/public/tenants/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicTenantDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/tenants/{slug}/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                        "image/png": unknown;
+                        "image/webp": unknown;
+                    };
+                };
+                /** @description Not Modified */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                        "image/png": unknown;
+                        "image/webp": unknown;
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "image/png": components["schemas"]["ProblemDetails"];
+                        "image/webp": components["schemas"]["ProblemDetails"];
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/tenants/{slug}/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicServiceDto"][];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/tenants/{slug}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    serviceId?: string;
+                    date?: string;
+                    staffId?: string;
+                };
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicAvailabilityDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/tenants/{slug}/availability/days": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    serviceId?: string;
+                    from?: string;
+                    to?: string;
+                    staffId?: string;
+                };
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicDaysDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -584,6 +847,54 @@ export interface components {
             detail?: null | string;
             instance?: null | string;
         };
+        PublicAvailabilityDto: {
+            /** Format: date */
+            date: string;
+            timeZone: string;
+            slots: components["schemas"]["PublicSlotDto"][];
+        };
+        PublicDayDto: {
+            /** Format: date */
+            date: string;
+            available: boolean;
+        };
+        PublicDaysDto: {
+            timeZone: string;
+            days: components["schemas"]["PublicDayDto"][];
+        };
+        PublicServiceDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description: null | string;
+            /** Format: int32 */
+            durationMinutes: number;
+            /** Format: int32 */
+            priceCents: null | number;
+            priceIsFrom: boolean;
+            staff: components["schemas"]["PublicStaffDto"][];
+        };
+        PublicSlotDto: {
+            /** Format: date-time */
+            start: string;
+        };
+        PublicStaffDto: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+        };
+        PublicTenantDto: {
+            slug: string;
+            name: string;
+            phone: null | string;
+            address: null | string;
+            timeZone: string;
+            /** Format: int32 */
+            cancellationWindowHours: number;
+            /** Format: int32 */
+            bookingHorizonDays: number;
+            brand: components["schemas"]["TenantBrandDto"];
+        };
         RegisterRequest: {
             email: string;
             password: string;
@@ -596,6 +907,12 @@ export interface components {
             email: string;
             token: string;
             newPassword: string;
+        };
+        TenantBrandDto: {
+            primaryColor: null | string;
+            ground: string;
+            headingFont: string;
+            hasLogo: boolean;
         };
         UpdateNavigationItemRequest: {
             isEnabled: null | boolean;

@@ -29,6 +29,8 @@ internal sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
             t.HasCheckConstraint("CK_Tenants_Slug", "\"Slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'");
             t.HasCheckConstraint("CK_Tenants_CancellationWindowHours", "\"CancellationWindowHours\" BETWEEN 0 AND 168");
             t.HasCheckConstraint("CK_Tenants_SlotIntervalMinutes", "\"SlotIntervalMinutes\" BETWEEN 5 AND 120");
+            t.HasCheckConstraint("CK_Tenants_MinNoticeMinutes", "\"MinNoticeMinutes\" BETWEEN 0 AND 10080");
+            t.HasCheckConstraint("CK_Tenants_BookingHorizonDays", "\"BookingHorizonDays\" BETWEEN 1 AND 365");
             t.HasCheckConstraint("CK_Tenants_BrandPrimaryColor", "\"BrandPrimaryColor\" IS NULL OR \"BrandPrimaryColor\" ~ '^#[0-9a-fA-F]{6}$'");
         });
     }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Bookly.Api.IntegrationTests.Infrastructure;
 
@@ -11,6 +12,9 @@ namespace Bookly.Api.IntegrationTests.Infrastructure;
 public sealed class BooklyApiFactory(PostgresFixture database, int loginPermitPerMinute = 1000) : WebApplicationFactory<Program>
 {
     public FakeEmailSender Emails { get; } = new();
+
+    /// <summary>Controllable clock. Default: Monday 1 March 2027, 08:00 in Rome.</summary>
+    public FakeTimeProvider Clock { get; } = new(new DateTimeOffset(2027, 3, 1, 7, 0, 0, TimeSpan.Zero));
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -22,11 +26,14 @@ public sealed class BooklyApiFactory(PostgresFixture database, int loginPermitPe
         builder.UseSetting("Email:From", "Bookly <no-reply@bookly.test>");
         builder.UseSetting("Auth:LoginPermitPerMinute", loginPermitPerMinute.ToString(System.Globalization.CultureInfo.InvariantCulture));
         builder.UseSetting("Auth:PasswordResetPermitPer15Minutes", "1000");
+        builder.UseSetting("Auth:PublicPermitPerMinute", "100000");
 
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
+            services.RemoveAll<TimeProvider>();
+            services.AddSingleton<TimeProvider>(Clock);
         });
     }
 

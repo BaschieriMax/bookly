@@ -420,6 +420,282 @@
           }
         }
       }
+    },
+    "/api/public/tenants/{slug}": {
+      "get": {
+        "tags": [
+          "PublicTenants"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicTenantDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/tenants/{slug}/logo": {
+      "get": {
+        "tags": [
+          "PublicTenants"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { },
+              "image/png": { },
+              "image/webp": { }
+            }
+          },
+          "304": {
+            "description": "Not Modified",
+            "content": {
+              "application/json": { },
+              "image/png": { },
+              "image/webp": { }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/tenants/{slug}/services": {
+      "get": {
+        "tags": [
+          "PublicTenants"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicServiceDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/tenants/{slug}/availability": {
+      "get": {
+        "tags": [
+          "PublicTenants"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "serviceId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "staffId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicAvailabilityDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/tenants/{slug}/availability/days": {
+      "get": {
+        "tags": [
+          "PublicTenants"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "serviceId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "staffId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicDaysDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -650,6 +926,185 @@
           }
         }
       },
+      "PublicAvailabilityDto": {
+        "required": [
+          "date",
+          "timeZone",
+          "slots"
+        ],
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicSlotDto"
+            }
+          }
+        }
+      },
+      "PublicDayDto": {
+        "required": [
+          "date",
+          "available"
+        ],
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "available": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PublicDaysDto": {
+        "required": [
+          "timeZone",
+          "days"
+        ],
+        "type": "object",
+        "properties": {
+          "timeZone": {
+            "type": "string"
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicDayDto"
+            }
+          }
+        }
+      },
+      "PublicServiceDto": {
+        "required": [
+          "id",
+          "name",
+          "description",
+          "durationMinutes",
+          "priceCents",
+          "priceIsFrom",
+          "staff"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "priceCents": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "priceIsFrom": {
+            "type": "boolean"
+          },
+          "staff": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicStaffDto"
+            }
+          }
+        }
+      },
+      "PublicSlotDto": {
+        "required": [
+          "start"
+        ],
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PublicStaffDto": {
+        "required": [
+          "id",
+          "displayName"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          }
+        }
+      },
+      "PublicTenantDto": {
+        "required": [
+          "slug",
+          "name",
+          "phone",
+          "address",
+          "timeZone",
+          "cancellationWindowHours",
+          "bookingHorizonDays",
+          "brand"
+        ],
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "address": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "cancellationWindowHours": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bookingHorizonDays": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "brand": {
+            "$ref": "#/components/schemas/TenantBrandDto"
+          }
+        }
+      },
       "RegisterRequest": {
         "required": [
           "email",
@@ -700,6 +1155,32 @@
           },
           "newPassword": {
             "type": "string"
+          }
+        }
+      },
+      "TenantBrandDto": {
+        "required": [
+          "primaryColor",
+          "ground",
+          "headingFont",
+          "hasLogo"
+        ],
+        "type": "object",
+        "properties": {
+          "primaryColor": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ground": {
+            "type": "string"
+          },
+          "headingFont": {
+            "type": "string"
+          },
+          "hasLogo": {
+            "type": "boolean"
           }
         }
       },
@@ -781,6 +1262,9 @@
     },
     {
       "name": "PlatformNavigation"
+    },
+    {
+      "name": "PublicTenants"
     }
   ]
 }

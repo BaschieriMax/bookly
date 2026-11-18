@@ -170,7 +170,8 @@ apps/api/src/Bookly.Api/
 
 ```text
 Tenant(Id, Slug UQ, Name, TimeZone, Status[Active|Suspended], Phone, Address,
-       CancellationWindowHours, SlotIntervalMinutes, BrandPrimaryColor?, CreatedAt)
+       CancellationWindowHours, SlotIntervalMinutes, MinNoticeMinutes, BookingHorizonDays,
+       BrandPrimaryColor?, BrandGround, BrandHeadingFont, CreatedAt)
 TenantLogo(TenantId PK, ContentType, Data bytea ≤ 200 KB, UpdatedAt)
 
 AppUser : IdentityUser<Guid>(FirstName, LastName, PhoneNumber, PrivacyAcceptedAt, CreatedAt)
@@ -208,7 +209,7 @@ Se due richieste concorrenti puntano allo stesso slot, la seconda fallisce con e
 
 **Indici**: `Tenant.Slug` (unique), `Appointment(TenantId, StaffMemberId, StartUtc)`, `Appointment(CustomerId, StartUtc)`, `Appointment(Status, StartUtc) WHERE ReminderSentAt IS NULL` per il job dei promemoria.
 
-**Query pattern**: letture in `AsNoTracking()` con proiezione diretta sui DTO. Calcolo degli slot = fasce di lavoro − assenze − appuntamenti confermati, per un giorno e un operatore alla volta (poche righe).
+**Query pattern**: letture in `AsNoTracking()` con proiezione diretta sui DTO. Calcolo degli slot = fasce di lavoro − assenze − appuntamenti confermati: `AvailabilityService` carica in 3 query i dati dell'intervallo richiesto, `AvailabilityCalculator` (funzione pura, testata) applica le regole della skill `booking-domain`. Ora legale: orari inesistenti saltati, orari ambigui con l'offset standard (ogni orario locale offerto una sola volta).
 
 **Concorrenza**: `xmin` come token di concorrenza ottimistica sugli update di `Appointment`.
 
@@ -256,7 +257,9 @@ Prefisso `/api`. JSON. Errori in formato `ProblemDetails` con `code`. Le richies
 | POST | `/auth/accept-invite` | Anonimo | Token d'invito del titolare |
 | GET | `/public/tenants/{slug}` | Pubblico | 404 se il tenant è sospeso |
 | GET | `/public/tenants/{slug}/services` | Pubblico | Con gli operatori abilitati |
-| GET | `/public/tenants/{slug}/availability?serviceId&staffId?&date` | Pubblico | Slot liberi del giorno, rate limited |
+| GET | `/public/tenants/{slug}/logo` | Pubblico | Logo (PNG/WebP), cache + ETag |
+| GET | `/public/tenants/{slug}/availability?serviceId&staffId?&date` | Pubblico | Slot liberi del giorno nell'offset del tenant, rate limited |
+| GET | `/public/tenants/{slug}/availability/days?serviceId&staffId?&from&to` | Pubblico | Giorni con almeno uno slot (max 62), per il date picker |
 | POST | `/tenants/{slug}/appointments` | Customer (email confermata) | 201 · 409 `booking.slot_unavailable` |
 | GET | `/me/appointments` | Customer | Prossimi e passati |
 | POST | `/me/appointments/{id}/cancel` | Customer | 422 `booking.cancellation_window_passed` |

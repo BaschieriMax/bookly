@@ -538,6 +538,9 @@ namespace Bookly.Api.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<int>("BookingHorizonDays")
+                        .HasColumnType("integer");
+
                     b.Property<string>("BrandGround")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -557,6 +560,9 @@ namespace Bookly.Api.Data.Migrations
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("MinNoticeMinutes")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -592,9 +598,13 @@ namespace Bookly.Api.Data.Migrations
 
                     b.ToTable("Tenants", t =>
                         {
+                            t.HasCheckConstraint("CK_Tenants_BookingHorizonDays", "\"BookingHorizonDays\" BETWEEN 1 AND 365");
+
                             t.HasCheckConstraint("CK_Tenants_BrandPrimaryColor", "\"BrandPrimaryColor\" IS NULL OR \"BrandPrimaryColor\" ~ '^#[0-9a-fA-F]{6}$'");
 
                             t.HasCheckConstraint("CK_Tenants_CancellationWindowHours", "\"CancellationWindowHours\" BETWEEN 0 AND 168");
+
+                            t.HasCheckConstraint("CK_Tenants_MinNoticeMinutes", "\"MinNoticeMinutes\" BETWEEN 0 AND 10080");
 
                             t.HasCheckConstraint("CK_Tenants_SlotIntervalMinutes", "\"SlotIntervalMinutes\" BETWEEN 5 AND 120");
 
