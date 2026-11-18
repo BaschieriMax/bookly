@@ -19,7 +19,7 @@ COPY --from=web /src/apps/web/dist/ src/Bookly.Api/wwwroot/
 RUN dotnet publish src/Bookly.Api/Bookly.Api.csproj -c Release -o /app --no-restore
 
 # 3) Runtime (non-chiseled: tzdata is needed for Europe/Rome)
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS runtime
 RUN apt-get update \
   && apt-get install -y --no-install-recommends tzdata \
   && rm -rf /var/lib/apt/lists/*
