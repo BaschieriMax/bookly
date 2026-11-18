@@ -1,11 +1,17 @@
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import type {
+  AdminService,
+  AdminStaff,
   MeResponse,
   MyAppointment,
   NavigationItem,
   PublicService,
   PublicTenant,
+  TenantBrandSettings,
+  TenantSettings,
+  TimeOff,
+  WorkingInterval,
 } from '@/types/api'
 
 export const TENANT_ID = '01a1eeca-0775-76cc-bee6-c94c4056036d'
@@ -149,10 +155,69 @@ export function demoAppointment(overrides: Partial<MyAppointment> = {}): MyAppoi
   }
 }
 
+export const adminServices: AdminService[] = [
+  {
+    id: '11111111-1111-4111-8111-111111111111',
+    name: 'Taglio',
+    description: null,
+    durationMinutes: 30,
+    bufferMinutes: 10,
+    priceCents: 2500,
+    priceIsFrom: false,
+    isActive: true,
+    sortOrder: 1,
+    staffIds: ['22222222-2222-4222-8222-222222222222'],
+  },
+]
+
+export const adminStaff: AdminStaff[] = [
+  {
+    id: '22222222-2222-4222-8222-222222222222',
+    displayName: 'Barbiere 1',
+    isActive: true,
+    sortOrder: 1,
+    hasLogin: false,
+    isMe: false,
+    serviceIds: ['11111111-1111-4111-8111-111111111111'],
+  },
+]
+
+export const adminHours: WorkingInterval[] = [
+  { dayOfWeek: 1, start: '09:00:00', end: '13:00:00' },
+  { dayOfWeek: 1, start: '15:00:00', end: '19:00:00' },
+]
+
+export const adminTimeOff: TimeOff[] = []
+
+export const adminSettings: TenantSettings = {
+  slug: 'barberia-demo',
+  name: 'Barberia Demo',
+  phone: '059 000 0000',
+  address: 'Via Esempio 1, Modena',
+  timeZone: 'Europe/Rome',
+  cancellationWindowHours: 12,
+  slotIntervalMinutes: 15,
+  minNoticeMinutes: 60,
+  bookingHorizonDays: 60,
+}
+
+export const adminBrand: TenantBrandSettings = {
+  primaryColor: '#e8b05a',
+  ground: 'Dark',
+  headingFont: 'Script',
+  hasLogo: false,
+}
+
 export const handlers = [
   http.get('/api/auth/me', () => new HttpResponse(null, { status: 204 })),
   http.get('/api/navigation/admin', () => HttpResponse.json(ownerNavigation)),
   http.get('/api/navigation/platform', () => HttpResponse.json(platformNavigation)),
+  http.get('/api/admin/services', () => HttpResponse.json(adminServices)),
+  http.get('/api/admin/staff', () => HttpResponse.json(adminStaff)),
+  http.get('/api/admin/staff/:id/working-hours', () => HttpResponse.json(adminHours)),
+  http.get('/api/admin/staff/:id/time-off', () => HttpResponse.json(adminTimeOff)),
+  http.get('/api/admin/settings', () => HttpResponse.json(adminSettings)),
+  http.get('/api/admin/brand', () => HttpResponse.json(adminBrand)),
   http.get('/api/public/tenants/barberia-demo', () => HttpResponse.json(demoTenant)),
   http.get('/api/public/tenants/barberia-demo/services', () => HttpResponse.json(demoServices)),
   http.get('/api/public/tenants/barberia-demo/availability/days', ({ request }) => {

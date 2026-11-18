@@ -44,6 +44,9 @@
   --font-sans: var(--bk-font-sans);
   --font-heading: var(--bk-font-heading);
   --font-tenant-heading: var(--bk-font-tenant-heading);
+  --font-brand-script: var(--bk-font-brand-script);
+  --font-brand-serif: var(--bk-font-brand-serif);
+  --font-brand-sans: var(--bk-font-brand-sans);
   --font-mono: var(--bk-font-mono);
 
   --radius-control: var(--bk-radius-control);

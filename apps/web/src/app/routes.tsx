@@ -23,6 +23,11 @@ const TenantPage = lazy(() => import('@/features/tenant/TenantPage'))
 const BookingPage = lazy(() => import('@/features/booking/BookingPage'))
 const AccountLayout = lazy(() => import('@/features/account/AccountLayout'))
 const MyAppointmentsPage = lazy(() => import('@/features/account/MyAppointmentsPage'))
+const ServicesPage = lazy(() => import('@/features/admin/ServicesPage'))
+const StaffPage = lazy(() => import('@/features/admin/StaffPage'))
+const SchedulePage = lazy(() => import('@/features/admin/SchedulePage'))
+const BrandPage = lazy(() => import('@/features/admin/BrandPage'))
+const SettingsPage = lazy(() => import('@/features/admin/SettingsPage'))
 // Admin and platform shells are only downloaded by signed-in staff, never by customers.
 const AdminLayout = lazy(() =>
   import('./layouts/AdminLayout').then((m) => ({ default: m.AdminLayout })),
@@ -74,11 +79,11 @@ export const routes: RouteObject[] = [
         element: withSuspense(<AdminLayout />),
         children: [
           { path: paths.admin.calendar, element: placeholder('calendar') },
-          { path: paths.admin.services, element: placeholder('services') },
-          { path: paths.admin.staff, element: placeholder('staff') },
-          { path: paths.admin.schedule, element: placeholder('schedule') },
-          { path: paths.admin.brand, element: placeholder('brand') },
-          { path: paths.admin.settings, element: placeholder('settings') },
+          { path: paths.admin.services, element: withSuspense(<ServicesPage />) },
+          { path: paths.admin.staff, element: withSuspense(<StaffPage />) },
+          { path: paths.admin.schedule, element: withSuspense(<SchedulePage />) },
+          { path: paths.admin.brand, element: withSuspense(<BrandPage />) },
+          { path: paths.admin.settings, element: withSuspense(<SettingsPage />) },
         ],
       },
       {

@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
+import { Toaster } from 'react-hot-toast'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { routes } from '@/app/routes'
 
@@ -10,6 +11,7 @@ export function renderApp(path: string) {
   const result = render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <Toaster />
     </QueryClientProvider>,
   )
   return { ...result, router, queryClient }

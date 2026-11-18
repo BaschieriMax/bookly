@@ -43,6 +43,10 @@
   --bk-font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --bk-font-heading: 'Space Grotesk Variable', 'Inter Variable', system-ui, sans-serif;
   --bk-font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  /* Heading fonts a tenant can choose (DEC-016), loaded by fonts-tenant.css */
+  --bk-font-brand-script: 'Great Vibes', cursive;
+  --bk-font-brand-serif: 'Fraunces Variable', Georgia, serif;
+  --bk-font-brand-sans: var(--bk-font-heading);
   /* Heading font of the public tenant pages; the tenant layout overrides it (DEC-016) */
   --bk-font-tenant-heading: var(--bk-font-heading);
 
