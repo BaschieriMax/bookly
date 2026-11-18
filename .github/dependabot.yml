@@ -7,6 +7,10 @@ updates:
       day: monday
       timezone: Europe/Rome
     open-pull-requests-limit: 5
+    ignore:
+      # Node types follow the Node major used by the build image.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
     commit-message:
       prefix: chore
     groups:
@@ -20,6 +24,16 @@ updates:
       day: monday
       timezone: Europe/Rome
     open-pull-requests-limit: 5
+    # Stay on the .NET 10 LTS train (DEC-003): framework majors are a deliberate upgrade, not a bot PR.
+    ignore:
+      - dependency-name: 'Microsoft.AspNetCore.*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'Microsoft.EntityFrameworkCore*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'Microsoft.Extensions.*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'Npgsql.*'
+        update-types: ['version-update:semver-major']
     commit-message:
       prefix: chore
     groups:
@@ -41,5 +55,13 @@ updates:
       interval: weekly
       day: monday
       timezone: Europe/Rome
+    ignore:
+      # .NET LTS and Node majors are upgraded on purpose (DEC-003).
+      - dependency-name: 'dotnet/sdk'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'dotnet/aspnet'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'node'
+        update-types: ['version-update:semver-major']
     commit-message:
       prefix: chore
