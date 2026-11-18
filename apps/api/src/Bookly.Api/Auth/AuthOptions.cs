@@ -21,4 +21,7 @@ public sealed class AuthOptions
 
     /// <summary>Anonymous public endpoints (tenant page, availability) per IP.</summary>
     public int PublicPermitPerMinute { get; set; } = 120;
+
+    /// <summary>Booking attempts per user.</summary>
+    public int BookingPermitPerMinute { get; set; } = 10;
 }

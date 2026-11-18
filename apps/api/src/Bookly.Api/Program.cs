@@ -5,6 +5,7 @@ using Bookly.Api.Infrastructure;
 using Bookly.Api.Infrastructure.Email;
 using Bookly.Api.Services;
 using Bookly.Api.Services.Availability;
+using Bookly.Api.Services.Booking;
 using Bookly.Api.Tenancy;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -35,6 +36,7 @@ builder.Services.AddBooklyAuth(builder.Configuration);
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<PublicTenantResolver>();
 builder.Services.AddScoped<AvailabilityService>();
+builder.Services.AddScoped<BookingService>();
 
 // Behind the hosting proxy (Render): trust only the last hop, so clients cannot spoof their IP
 // to dodge rate limits. Enabled with ReverseProxy__Enabled=true in production.

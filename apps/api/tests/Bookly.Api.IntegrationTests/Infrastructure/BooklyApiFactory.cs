@@ -27,6 +27,7 @@ public sealed class BooklyApiFactory(PostgresFixture database, int loginPermitPe
         builder.UseSetting("Auth:LoginPermitPerMinute", loginPermitPerMinute.ToString(System.Globalization.CultureInfo.InvariantCulture));
         builder.UseSetting("Auth:PasswordResetPermitPer15Minutes", "1000");
         builder.UseSetting("Auth:PublicPermitPerMinute", "100000");
+        builder.UseSetting("Auth:BookingPermitPerMinute", "100000");
 
         builder.ConfigureTestServices(services =>
         {

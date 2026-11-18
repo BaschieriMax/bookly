@@ -35,7 +35,7 @@ public sealed class AvailabilityService(AppDbContext db, TimeProvider timeProvid
     public Task<List<Guid>> EligibleStaffAsync(Guid serviceId, Guid? staffId, CancellationToken cancellationToken) =>
         db.StaffServices
             .Where(s => s.ServiceId == serviceId && s.StaffMember.IsActive && (staffId == null || s.StaffMemberId == staffId))
-            .OrderBy(s => s.StaffMember.SortOrder)
+            .OrderBy(s => s.StaffMember.SortOrder).ThenBy(s => s.StaffMember.DisplayName).ThenBy(s => s.StaffMemberId)
             .Select(s => s.StaffMemberId)
             .ToListAsync(cancellationToken);
 
