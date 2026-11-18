@@ -38,10 +38,21 @@ cd apps/web
 npm ci
 npm run dev
 
-# backend (http://localhost:5080)
+# backend (http://localhost:5080) — in Development applica le migrazioni all'avvio
 cd apps/api
+dotnet tool restore
 dotnet run --project src/Bookly.Api
 ```
+
+Migrazioni EF Core (da `apps/api`):
+
+```bash
+dotnet ef migrations add <Nome> --project src/Bookly.Api --output-dir Data/Migrations
+dotnet ef database update --project src/Bookly.Api
+```
+
+Test di integrazione: usano Testcontainers (serve Docker). Senza Docker si può puntare a un Postgres esistente:
+`BOOKLY_TEST_POSTGRES="Host=localhost;Database=postgres;Username=...;Password=..." dotnet test` (crea e cancella un database temporaneo).
 
 Mailpit (email in sviluppo): http://localhost:8025
 
