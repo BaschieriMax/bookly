@@ -73,6 +73,9 @@ jobs:
             postgres:17-alpine
           docker run -d --name bookly --network bookly-ci -p 8080:8080 \
             -e ConnectionStrings__Default="Host=db;Database=bookly;Username=bookly;Password=bookly_ci" \
+            -e App__PublicBaseUrl="http://localhost:8080" \
+            -e Email__Host="smtp.invalid" \
+            -e Email__From="Bookly <no-reply@bookly.test>" \
             bookly:ci
           for i in $(seq 1 30); do
             if curl -fsS http://localhost:8080/api/health/ready; then break; fi
