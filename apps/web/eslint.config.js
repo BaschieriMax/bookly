@@ -26,7 +26,7 @@ const noHardcodedColors = [
 ]
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage', 'src/types/api.gen.ts']),
+  globalIgnores(['dist', 'coverage', 'playwright-report', 'test-results', 'src/types/api.gen.ts']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

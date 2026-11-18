@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "gen:api": "openapi-typescript openapi/bookly-api.json -o src/types/api.gen.ts"
+    "gen:api": "openapi-typescript openapi/bookly-api.json -o src/types/api.gen.ts",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",
@@ -22,6 +23,7 @@
     "@fontsource-variable/space-grotesk": "^5.3.0",
     "@fontsource/great-vibes": "^5.3.0",
     "@hookform/resolvers": "^7.0.7",
+    "@sentry/react": "^11.14.0",
     "@tanstack/react-query": "^5.108.0",
     "axios": "^1.21.1",
     "i18next": "^27.1.5",
@@ -37,7 +39,9 @@
     "zustand": "^5.1.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/vite": "^4.3.5",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",

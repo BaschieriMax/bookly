@@ -75,7 +75,7 @@ describe('CalendarPage', () => {
     // The time grid labels events for screen readers.
     await userEvent.click(
       await screen.findByRole('button', {
-        name: /10:00–10:30, Taglio, Mario Rossi, Anna, Confermato/,
+        name: /10:00 Taglio · Mario Rossi, fino alle 10:30, Anna, Confermato/,
       }),
     )
     expect(requested).toContain('2099-03-02..2099-03-02')
@@ -153,12 +153,14 @@ describe('CalendarPage', () => {
     )
     renderApp('/admin?data=2099-03-02')
 
-    await userEvent.click(await screen.findByRole('button', { name: /Mario Rossi, Anna/ }))
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Mario Rossi, fino alle .*, Anna/ }),
+    )
     let dialog = await screen.findByRole('dialog', { name: 'Appuntamento' })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Non presentato' }))
     expect((await screen.findAllByText('Stato aggiornato.'))[0]).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: /Luigi Verdi, Anna/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Luigi Verdi, fino alle .*, Anna/ }))
     dialog = await screen.findByRole('dialog', { name: 'Appuntamento' })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Annulla appuntamento' }))
     dialog = await screen.findByRole('dialog', { name: 'Annulla appuntamento' })

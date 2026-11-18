@@ -1,8 +1,7 @@
-/// <reference types="vitest/config" />
 import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -20,12 +19,18 @@ export default defineConfig({
     },
   },
   build: {
-    sourcemap: true,
+    // Maps are generated for debugging/error tracking but not referenced by the bundles; the
+    // Docker image drops them so the source is not published (DEC-031).
+    sourcemap: 'hidden',
+    // Fonts stay files (cacheable, and allowed by the CSP font-src 'self'): never inline as data:.
+    assetsInlineLimit: (file) => (/\.(woff2?|ttf|otf)$/.test(file) ? false : undefined),
   },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,
     restoreMocks: true,
+    // Playwright specs run against the real stack (npm run e2e), not in jsdom.
+    exclude: [...configDefaults.exclude, 'e2e/**'],
   },
 })

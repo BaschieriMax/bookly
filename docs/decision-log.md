@@ -808,3 +808,45 @@ Diritti esercitabili in autonomia, storico utile alle attività senza dati perso
 Status:
 Approved (dettaglio implementativo dello Step 12)
 ```
+
+```text
+Decision:
+DEC-031 — Hardening: header di sicurezza e CSP, meta tag delle pagine attività, Sentry, E2E
+
+Date:
+2026-11-18
+
+Context:
+Step 13 (overview §OWASP A02, §20, R7/Q4). Massimo ha confermato i meta tag server-side nell'MVP.
+
+Decision:
+- Header su ogni risposta: CSP (default-src 'self'; script-src 'self' senza unsafe-inline né
+  eval; style-src con 'unsafe-inline' per le variabili CSS del tema nei style attribute e lo
+  style element dei toast; img data:/blob:; frame-ancestors 'none'; object-src 'none';
+  upgrade-insecure-requests fuori da Development), nosniff, X-Frame-Options DENY,
+  Referrer-Policy, Permissions-Policy, COOP e CORP same-origin; HSTS 1 anno.
+  Origini extra per connect-src solo da configurazione (Security:ExtraConnectSources, https).
+- Compatibilità con la CSP: font mai inline come data: (assetsInlineLimit), Zod in modalità
+  jitless (niente new Function), source map "hidden" e rimosse dall'immagine Docker.
+- /b/{slug}: il server inserisce title, description, canonical e Open Graph (og:image = logo)
+  nell'index.html; attività sconosciute o sospese → 404 con noindex. robots.txt esclude le aree
+  private.
+- Sentry facoltativo (Sentry__Dsn, VITE_SENTRY_DSN): nessun utente, cookie, header né query
+  string (i token dei link email), niente tracing; l'SDK web è un chunk caricato solo con DSN.
+- I log non contengono più oggetto e destinatario delle email (dati personali): solo il tipo.
+- Rate limit anche su eliminazione account (verifica password) ed export.
+- E2E Playwright in CI contro lo stack reale (build di produzione servita dall'API): prenotazione
+  completa, calendario, header e meta, axe WCAG 2.1 AA, zero errori in console e violazioni CSP,
+  su mobile e desktop.
+
+Alternatives:
+CSP con nonce (inutile: nessuno script inline); prerender delle pagine attività (più complesso
+dell'iniezione dei meta); Sentry tunnel via API (rimandato: basta connect-src).
+
+Motivation:
+Difesa in profondità contro XSS e clickjacking verificata da test automatici, anteprime dei link
+condivisi, errori di produzione visibili senza esporre dati personali.
+
+Status:
+Approved (Q4 confermata da Massimo il 2026-11-18)
+```

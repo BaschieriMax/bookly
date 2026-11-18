@@ -19,6 +19,8 @@ COPY apps/api/src/Bookly.Api/Bookly.Api.csproj src/Bookly.Api/
 RUN dotnet restore src/Bookly.Api/Bookly.Api.csproj
 COPY apps/api/src/ src/
 COPY --from=web /src/apps/web/dist/ src/Bookly.Api/wwwroot/
+# Source maps are not published (DEC-031): upload them to Sentry from CI if needed.
+RUN find src/Bookly.Api/wwwroot -name '*.map' -delete
 RUN dotnet publish src/Bookly.Api/Bookly.Api.csproj -c Release -o /app --no-restore -p:OpenApiGenerateDocuments=false
 
 # 3) Runtime (non-chiseled: tzdata is needed for Europe/Rome)
