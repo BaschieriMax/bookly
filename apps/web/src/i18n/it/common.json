@@ -1,0 +1,16 @@
+{
+  "loading": "Caricamento…",
+  "menu": "Menu",
+  "openMenu": "Apri il menu",
+  "closeMenu": "Chiudi il menu",
+  "logout": "Esci",
+  "comingSoon": "In arrivo",
+  "comingSoonDescription": "Questa sezione è in costruzione.",
+  "tenant": "Attività",
+  "errors": {
+    "generic": "Qualcosa è andato storto. Riprova.",
+    "network": "Connessione assente o server non raggiungibile.",
+    "forbidden": "Non hai i permessi per questa operazione.",
+    "tooManyRequests": "Troppi tentativi. Riprova tra qualche minuto."
+  }
+}

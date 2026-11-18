@@ -16,7 +16,7 @@ COPY apps/api/src/Bookly.Api/Bookly.Api.csproj src/Bookly.Api/
 RUN dotnet restore src/Bookly.Api/Bookly.Api.csproj
 COPY apps/api/src/ src/
 COPY --from=web /src/apps/web/dist/ src/Bookly.Api/wwwroot/
-RUN dotnet publish src/Bookly.Api/Bookly.Api.csproj -c Release -o /app --no-restore
+RUN dotnet publish src/Bookly.Api/Bookly.Api.csproj -c Release -o /app --no-restore -p:OpenApiGenerateDocuments=false
 
 # 3) Runtime (non-chiseled: tzdata is needed for Europe/Rome)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime

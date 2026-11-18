@@ -1,4 +1,7 @@
+using Bookly.Api.Auth.Policies;
 using Bookly.Api.Data;
+using Bookly.Api.Tenancy;
+using Microsoft.AspNetCore.Authorization;
 using Bookly.Api.Entities;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Identity;
@@ -78,7 +81,10 @@ internal static class AuthServiceCollectionExtensions
                 };
             });
 
-        services.AddAuthorization();
+        services.AddHttpContextAccessor();
+        services.AddScoped<TenantMembershipResolver>();
+        services.AddScoped<IAuthorizationHandler, TenantRoleHandler>();
+        services.AddAuthorization(options => options.AddBooklyPolicies());
 
         services.AddAntiforgery();
         services.AddOptions<AntiforgeryOptions>()

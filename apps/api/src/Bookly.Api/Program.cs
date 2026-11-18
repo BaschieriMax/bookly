@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Bookly.Api.Auth;
 using Bookly.Api.Data;
 using Bookly.Api.Infrastructure;
@@ -14,14 +15,17 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddOptions<AppOptions>()
     .Bind(builder.Configuration.GetSection(AppOptions.Section))
     .ValidateDataAnnotations()
-    .ValidateOnStart();
+    .ValidateOnStartUnlessBuildTime();
 builder.Services.AddOptions<EmailOptions>()
     .Bind(builder.Configuration.GetSection(EmailOptions.Section))
     .ValidateDataAnnotations()
-    .ValidateOnStart();
+    .ValidateOnStartUnlessBuildTime();
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 
-builder.Services.AddControllers(options => options.AddGlobalAntiforgeryValidation());
+// Strict numbers: no "123" strings accepted for numbers, and the OpenAPI schema stays "integer" (DEC-013).
+builder.Services.AddControllers(options => options.AddGlobalAntiforgeryValidation())
+    .AddJsonOptions(options => options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.Strict);
+builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict);
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddBooklyData(builder.Configuration);
@@ -64,6 +68,13 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 {
     await using var scope = app.Services.CreateAsyncScope();
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
+
+    if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("Database:SeedDemoData"))
+    {
+        var password = app.Configuration["Database:DemoPassword"]
+            ?? throw new InvalidOperationException("Database:DemoPassword is required to seed demo data.");
+        await DemoDataSeeder.SeedAsync(scope.ServiceProvider, password);
+    }
 }
 
 app.UseStatusCodePages();

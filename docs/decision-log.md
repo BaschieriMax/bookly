@@ -553,3 +553,33 @@ Stesso codice in tutti gli ambienti, provider sostituibile cambiando solo la con
 Status:
 Approved (specifica DEC-011)
 ```
+
+```text
+Decision:
+DEC-023 — Tenant attivo dell'area admin: header X-Bookly-Tenant validato + store Zustand
+
+Date:
+2026-11-18
+
+Context:
+Un utente può essere Owner/Staff di più attività. Le rotte admin devono sapere su quale tenant
+lavorare senza mai fidarsi di un valore del client (DEC-006).
+
+Decision:
+- Il client invia l'id del tenant attivo nell'header `X-Bookly-Tenant`.
+- Il server (TenantMembershipResolver) lo accetta solo se l'utente ha una membership attiva su
+  quel tenant; senza header serve una sola membership. Il tenant risolto alimenta il filtro EF.
+- Policy `TenantMember`, `TenantOwner`, `PlatformAdmin` applicate sugli endpoint.
+- Frontend: il tenant attivo vive in uno store Zustand persistito (unico stato globale: lo
+  usano client HTTP, sidebar e selettore di attività).
+
+Alternatives:
+Slug del tenant nell'URL admin (/admin/{slug}/...): URL più lunghi e route del menu non statiche;
+cookie di sessione con il tenant (stato lato server in più).
+
+Motivation:
+Semplice, verificato a ogni richiesta, compatibile con il menu dal server (DEC-019).
+
+Status:
+Approved (scelta tecnica di Claude nello Step 4, reversibile)
+```

@@ -243,7 +243,7 @@ Account **globali**: un cliente usa lo stesso account per prenotare presso attiv
 
 ## 12. API CONTRACT
 
-Prefisso `/api`. JSON. Errori in formato `ProblemDetails` con `code`. Le richieste che modificano dati richiedono `X-XSRF-TOKEN`.
+Prefisso `/api`. JSON. Errori in formato `ProblemDetails` con `code`. Le richieste che modificano dati richiedono `X-XSRF-TOKEN`. Le rotte admin usano il tenant indicato dall'header `X-Bookly-Tenant` (id), sempre verificato sulle membership dell'utente (DEC-023).
 
 | Metodo | Route | Auth | Note |
 |---|---|---|---|
@@ -273,7 +273,9 @@ Prefisso `/api`. JSON. Errori in formato `ProblemDetails` con `code`. Le richies
 | GET/POST | `/platform/tenants` | SuperAdmin | |
 | POST | `/platform/tenants/{id}/suspend` · `/activate` · `/invite-owner` | SuperAdmin | |
 | POST | `/jobs/send-reminders` | Header `X-Job-Secret` | Idempotente, escluso dall'antiforgery |
-| GET | `/navigation?area=admin\|platform` | Auth | Voci della sidebar permesse all'utente (DEC-019) |
+| GET | `/navigation/admin` | Owner/Staff | Voci della sidebar per il ruolo nel tenant corrente (DEC-019) |
+| GET | `/navigation/platform` | SuperAdmin | Voci della sidebar della piattaforma |
+| GET | `/platform/navigation` | SuperAdmin | Tutte le voci, con ruoli e stato |
 | PATCH | `/platform/navigation/{id}` | SuperAdmin | Abilita/disabilita, riordina |
 | GET | `/health` | Pubblico | Liveness + ping al DB |
 

@@ -24,14 +24,17 @@ public sealed class ApiSession : IDisposable
     public async Task<HttpResponseMessage> MeAsync() => await Client.GetAsync("/api/auth/me");
 
     /// <summary>POST with the X-XSRF-TOKEN header taken from the cookie, priming it first if needed.</summary>
-    public async Task<HttpResponseMessage> PostAsync(string path, object? body = null)
+    public Task<HttpResponseMessage> PostAsync(string path, object? body = null) => SendAsync(HttpMethod.Post, path, body);
+
+    /// <summary>Unsafe request with the X-XSRF-TOKEN header taken from the cookie, priming it first if needed.</summary>
+    public async Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, object? body = null)
     {
         if (GetCookie("XSRF-TOKEN") is null)
         {
             (await MeAsync()).Dispose();
         }
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, path)
+        using var request = new HttpRequestMessage(method, path)
         {
             Content = JsonContent.Create(body ?? new { }),
         };
