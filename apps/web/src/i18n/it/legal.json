@@ -1,0 +1,127 @@
+{
+  "draftNotice": "Bozza da far validare a un professionista prima della pubblicazione. I campi tra parentesi quadre vanno completati.",
+  "updatedAt": "Ultimo aggiornamento: {{date}}",
+  "footer": {
+    "privacy": "Privacy e cookie",
+    "terms": "Termini di servizio",
+    "label": "Informazioni legali"
+  },
+  "privacy": {
+    "title": "Informativa privacy e cookie",
+    "intro": "Questa informativa spiega come vengono trattati i dati personali di chi usa Bookly per prenotare o per gestire un'attività (artt. 13–14 del Regolamento UE 2016/679, \"GDPR\").",
+    "sections": [
+      {
+        "title": "Chi tratta i tuoi dati",
+        "paragraphs": [
+          "Per il tuo account Bookly il titolare del trattamento è [Ragione sociale], [indirizzo], email [email privacy].",
+          "Quando prenoti presso un'attività (per esempio un barbiere), è quell'attività il titolare dei dati della prenotazione: Bookly li tratta per suo conto come responsabile del trattamento (art. 28 GDPR), sulla base di un accordo con l'attività."
+        ]
+      },
+      {
+        "title": "Quali dati trattiamo",
+        "paragraphs": [
+          "Dati dell'account: nome, cognome, email, telefono (facoltativo) e password, conservata solo in forma cifrata.",
+          "Dati delle prenotazioni: attività, servizio, operatore, data e ora, stato dell'appuntamento ed eventuali note che scrivi tu. Non inserire nelle note informazioni sulla salute.",
+          "Dati tecnici: indirizzo IP e registri delle richieste, usati per la sicurezza del servizio e per prevenire abusi."
+        ]
+      },
+      {
+        "title": "Perché e su quale base",
+        "paragraphs": [
+          "Creare e gestire l'account, le prenotazioni e le relative email (conferma, modifica, disdetta, promemoria): esecuzione del contratto (art. 6.1.b GDPR).",
+          "Proteggere il servizio da accessi non autorizzati e abusi: legittimo interesse (art. 6.1.f GDPR).",
+          "Adempiere a obblighi di legge, per esempio richieste dell'autorità: obbligo legale (art. 6.1.c GDPR).",
+          "Non usiamo i tuoi dati per pubblicità né li vendiamo a terzi."
+        ]
+      },
+      {
+        "title": "A chi li affidiamo",
+        "paragraphs": [
+          "Fornitori tecnici che agiscono come sub-responsabili: hosting dell'applicazione [Render — regione da indicare], database [Neon — regione UE da indicare], invio email [Resend — Stati Uniti].",
+          "Per i trasferimenti fuori dallo Spazio Economico Europeo si applicano le garanzie previste dal GDPR (decisione di adeguatezza o clausole contrattuali standard). [Verificare contratti e regioni al momento del rilascio.]",
+          "L'attività presso cui prenoti vede i dati della tua prenotazione e i tuoi contatti, per poterti servire e avvisarti."
+        ]
+      },
+      {
+        "title": "Per quanto tempo",
+        "paragraphs": [
+          "Account: finché non lo elimini. Gli account mai confermati vengono cancellati dopo 30 giorni.",
+          "Note degli appuntamenti: cancellate 24 mesi dopo l'appuntamento.",
+          "Se elimini l'account, i tuoi dati personali vengono cancellati e gli appuntamenti futuri annullati; lo storico degli appuntamenti passati resta all'attività in forma anonima, perché le serve per la propria gestione e contabilità.",
+          "Registri tecnici: [N] giorni."
+        ]
+      },
+      {
+        "title": "I tuoi diritti",
+        "paragraphs": [
+          "Puoi accedere ai tuoi dati e scaricarli in un file (portabilità), correggerli ed eliminare l'account in autonomia dalla pagina \"Profilo e privacy\" del tuo account.",
+          "Puoi inoltre chiedere la limitazione del trattamento od opporti, scrivendo a [email privacy]. Per i dati di una prenotazione puoi rivolgerti anche direttamente all'attività.",
+          "Hai il diritto di presentare reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it)."
+        ]
+      },
+      {
+        "title": "Cookie e archiviazione nel browser",
+        "paragraphs": [
+          "Bookly usa solo strumenti tecnici, necessari al funzionamento: per questo non serve un banner di consenso.",
+          "Cookie di sessione dell'accesso (__Host-bookly.auth), cookie di protezione contro le richieste falsificate (XSRF-TOKEN e il cookie antiforgery) e, solo per chi gestisce un'attività, la memoria locale del browser che ricorda l'attività selezionata.",
+          "Non usiamo cookie di profilazione, di statistica o di terze parti. Se in futuro ne aggiungessimo, chiederemmo prima il tuo consenso."
+        ]
+      },
+      {
+        "title": "Modifiche",
+        "paragraphs": [
+          "Se l'informativa cambia in modo rilevante te lo comunicheremo via email o al primo accesso."
+        ]
+      }
+    ]
+  },
+  "terms": {
+    "title": "Termini di servizio",
+    "intro": "Questi termini regolano l'uso di Bookly, la piattaforma che permette ai clienti di prenotare presso attività locali e alle attività di gestire le proprie prenotazioni. Il servizio è offerto da [Ragione sociale].",
+    "sections": [
+      {
+        "title": "Il servizio",
+        "paragraphs": [
+          "Bookly è uno strumento tecnico: il servizio prenotato (per esempio un taglio) è fornito dall'attività, che ne è l'unica responsabile, così come di prezzi, orari e qualità della prestazione.",
+          "I prezzi mostrati sono indicativi e vengono pagati direttamente all'attività."
+        ]
+      },
+      {
+        "title": "Account",
+        "paragraphs": [
+          "Per prenotare serve un account con un'email confermata. Sei responsabile della riservatezza della tua password.",
+          "Puoi eliminare l'account in qualsiasi momento dalla pagina \"Profilo e privacy\"."
+        ]
+      },
+      {
+        "title": "Prenotazioni e disdette",
+        "paragraphs": [
+          "Una prenotazione è confermata quando la ricevi via email e la vedi tra i tuoi appuntamenti.",
+          "Puoi disdire online entro il limite indicato dall'attività; oltre quel limite devi contattarla direttamente.",
+          "L'attività può spostare o annullare un appuntamento: in quel caso ricevi un'email."
+        ]
+      },
+      {
+        "title": "Per le attività",
+        "paragraphs": [
+          "L'attività è titolare dei dati dei propri clienti e Bookly ne è responsabile del trattamento: i rispettivi obblighi sono regolati da un accordo separato (art. 28 GDPR) [da allegare].",
+          "L'attività si impegna a usare i dati dei clienti solo per gestire gli appuntamenti e a non chiedere nelle note dati sanitari o di altre categorie particolari.",
+          "Bookly può sospendere un'attività in caso di uso improprio o di mancato rispetto di questi termini; i dati restano conservati."
+        ]
+      },
+      {
+        "title": "Uso corretto",
+        "paragraphs": [
+          "È vietato prenotare senza intenzione di presentarsi, usare dati di altre persone senza autorizzazione o tentare di compromettere la sicurezza del servizio."
+        ]
+      },
+      {
+        "title": "Responsabilità e legge applicabile",
+        "paragraphs": [
+          "Bookly è fornito \"così com'è\": facciamo il possibile per mantenerlo disponibile e sicuro, ma possono verificarsi interruzioni. [Limitazioni di responsabilità da definire con un professionista.]",
+          "Si applica la legge italiana. Restano salvi i diritti inderogabili riconosciuti ai consumatori."
+        ]
+      }
+    ]
+  }
+}

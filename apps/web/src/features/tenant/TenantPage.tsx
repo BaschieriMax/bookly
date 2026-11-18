@@ -1,6 +1,7 @@
 import { CalendarCheck, ChevronRight, Clock, MapPin, Phone } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { paths } from '@/app/paths'
 import { PageSpinner } from '@/components/ui/PageSpinner'
 import { formatDuration, formatPrice } from '@/lib/format'
 import { useServices } from './tenantApi'
@@ -12,7 +13,7 @@ const eyebrow = 'text-[13px] font-semibold tracking-[0.14em] text-primary-text'
 /** Public page of a business: /b/:slug (prototype "Pagina attività"). */
 export default function TenantPage() {
   const tenant = useCurrentTenant()
-  const { t } = useTranslation('booking')
+  const { t } = useTranslation(['booking', 'legal'])
   const { data: services, isPending } = useServices(tenant.slug)
   const bookingPath = `/b/${tenant.slug}/prenota`
 
@@ -86,9 +87,14 @@ export default function TenantPage() {
 
       <footer className="mt-auto flex flex-col gap-1.5 border-t border-border px-5 pt-5 pb-28 text-[13px] text-muted sm:px-8">
         <span>{t('poweredBy')}</span>
-        <Link to="/privacy" className="underline">
-          {t('privacy')}
-        </Link>
+        <span className="flex flex-wrap gap-x-4">
+          <Link to={paths.privacy} className="underline">
+            {t('privacy')}
+          </Link>
+          <Link to={paths.terms} className="underline">
+            {t('legal:footer.terms')}
+          </Link>
+        </span>
       </footer>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-border bg-bg px-5 pt-3 pb-6">

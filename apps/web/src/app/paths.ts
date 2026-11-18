@@ -8,9 +8,11 @@ export const paths = {
   confirmEmail: '/conferma-email',
   invitation: '/invito',
   privacy: '/privacy',
+  terms: '/termini',
   tenant: '/b/:slug',
   booking: '/b/:slug/prenota',
   myAppointments: '/account/appuntamenti',
+  myProfile: '/account/profilo',
   admin: {
     calendar: '/admin',
     services: '/admin/servizi',

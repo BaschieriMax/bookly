@@ -11,7 +11,7 @@ export function AuthCard({
   children: ReactNode
 }) {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center gap-6 px-6 py-12">
+    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-6 py-12">
       <div className="flex flex-col gap-1">
         <h1 className="font-heading text-3xl font-semibold tracking-tight">{title}</h1>
         {subtitle && <p className="text-muted">{subtitle}</p>}
