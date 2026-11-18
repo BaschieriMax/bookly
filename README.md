@@ -1,0 +1,65 @@
+# Bookly
+
+Prenotazioni online multi-tenant per attività locali: barbieri, estetiste, piccoli negozi.
+Ogni attività ha la sua pagina di prenotazione con il proprio brand. I titolari gestiscono servizi, staff, orari e calendario.
+
+> Stato: in sviluppo (MVP). Documentazione di progetto in [`docs/`](./docs).
+
+## Stack
+
+| Area | Tecnologie |
+|---|---|
+| Frontend | React 19, Vite 8, TypeScript strict, React Router v8, TanStack Query + Axios, Tailwind CSS v4, React Hook Form + Zod, react-i18next |
+| Backend | .NET 10 (LTS), ASP.NET Core (Controllers), EF Core 10, ASP.NET Core Identity (cookie) |
+| Database | PostgreSQL 17 |
+| Test | Vitest + React Testing Library, xUnit + Testcontainers, Playwright |
+| CI/CD | GitHub Actions |
+| Deploy | Container unico (API + SPA) su Render, Postgres su Neon, email con Resend |
+
+## Struttura
+
+```text
+apps/
+  api/   # ASP.NET Core 10 (Bookly.sln)
+  web/   # React + Vite
+docs/    # overview, decision log, technical debt
+```
+
+## Sviluppo locale
+
+Prerequisiti: Node 22+, .NET SDK 10, Docker.
+
+```bash
+# servizi di supporto: Postgres + Mailpit
+docker compose up -d
+
+# frontend (http://localhost:5173, proxy /api → :5080)
+cd apps/web
+npm ci
+npm run dev
+
+# backend (http://localhost:5080)
+cd apps/api
+dotnet run --project src/Bookly.Api
+```
+
+Mailpit (email in sviluppo): http://localhost:8025
+
+## Personalizzare stili e font
+
+Colori, font e raggi stanno **solo** in `apps/web/src/styles/tokens.css` (variabili `--bk-*`).
+Tailwind li espone come classi semantiche (`bg-primary`, `text-muted`, `font-heading`).
+Per cambiare palette o font basta modificare quel file. Per aggiungere una nuova famiglia di font, importarla in `apps/web/src/styles/fonts.css`.
+Vedi DEC-018 in [`docs/decision-log.md`](./docs/decision-log.md).
+
+## Convenzioni
+
+- Codice, nomi e commenti in inglese.
+- Commit in italiano: `tipo: descrizione` (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`).
+- `main` protetto: si lavora su branch e si integra con pull request a CI verde.
+
+## Documentazione
+
+- [Project overview](./docs/project-overview.md)
+- [Decision log](./docs/decision-log.md)
+- [Technical debt](./docs/tech-debt.md)
