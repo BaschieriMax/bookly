@@ -333,7 +333,9 @@ public sealed class CalendarService(
             a.CancellationReason,
             a.Service.PriceCents,
             a.Service.PriceIsFrom,
-            new CalendarCustomerDto(a.Customer.FirstName, a.Customer.LastName, a.Customer.Email, a.Customer.PhoneNumber),
+            a.Customer.DeletedAt is null
+                ? new CalendarCustomerDto(a.Customer.FirstName, a.Customer.LastName, a.Customer.Email, a.Customer.PhoneNumber)
+                : new CalendarCustomerDto(a.Customer.FirstName, a.Customer.LastName, null, null),
             CanMove: confirmed && a.StartUtc > now,
             CanCancel: confirmed,
             CanMark: confirmed && a.StartUtc <= now);

@@ -52,6 +52,15 @@ internal static class EmailTemplates
         link: bookLink,
         footer: "Se non sei stato tu, contatta subito l'attività.");
 
+    public static EmailMessage AccountDeleted(string to, string firstName, string homeLink) => Build(
+        to,
+        subject: "Il tuo account Bookly è stato eliminato",
+        greeting: firstName,
+        paragraph: "Come richiesto, abbiamo eliminato il tuo account: i tuoi dati personali sono stati cancellati e gli appuntamenti futuri annullati. Lo storico degli appuntamenti passati resta alle attività in forma anonima.",
+        actionLabel: "Torna su Bookly",
+        link: homeLink,
+        footer: "Se non hai chiesto tu l'eliminazione, rispondi a questa email o contatta subito il supporto.");
+
     public static EmailMessage AppointmentReminder(
         string to,
         string firstName,

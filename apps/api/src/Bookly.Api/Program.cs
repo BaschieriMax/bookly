@@ -5,6 +5,7 @@ using Bookly.Api.Data;
 using Bookly.Api.Infrastructure;
 using Bookly.Api.Infrastructure.Email;
 using Bookly.Api.Services;
+using Bookly.Api.Services.Account;
 using Bookly.Api.Services.Admin;
 using Bookly.Api.Services.Availability;
 using Bookly.Api.Services.Jobs;
@@ -48,6 +49,8 @@ builder.Services.AddScoped<TenantSettingsService>();
 builder.Services.AddScoped<CalendarService>();
 builder.Services.AddScoped<TenantProvisioningService>();
 builder.Services.AddScoped<ReminderService>();
+builder.Services.AddScoped<RetentionService>();
+builder.Services.AddScoped<PrivacyService>();
 builder.Services.AddOptions<JobsOptions>()
     .Bind(builder.Configuration.GetSection(JobsOptions.Section))
     .Validate(o => o.Secret.Length is 0 or >= 32, "Jobs:Secret must be empty (disabled) or at least 32 characters.")

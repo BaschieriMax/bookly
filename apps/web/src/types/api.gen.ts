@@ -1505,6 +1505,213 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/jobs/apply-retention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RetentionRunResult"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProfileDto"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateProfileRequest"];
+                    "text/json": components["schemas"]["UpdateProfileRequest"];
+                    "application/*+json": components["schemas"]["UpdateProfileRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProfileDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DataExportDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DeleteAccountRequest"];
+                    "text/json": components["schemas"]["DeleteAccountRequest"];
+                    "application/*+json": components["schemas"]["DeleteAccountRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/appointments": {
         parameters: {
             query?: never;
@@ -2366,8 +2573,49 @@ export interface components {
             endTime: null | string;
             reason: null | string;
         };
+        DataExportDto: {
+            /** Format: date-time */
+            exportedAt: string;
+            account: components["schemas"]["ExportAccountDto"];
+            memberships: components["schemas"]["ExportMembershipDto"][];
+            appointments: components["schemas"]["ExportAppointmentDto"][];
+        };
+        DeleteAccountRequest: {
+            password: string;
+        };
         EmailRequest: {
             email: string;
+        };
+        ExportAccountDto: {
+            /** Format: uuid */
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+            phoneNumber: null | string;
+            emailConfirmed: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            privacyAcceptedAt: null | string;
+        };
+        ExportAppointmentDto: {
+            tenant: string;
+            service: string;
+            staff: string;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            status: string;
+            note: null | string;
+            cancellationReason: null | string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ExportMembershipDto: {
+            tenant: string;
+            role: string;
         };
         /** Format: binary */
         IFormFile: string;
@@ -2484,6 +2732,14 @@ export interface components {
             detail?: null | string;
             instance?: null | string;
         };
+        ProfileDto: {
+            email: string;
+            firstName: string;
+            lastName: string;
+            phoneNumber: null | string;
+            /** Format: date-time */
+            createdAt: string;
+        };
         PublicAvailabilityDto: {
             /** Format: date */
             date: string;
@@ -2550,6 +2806,12 @@ export interface components {
             email: string;
             token: string;
             newPassword: string;
+        };
+        RetentionRunResult: {
+            /** Format: int32 */
+            appointmentsCleaned: number;
+            /** Format: int32 */
+            unconfirmedAccountsDeleted: number;
         };
         SaveServiceRequest: {
             name: string;
@@ -2639,6 +2901,11 @@ export interface components {
             isEnabled: null | boolean;
             /** Format: int32 */
             sortOrder: null | number;
+        };
+        UpdateProfileRequest: {
+            firstName: string;
+            lastName: string;
+            phoneNumber: null | string;
         };
         ValidationProblemDetails: {
             type?: null | string;
