@@ -47,7 +47,10 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: dotnet restore Bookly.slnx
+      - run: dotnet tool restore
       - run: dotnet build Bookly.slnx -c Release --no-restore
+      - name: Migrations are in sync with the model
+        run: dotnet ef migrations has-pending-model-changes --project src/Bookly.Api --configuration Release --no-build
       - run: dotnet test Bookly.slnx -c Release --no-build --logger "console;verbosity=normal"
       - name: Check vulnerable NuGet packages
         run: |
@@ -64,12 +67,19 @@ jobs:
         run: docker build -t bookly:ci .
       - name: Smoke test
         run: |
-          docker run -d --name bookly -p 8080:8080 bookly:ci
+          docker network create bookly-ci
+          docker run -d --name db --network bookly-ci \
+            -e POSTGRES_USER=bookly -e POSTGRES_PASSWORD=bookly_ci -e POSTGRES_DB=bookly \
+            postgres:17-alpine
+          docker run -d --name bookly --network bookly-ci -p 8080:8080 \
+            -e ConnectionStrings__Default="Host=db;Database=bookly;Username=bookly;Password=bookly_ci" \
+            bookly:ci
           for i in $(seq 1 30); do
-            if curl -fsS http://localhost:8080/api/health; then break; fi
-            sleep 1
+            if curl -fsS http://localhost:8080/api/health/ready; then break; fi
+            sleep 2
           done
           curl -fsS http://localhost:8080/api/health
+          curl -fsS http://localhost:8080/api/health/ready
           curl -fsS http://localhost:8080/ | grep -q '<div id="root">'
           curl -fsS http://localhost:8080/admin | grep -q '<div id="root">'
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/nope)" = "404"
