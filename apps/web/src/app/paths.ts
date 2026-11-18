@@ -4,6 +4,12 @@ export const paths = {
   login: '/login',
   register: '/registrati',
   forgotPassword: '/password-dimenticata',
+  resetPassword: '/reimposta-password',
+  confirmEmail: '/conferma-email',
+  privacy: '/privacy',
+  tenant: '/b/:slug',
+  booking: '/b/:slug/prenota',
+  myAppointments: '/account/appuntamenti',
   admin: {
     calendar: '/admin',
     services: '/admin/servizi',

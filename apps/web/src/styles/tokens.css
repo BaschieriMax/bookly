@@ -16,6 +16,8 @@
   --bk-color-primary-hover: #115e59;
   --bk-color-primary-fg: #ffffff;
   --bk-color-primary-soft: #f0fdfa;
+  /* Primary used as text (links, prices): falls back to ink when the brand color is too light (DEC-016) */
+  --bk-color-primary-text: #0f766e;
 
   /* Surfaces */
   --bk-color-bg: #fafafa;
@@ -41,6 +43,8 @@
   --bk-font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --bk-font-heading: 'Space Grotesk Variable', 'Inter Variable', system-ui, sans-serif;
   --bk-font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  /* Heading font of the public tenant pages; the tenant layout overrides it (DEC-016) */
+  --bk-font-tenant-heading: var(--bk-font-heading);
 
   /* Shape */
   --bk-radius-control: 8px;

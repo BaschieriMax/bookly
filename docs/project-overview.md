@@ -554,7 +554,6 @@ Motivazione: è solo il nome del repo; il brand si decide con le direzioni visua
 | Q1 | Il repo `BaschieriMax/bookly` è creato? Va collegato a questa sessione | Massimo | Step 0 |
 | Q2 | Dominio: Massimo lo compra in Fase 4 (serve a Resend per inviare email reali) | Massimo | Step 15 |
 | Q4 | Iniezione server-side dei meta tag per la SEO delle pagine attività: la vuoi nell'MVP? | Massimo | Step 7 |
-| Q5 | shadcn/ui per il solo DatePicker/Calendar del wizard: ok? | Massimo | Step 7 |
 
 ## 30. DECISION LOG
 

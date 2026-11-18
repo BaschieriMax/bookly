@@ -877,7 +877,8 @@
           "name",
           "phone",
           "address",
-          "primaryColor"
+          "primaryColor",
+          "timeZone"
         ],
         "type": "object",
         "properties": {
@@ -904,6 +905,9 @@
               "null",
               "string"
             ]
+          },
+          "timeZone": {
+            "type": "string"
           }
         }
       },

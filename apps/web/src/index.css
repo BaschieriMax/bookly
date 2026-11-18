@@ -22,6 +22,7 @@
   --color-primary-hover: var(--bk-color-primary-hover);
   --color-primary-fg: var(--bk-color-primary-fg);
   --color-primary-soft: var(--bk-color-primary-soft);
+  --color-primary-text: var(--bk-color-primary-text);
 
   --color-bg: var(--bk-color-bg);
   --color-surface: var(--bk-color-surface);
@@ -42,6 +43,7 @@
 
   --font-sans: var(--bk-font-sans);
   --font-heading: var(--bk-font-heading);
+  --font-tenant-heading: var(--bk-font-tenant-heading);
   --font-mono: var(--bk-font-mono);
 
   --radius-control: var(--bk-radius-control);

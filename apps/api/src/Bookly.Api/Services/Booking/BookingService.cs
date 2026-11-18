@@ -204,7 +204,7 @@ public sealed class BookingService(
         var deadline = CancelDeadline(a, tenant);
         return new MyAppointmentDto(
             a.Id,
-            new AppointmentTenantDto(tenant.Slug, tenant.Name, tenant.Phone, tenant.Address, tenant.BrandPrimaryColor),
+            new AppointmentTenantDto(tenant.Slug, tenant.Name, tenant.Phone, tenant.Address, tenant.BrandPrimaryColor, tenant.TimeZone),
             service.Name,
             service.DurationMinutes,
             service.PriceCents,

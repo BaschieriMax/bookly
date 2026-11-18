@@ -583,3 +583,33 @@ Semplice, verificato a ogni richiesta, compatibile con il menu dal server (DEC-0
 Status:
 Approved (scelta tecnica di Claude nello Step 4, reversibile)
 ```
+
+```text
+Decision:
+DEC-024 — Calendario del wizard: react-day-picker con i design token (invece della CLI shadcn/ui)
+
+Date:
+2026-11-18
+
+Context:
+Proposto shadcn/ui per il date picker (accessibilità e tastiera complesse). Il Calendar di shadcn è
+un wrapper di react-day-picker che usa le proprie variabili di tema (--primary, --accent,
+--muted-foreground…), che non esistono nel nostro sistema: la palette Tailwind è ridotta ai soli
+token semantici (DEC-018).
+
+Decision:
+Usare direttamente react-day-picker (v10, la stessa libreria del Calendar shadcn): locale it,
+settimana da lunedì, giorni non disponibili disabilitati, stile solo con classi dei nostri token
+(componente DatePicker). Nessuna CLI shadcn, nessun secondo set di variabili.
+
+Alternatives:
+shadcn/ui Calendar (richiede di mappare il suo tema sui nostri token e porta clsx/tailwind-merge);
+calendario custom (navigazione da tastiera e ARIA da riscrivere).
+
+Motivation:
+Stessa accessibilità del componente shadcn, un solo sistema di token, una dipendenza in meno.
+
+Status:
+Approved (Massimo ha dato il via a shadcn per il calendario; questa è l'implementazione
+equivalente senza la CLI, reversibile)
+```

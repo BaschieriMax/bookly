@@ -13,6 +13,16 @@ import { withSuspense } from './withSuspense'
 
 const HomePage = lazy(() => import('@/features/home/HomePage'))
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'))
+const RegisterPage = lazy(() => import('@/features/auth/RegisterPage'))
+const ConfirmEmailPage = lazy(() => import('@/features/auth/ConfirmEmailPage'))
+const ForgotPasswordPage = lazy(() => import('@/features/auth/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'))
+// Public tenant pages: their own chunk, with the tenant fonts.
+const TenantLayout = lazy(() => import('@/features/tenant/TenantLayout'))
+const TenantPage = lazy(() => import('@/features/tenant/TenantPage'))
+const BookingPage = lazy(() => import('@/features/booking/BookingPage'))
+const AccountLayout = lazy(() => import('@/features/account/AccountLayout'))
+const MyAppointmentsPage = lazy(() => import('@/features/account/MyAppointmentsPage'))
 // Admin and platform shells are only downloaded by signed-in staff, never by customers.
 const AdminLayout = lazy(() =>
   import('./layouts/AdminLayout').then((m) => ({ default: m.AdminLayout })),
@@ -32,14 +42,34 @@ export const routes: RouteObject[] = [
       { index: true, element: withSuspense(<HomePage />) },
       {
         element: <RedirectIfAuthenticated />,
-        children: [{ path: paths.login, element: withSuspense(<LoginPage />) }],
+        children: [
+          { path: paths.login, element: withSuspense(<LoginPage />) },
+          { path: paths.register, element: withSuspense(<RegisterPage />) },
+          { path: paths.forgotPassword, element: withSuspense(<ForgotPasswordPage />) },
+        ],
       },
+      { path: paths.confirmEmail, element: withSuspense(<ConfirmEmailPage />) },
+      { path: paths.resetPassword, element: withSuspense(<ResetPasswordPage />) },
+      { path: paths.privacy, element: <PlaceholderPage title="Informativa privacy" /> },
+    ],
+  },
+  {
+    path: paths.tenant,
+    element: withSuspense(<TenantLayout />),
+    errorElement: <RouteError />,
+    children: [
+      { index: true, element: withSuspense(<TenantPage />) },
+      { path: 'prenota', element: withSuspense(<BookingPage />) },
     ],
   },
   {
     element: <RequireAuth />,
     errorElement: <RouteError />,
     children: [
+      {
+        element: withSuspense(<AccountLayout />),
+        children: [{ path: paths.myAppointments, element: withSuspense(<MyAppointmentsPage />) }],
+      },
       {
         element: withSuspense(<AdminLayout />),
         children: [
