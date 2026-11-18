@@ -19,4 +19,10 @@ internal static class ErrorCodes
     public const string ServiceNotFound = "booking.service_not_found";
     public const string StaffNotFound = "booking.staff_not_found";
     public const string InvalidRange = "booking.invalid_range";
+    public const string SlotUnavailable = "booking.slot_unavailable";
+    public const string EmailNotConfirmed = "booking.email_not_confirmed";
+    public const string AppointmentNotFound = "booking.appointment_not_found";
+    public const string NotCancellable = "booking.not_cancellable";
+    public const string CancellationWindowPassed = "booking.cancellation_window_passed";
+    public const string ConcurrentUpdate = "booking.concurrent_update";
 }

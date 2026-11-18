@@ -14,6 +14,7 @@ public static class TestUsers
     public static async Task<AppUser> CreateAsync(
         BooklyApiFactory factory,
         bool superAdmin = false,
+        bool emailConfirmed = true,
         params (Guid TenantId, TenantRole Role)[] memberships)
     {
         await using var scope = factory.Services.CreateAsyncScope();
@@ -26,7 +27,7 @@ public static class TestUsers
             Id = Guid.CreateVersion7(),
             UserName = email,
             Email = email,
-            EmailConfirmed = true,
+            EmailConfirmed = emailConfirmed,
             FirstName = "Test",
             LastName = "User",
             CreatedAt = DateTimeOffset.UtcNow,

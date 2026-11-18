@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
@@ -14,6 +15,9 @@ internal static class RateLimitPolicies
 
     /// <summary>Anonymous public pages: tenant info, services, availability.</summary>
     public const string Public = "public";
+
+    /// <summary>Creating appointments, per signed-in user.</summary>
+    public const string Booking = "booking";
 
     public static IServiceCollection AddBooklyRateLimiting(this IServiceCollection services)
     {
@@ -38,6 +42,18 @@ internal static class RateLimitPolicies
                 return RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => new FixedWindowRateLimiterOptions
                 {
                     PermitLimit = options.PublicPermitPerMinute,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0,
+                });
+            });
+
+            limiter.AddPolicy(Booking, context =>
+            {
+                var options = context.RequestServices.GetRequiredService<IOptions<AuthOptions>>().Value;
+                var user = context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? ClientKey(context);
+                return RateLimitPartition.GetFixedWindowLimiter(user, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = options.BookingPermitPerMinute,
                     Window = TimeSpan.FromMinutes(1),
                     QueueLimit = 0,
                 });

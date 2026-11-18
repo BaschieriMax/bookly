@@ -96,7 +96,7 @@ public sealed class PublicTenantsController(
                 s.PriceIsFrom,
                 s.Staff
                     .Where(ss => ss.StaffMember.IsActive)
-                    .OrderBy(ss => ss.StaffMember.SortOrder)
+                    .OrderBy(ss => ss.StaffMember.SortOrder).ThenBy(ss => ss.StaffMember.DisplayName)
                     .Select(ss => new PublicStaffDto(ss.StaffMemberId, ss.StaffMember.DisplayName))
                     .ToList()))
             .ToListAsync(cancellationToken);

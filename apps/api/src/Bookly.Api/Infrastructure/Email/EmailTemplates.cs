@@ -32,6 +32,26 @@ internal static class EmailTemplates
         link: link,
         footer: "Il link scade tra 1 ora. Se non hai chiesto tu il cambio password, ignora questa email.");
 
+    public static EmailMessage BookingConfirmed(
+        string to, string firstName, string tenantName, string serviceName, string when, string? address, string manageLink) => Build(
+        to,
+        subject: $"Prenotazione confermata da {tenantName}",
+        greeting: firstName,
+        paragraph: $"La tua prenotazione è confermata: {serviceName}, {when}{(address is null ? string.Empty : $", {address}")}.",
+        actionLabel: "Gestisci la prenotazione",
+        link: manageLink,
+        footer: "Se non puoi venire, disdici dal link: libererai il posto per un altro cliente.");
+
+    public static EmailMessage BookingCancelledByCustomer(
+        string to, string firstName, string tenantName, string serviceName, string when, string bookLink) => Build(
+        to,
+        subject: $"Prenotazione disdetta: {tenantName}",
+        greeting: firstName,
+        paragraph: $"Abbiamo registrato la disdetta di {serviceName}, {when}.",
+        actionLabel: "Prenota un altro orario",
+        link: bookLink,
+        footer: "Se non sei stato tu, contatta subito l'attività.");
+
     private static EmailMessage Build(
         string to, string subject, string greeting, string paragraph, string actionLabel, string link, string footer)
     {
