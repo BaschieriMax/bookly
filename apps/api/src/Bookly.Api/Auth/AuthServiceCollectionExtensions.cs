@@ -16,6 +16,7 @@ internal static class AuthServiceCollectionExtensions
     {
         services.AddOptions<AuthOptions>().Bind(configuration.GetSection(AuthOptions.Section));
         services.AddOptions<EmailConfirmationTokenProviderOptions>();
+        services.AddOptions<InvitationTokenProviderOptions>();
 
         services
             .AddIdentityCore<AppUser>(options =>
@@ -43,7 +44,8 @@ internal static class AuthServiceCollectionExtensions
             .AddEntityFrameworkStores<AppDbContext>()
             .AddSignInManager()
             .AddDefaultTokenProviders()
-            .AddTokenProvider<EmailConfirmationTokenProvider<AppUser>>(EmailConfirmationTokenProvider<AppUser>.ProviderName);
+            .AddTokenProvider<EmailConfirmationTokenProvider<AppUser>>(EmailConfirmationTokenProvider<AppUser>.ProviderName)
+            .AddTokenProvider<InvitationTokenProvider<AppUser>>(InvitationTokenProvider<AppUser>.ProviderName);
 
         // Password reset tokens: 1 hour.
         services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(1));

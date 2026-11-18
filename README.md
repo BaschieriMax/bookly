@@ -69,6 +69,13 @@ password `bookly-demo-2026`:
 Tipi TypeScript dell'API: la build del backend aggiorna `apps/web/openapi/bookly-api.json`,
 poi `npm run gen:api` (in `apps/web`) rigenera `src/types/api.gen.ts`. La CI fallisce se non sono allineati.
 
+## Primo super-admin (produzione)
+
+1. Registrati sul sito con la tua email e confermala dal link ricevuto.
+2. Imposta la variabile `Platform__SuperAdminEmails__0=<la tua email>` sul servizio e riavvialo.
+3. All'avvio l'API ti assegna il ruolo SuperAdmin (solo se l'email è confermata, DEC-028). Da
+   `/platform/tenant` crei le attività e inviti i titolari.
+
 ## Personalizzare stili e font
 
 Colori, font e raggi stanno **solo** in `apps/web/src/styles/tokens.css` (variabili `--bk-*`).

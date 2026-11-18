@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 using Bookly.Api.Auth;
 using Bookly.Api.Data;
@@ -6,6 +7,7 @@ using Bookly.Api.Infrastructure.Email;
 using Bookly.Api.Services;
 using Bookly.Api.Services.Admin;
 using Bookly.Api.Services.Availability;
+using Bookly.Api.Services.Platform;
 using Bookly.Api.Services.Booking;
 using Bookly.Api.Tenancy;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -43,6 +45,8 @@ builder.Services.AddScoped<CatalogService>();
 builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddScoped<TenantSettingsService>();
 builder.Services.AddScoped<CalendarService>();
+builder.Services.AddScoped<TenantProvisioningService>();
+builder.Services.AddOptions<PlatformOptions>().Bind(builder.Configuration.GetSection(PlatformOptions.Section));
 
 // Behind the hosting proxy (Render): trust only the last hop, so clients cannot spoof their IP
 // to dodge rate limits. Enabled with ReverseProxy__Enabled=true in production.
@@ -87,6 +91,15 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
             ?? throw new InvalidOperationException("Database:DemoPassword is required to seed demo data.");
         await DemoDataSeeder.SeedAsync(scope.ServiceProvider, password);
     }
+}
+
+if (!BuildTime.IsOpenApiGeneration)
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    await SuperAdminBootstrapper.RunAsync(
+        scope.ServiceProvider,
+        app.Services.GetRequiredService<IOptions<PlatformOptions>>().Value,
+        app.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(SuperAdminBootstrapper)));
 }
 
 app.UseStatusCodePages();

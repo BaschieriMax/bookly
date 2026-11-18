@@ -1,0 +1,57 @@
+{
+  "tenants": {
+    "title": "Attività",
+    "lead": "Le attività sulla piattaforma. Qui vedi solo dati aggregati: appuntamenti e clienti restano dell'attività.",
+    "new": "Nuova attività",
+    "empty": "Nessuna attività. Crea la prima e invita il titolare.",
+    "status": { "Active": "Attiva", "Suspended": "Sospesa" },
+    "counts": "{{staff}} operatori · {{services}} servizi",
+    "owners": "Titolari",
+    "noOwners": "Nessun titolare",
+    "pending": "Invito in attesa",
+    "resend": "Reinvia invito a {{name}}",
+    "resent": "Invito inviato di nuovo.",
+    "addOwner": "Aggiungi titolare",
+    "suspend": "Sospendi",
+    "reactivate": "Riattiva",
+    "suspendTitle": "Sospendere «{{name}}»?",
+    "suspendText": "La pagina pubblica non sarà più raggiungibile, le prenotazioni si bloccano e lo staff perde l'accesso all'area dell'attività. I dati restano conservati e puoi riattivarla quando vuoi.",
+    "suspended": "Attività sospesa.",
+    "reactivated": "Attività riattivata.",
+    "created": "Attività creata: abbiamo inviato l'invito al titolare.",
+    "ownerInvited": "Titolare aggiunto: gli abbiamo inviato un'email.",
+    "publicPage": "Apri la pagina pubblica di {{name}}",
+    "createdAt": "Creata il {{date}}",
+    "fields": {
+      "name": "Nome dell'attività",
+      "slug": "Indirizzo della pagina",
+      "slugHint": "bookly.it/b/{{slug}} — solo lettere minuscole, numeri e trattini.",
+      "timeZone": "Fuso orario",
+      "owner": "Titolare",
+      "ownerEmail": "Email del titolare",
+      "ownerFirstName": "Nome",
+      "ownerLastName": "Cognome",
+      "ownerHint": "Riceverà un link per scegliere la password (valido 7 giorni). Se ha già un account Bookly, lo usa."
+    }
+  },
+  "navigation": {
+    "title": "Navigazione",
+    "lead": "Le voci del menu laterale arrivano dal server: qui puoi nasconderle o cambiarne l'ordine per tutti gli utenti.",
+    "areas": { "Admin": "Area attività", "Platform": "Piattaforma" },
+    "enabled": "Visibile",
+    "moveUp": "Sposta su {{label}}",
+    "moveDown": "Sposta giù {{label}}",
+    "roles": "Ruoli: {{roles}}",
+    "saved": "Menu aggiornato."
+  },
+  "errors": {
+    "platform": {
+      "slug_taken": "Questo indirizzo è già usato da un'altra attività.",
+      "invalid_slug": "Indirizzo non valido: 3–40 caratteri, lettere minuscole, numeri e trattini.",
+      "already_owner": "Questa persona è già titolare dell'attività."
+    },
+    "admin": { "invalid_time_zone": "Fuso orario non valido." },
+    "tenant": { "not_found": "Attività non trovata." },
+    "load": "Impossibile caricare i dati. Riprova."
+  }
+}
