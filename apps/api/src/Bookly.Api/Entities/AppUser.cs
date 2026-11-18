@@ -13,6 +13,9 @@ public class AppUser : IdentityUser<Guid>
 
     public DateTimeOffset CreatedAt { get; set; }
 
+    /// <summary>Set when the user deleted the account: the row stays, anonymised (DEC-030).</summary>
+    public DateTimeOffset? DeletedAt { get; set; }
+
     public ICollection<TenantMembership> Memberships { get; } = [];
 }
 

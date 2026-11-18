@@ -80,6 +80,48 @@ Priorità:
 Bassa
 ```
 
+```text
+ID: TD-005
+Problema:
+Informativa privacy e termini di servizio sono bozze con campi da completare (ragione sociale,
+contatti, regioni dei fornitori, limitazioni di responsabilità) e manca l'accordo art. 28 con le
+attività.
+
+Motivo:
+I testi legali devono essere validati da un professionista (skill booking-domain, GDPR).
+
+Impatto:
+Non si può andare in produzione con clienti reali finché i testi non sono definitivi.
+
+Soluzione futura:
+Completare i campi in apps/web/src/i18n/it/legal.json, far validare i testi, preparare il DPA
+per le attività, togliere l'avviso "Bozza" (LegalPage).
+
+Priorità:
+Alta (da chiudere prima della release, Step 15)
+```
+
+```text
+ID: TD-006
+Problema:
+La conservazione non copre gli account inattivi e il cambio email non è self-service.
+
+Motivo:
+Manca il tracciamento dell'ultima attività; il cambio email richiede una doppia conferma
+(vecchio e nuovo indirizzo) non ancora implementata.
+
+Impatto:
+Account confermati ma abbandonati restano finché l'utente non li elimina; per cambiare email
+serve il supporto.
+
+Soluzione futura:
+Salvare LastActivityAt al login, avvisare dopo 23 mesi di inattività e anonimizzare a 24;
+flusso di cambio email con token su entrambi gli indirizzi.
+
+Priorità:
+Media
+```
+
 ## Revisione
 
 Il log si rivede a ogni release e nella manutenzione mensile. Un debito con priorità `Alta` non può restare aperto alla release senza una decisione esplicita di Massimo registrata nel Decision Log.

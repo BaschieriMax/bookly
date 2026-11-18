@@ -33,7 +33,7 @@ export function TextField({
         ref={ref}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy || undefined}
-        className={`min-h-11 rounded-control border bg-surface px-3 text-ink ${error ? 'border-danger' : 'border-border-strong'}`}
+        className={`min-h-11 rounded-control border bg-surface px-3 text-ink read-only:bg-subtle read-only:text-muted ${error ? 'border-danger' : 'border-border-strong'}`}
         {...props}
       />
       {hint && !error && (

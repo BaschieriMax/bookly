@@ -770,3 +770,41 @@ Nessun doppio invio anche con run concorrenti, nessun promemoria perso per un er
 Status:
 Approved (dettaglio implementativo dello Step 11)
 ```
+
+```text
+Decision:
+DEC-030 — GDPR: diritti dell'interessato, cancellazione con anonimizzazione e conservazione
+
+Date:
+2026-11-18
+
+Context:
+Step 12. La skill booking-domain chiede export, rettifica e cancellazione, con lo storico passato
+anonimizzato (serve alle attività) e un periodo di conservazione (proposta 24 mesi).
+
+Decision:
+- Accesso/portabilità: GET /api/me/export scarica un JSON con profilo, ruoli e appuntamenti presso
+  tutte le attività. Rettifica: PUT /api/me/profile (nome, cognome, telefono; l'email no, TD-006).
+- Cancellazione: POST /api/me/delete con la password (ri-autenticazione). Appuntamenti futuri
+  disdetti, note e motivi cancellati, legami staff e ruoli rimossi; la riga utente resta ma
+  anonimizzata ("Cliente eliminato", email segnaposto @deleted.invalid, niente telefono né
+  password, bloccata, security stamp rinnovato → tutte le sessioni e i link scadono). Lo storico
+  resta all'attività senza contatti. Email di conferma all'indirizzo originale. I titolari di
+  un'attività devono prima trasferirla (409).
+- Conservazione: job giornaliero POST /api/jobs/apply-retention (cron retention.yml): note e
+  motivi degli appuntamenti cancellati 24 mesi dopo l'appuntamento; account mai confermati,
+  inutilizzati, cancellati dopo 30 giorni.
+- Testi legali: informativa privacy e cookie, termini di servizio, come bozze (TD-005).
+  Solo strumenti tecnici → nessun banner cookie.
+
+Alternatives:
+Cancellare la riga utente e gli appuntamenti (l'attività perderebbe lo storico); chiave esterna
+nullable sugli appuntamenti (più modifiche al codice, nessun vantaggio per la privacy rispetto
+all'anonimizzazione della riga).
+
+Motivation:
+Diritti esercitabili in autonomia, storico utile alle attività senza dati personali.
+
+Status:
+Approved (dettaglio implementativo dello Step 12)
+```

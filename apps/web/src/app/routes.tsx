@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 import type { RouteObject } from 'react-router'
-import { PlaceholderPage } from '@/components/ui/PlaceholderPage'
 import { RedirectIfAuthenticated } from './guards/RedirectIfAuthenticated'
 import { RequireAuth } from './guards/RequireAuth'
 import { PublicLayout } from './layouts/PublicLayout'
@@ -22,6 +21,9 @@ const TenantPage = lazy(() => import('@/features/tenant/TenantPage'))
 const BookingPage = lazy(() => import('@/features/booking/BookingPage'))
 const AccountLayout = lazy(() => import('@/features/account/AccountLayout'))
 const MyAppointmentsPage = lazy(() => import('@/features/account/MyAppointmentsPage'))
+const ProfilePage = lazy(() => import('@/features/account/ProfilePage'))
+const PrivacyPage = lazy(() => import('@/features/legal/PrivacyPage'))
+const TermsPage = lazy(() => import('@/features/legal/TermsPage'))
 const CalendarPage = lazy(() => import('@/features/admin/calendar/CalendarPage'))
 const TenantsPage = lazy(() => import('@/features/platform/TenantsPage'))
 const NavigationAdminPage = lazy(() => import('@/features/platform/NavigationAdminPage'))
@@ -55,7 +57,8 @@ export const routes: RouteObject[] = [
       { path: paths.confirmEmail, element: withSuspense(<ConfirmEmailPage />) },
       { path: paths.resetPassword, element: withSuspense(<ResetPasswordPage />) },
       { path: paths.invitation, element: withSuspense(<AcceptInvitationPage />) },
-      { path: paths.privacy, element: <PlaceholderPage title="Informativa privacy" /> },
+      { path: paths.privacy, element: withSuspense(<PrivacyPage />) },
+      { path: paths.terms, element: withSuspense(<TermsPage />) },
     ],
   },
   {
@@ -73,7 +76,10 @@ export const routes: RouteObject[] = [
     children: [
       {
         element: withSuspense(<AccountLayout />),
-        children: [{ path: paths.myAppointments, element: withSuspense(<MyAppointmentsPage />) }],
+        children: [
+          { path: paths.myAppointments, element: withSuspense(<MyAppointmentsPage />) },
+          { path: paths.myProfile, element: withSuspense(<ProfilePage />) },
+        ],
       },
       {
         element: withSuspense(<AdminLayout />),
