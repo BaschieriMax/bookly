@@ -56,6 +56,19 @@ Test di integrazione: usano Testcontainers (serve Docker). Senza Docker si può 
 
 Mailpit (email in sviluppo): http://localhost:8025
 
+In Development il backend crea dati demo (attività `barberia-demo`) con questi account,
+password `bookly-demo-2026`:
+
+| Account | Ruolo |
+|---|---|
+| `admin@bookly.local` | SuperAdmin della piattaforma |
+| `titolare@bookly.local` | Owner di Barberia Demo |
+| `staff@bookly.local` | Staff di Barberia Demo |
+| `cliente@bookly.local` | Cliente |
+
+Tipi TypeScript dell'API: la build del backend aggiorna `apps/web/openapi/bookly-api.json`,
+poi `npm run gen:api` (in `apps/web`) rigenera `src/types/api.gen.ts`. La CI fallisce se non sono allineati.
+
 ## Personalizzare stili e font
 
 Colori, font e raggi stanno **solo** in `apps/web/src/styles/tokens.css` (variabili `--bk-*`).

@@ -1,3 +1,4 @@
+using Bookly.Api.Infrastructure;
 using Bookly.Api.Tenancy;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -8,8 +9,13 @@ internal static class DataServiceCollectionExtensions
 {
     public static IServiceCollection AddBooklyData(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Default")
-            ?? throw new InvalidOperationException("Connection string 'Default' is not configured.");
+        // Validated when the host starts (not at registration), so build-time tools such as the
+        // OpenAPI document generator can build the service collection without a database.
+        services.AddOptions<DatabaseOptions>()
+            .Configure(o => o.ConnectionString = configuration.GetConnectionString("Default") ?? string.Empty)
+            .ValidateDataAnnotations()
+            .ValidateOnStartUnlessBuildTime();
+        var connectionString = configuration.GetConnectionString("Default") ?? string.Empty;
 
         services.AddScoped<TenantContext>();
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
@@ -19,9 +25,11 @@ internal static class DataServiceCollectionExtensions
             npgsql => npgsql.EnableRetryOnFailure(maxRetryCount: 3)));
 
         // Keys survive container restarts: auth cookies and antiforgery tokens stay valid (DEC-005).
-        services.AddDataProtection()
-            .SetApplicationName("Bookly")
-            .PersistKeysToDbContext<AppDbContext>();
+        var dataProtection = services.AddDataProtection().SetApplicationName("Bookly");
+        if (!BuildTime.IsOpenApiGeneration)
+        {
+            dataProtection.PersistKeysToDbContext<AppDbContext>();
+        }
 
         services.AddHealthChecks()
             .AddDbContextCheck<AppDbContext>("database", tags: ["ready"]);
