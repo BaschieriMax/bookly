@@ -133,7 +133,14 @@ internal static class EmailTemplates
         footer: "Puoi disattivare questi avvisi nelle impostazioni dell'attività.");
 
     private static EmailMessage Build(
-        string to, string subject, string greeting, string paragraph, string actionLabel, string link, string footer)
+        string to,
+        string subject,
+        string greeting,
+        string paragraph,
+        string actionLabel,
+        string link,
+        string footer,
+        [System.Runtime.CompilerServices.CallerMemberName] string kind = "")
     {
         var html = HtmlEncoder.Default;
         var htmlBody = $"""
@@ -162,6 +169,6 @@ internal static class EmailTemplates
             {footer}
             """;
 
-        return new EmailMessage(to, subject, htmlBody, textBody);
+        return new EmailMessage(to, subject, htmlBody, textBody, kind);
     }
 }

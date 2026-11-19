@@ -1,0 +1,10 @@
+# Public business pages can be indexed; private areas cannot.
+User-agent: *
+Allow: /b/
+Disallow: /admin
+Disallow: /platform
+Disallow: /account
+Disallow: /api/
+Disallow: /invito
+Disallow: /conferma-email
+Disallow: /reimposta-password

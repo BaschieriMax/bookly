@@ -146,14 +146,6 @@ export function TimeGrid({
                     <button
                       type="button"
                       onClick={() => onSelect(a)}
-                      aria-label={t('calendar.appointmentLabel', {
-                        start: timeOf(a.start),
-                        end: timeOf(a.end),
-                        service: a.serviceName,
-                        customer,
-                        staff: staffName(a.staffId),
-                        status: t(`calendar.status.${a.status as AppointmentStatus}`),
-                      })}
                       className={`flex w-full flex-col justify-center overflow-hidden rounded-control border-l-4 px-2 py-0.5 text-left text-xs leading-tight shadow-sm hover:brightness-95 ${statusBlock[a.status] ?? statusBlock.Confirmed}`}
                       style={{ height: Math.max(px(end - start), 22) }}
                     >
@@ -172,6 +164,15 @@ export function TimeGrid({
                           <span className="truncate">{customer}</span>
                         </>
                       )}
+                      {/* Visible text first, details for screen readers (WCAG 2.5.3 label in name). */}
+                      <span className="sr-only">
+                        {', '}
+                        {t('calendar.appointmentDetails', {
+                          end: timeOf(a.end),
+                          staff: staffName(a.staffId),
+                          status: t(`calendar.status.${a.status as AppointmentStatus}`),
+                        })}
+                      </span>
                     </button>
                     {blocked > end && (
                       <div

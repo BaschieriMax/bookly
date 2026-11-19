@@ -220,7 +220,6 @@
     "timeOff": "Assenza",
     "closed": "Chiuso",
     "now": "Ora",
-    "appointmentLabel": "{{start}}–{{end}}, {{service}}, {{customer}}, {{staff}}, {{status}}",
     "status": {
       "Confirmed": "Confermato",
       "Completed": "Completato",
@@ -260,6 +259,7 @@
       "confirm": "Sì, annulla",
       "done": "Appuntamento annullato."
     },
-    "marked": "Stato aggiornato."
+    "marked": "Stato aggiornato.",
+    "appointmentDetails": "fino alle {{end}}, {{staff}}, {{status}}"
   }
 }

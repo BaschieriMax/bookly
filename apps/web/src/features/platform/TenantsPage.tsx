@@ -338,10 +338,13 @@ export default function TenantsPage() {
                     <Link
                       to={`/b/${tenant.slug}`}
                       target="_blank"
-                      aria-label={t('tenants.publicPage', { name: tenant.name })}
                       className="inline-flex items-center gap-1.5 self-start text-sm font-semibold text-primary-text"
                     >
                       /b/{tenant.slug}
+                      <span className="sr-only">
+                        {' '}
+                        ({t('tenants.publicPage', { name: tenant.name })})
+                      </span>
                       <ExternalLink aria-hidden="true" className="size-3.5" />
                     </Link>
                     <p className="text-sm text-muted">

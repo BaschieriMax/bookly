@@ -69,6 +69,21 @@ password `bookly-demo-2026`:
 Tipi TypeScript dell'API: la build del backend aggiorna `apps/web/openapi/bookly-api.json`,
 poi `npm run gen:api` (in `apps/web`) rigenera `src/types/api.gen.ts`. La CI fallisce se non sono allineati.
 
+## Test end-to-end (Playwright)
+
+Girano contro lo stack reale: l'API serve la build di produzione della SPA (stessa origine, CSP
+attiva) su un database con i dati demo. Controllano il flusso di prenotazione, l'accessibilità
+(axe, WCAG 2.1 AA) e che non ci siano errori in console o violazioni CSP, su mobile e desktop.
+
+```bash
+cd apps/web && npm run build
+mkdir -p ../api/src/Bookly.Api/wwwroot && cp -r dist/. ../api/src/Bookly.Api/wwwroot/
+cd ../api/src/Bookly.Api && Auth__LoginPermitPerMinute=1000 dotnet run   # database con i dati demo
+cd apps/web && npx playwright install chromium && npm run e2e
+```
+
+In CI li esegue il job `E2E` (report e tracce come artifact se falliscono).
+
 ## Primo super-admin (produzione)
 
 1. Registrati sul sito con la tua email e confermala dal link ricevuto.

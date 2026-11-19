@@ -39,6 +39,6 @@ internal sealed class SmtpEmailSender(IOptions<EmailOptions> options, ILogger<Sm
         await client.DisconnectAsync(quit: true, timeout.Token);
 
         // Never log addresses or bodies: they contain personal data and tokens.
-        logger.LogInformation("Email sent: {Subject}", message.Subject);
+        logger.LogInformation("Email {EmailKind} sent", message.Kind); // no subject or recipient: they carry personal data
     }
 }

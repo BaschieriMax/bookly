@@ -1,10 +1,12 @@
 using System.Text.Json;
+using Bookly.Api.Auth;
 using Bookly.Api.DTOs.Account;
 using Bookly.Api.Entities;
 using Bookly.Api.Services.Account;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Bookly.Api.Controllers;
 
@@ -40,6 +42,7 @@ public sealed class MeController(
 
     /// <summary>All personal data as a downloadable JSON file (GDPR art. 15 and 20).</summary>
     [HttpGet("export")]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     [Produces("application/json")]
     [ProducesResponseType<DataExportDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Export(CancellationToken cancellationToken)
@@ -58,6 +61,7 @@ public sealed class MeController(
 
     /// <summary>Deletes (anonymises) the account after re-entering the password, then signs out.</summary>
     [HttpPost("delete")]
+    [EnableRateLimiting(RateLimitPolicies.Auth)] // the password check must not become an oracle
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]

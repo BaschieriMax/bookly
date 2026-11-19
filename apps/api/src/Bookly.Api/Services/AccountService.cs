@@ -184,7 +184,7 @@ public sealed class AccountService(
         }
         catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
-            logger.LogError(exception, "Sending email '{Subject}' failed", message.Subject);
+            logger.LogError(exception, "Sending email {EmailKind} failed", message.Kind);
         }
     }
 

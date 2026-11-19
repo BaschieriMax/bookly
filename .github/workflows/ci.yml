@@ -63,6 +63,73 @@ jobs:
           dotnet list Bookly.slnx package --vulnerable --include-transitive 2>&1 | tee vulnerable.txt
           if grep -q -E "Critical|High" vulnerable.txt; then exit 1; fi
 
+  e2e:
+    name: E2E (Playwright, a11y, CSP)
+    runs-on: ubuntu-latest
+    needs: [web, api]
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: bookly
+          POSTGRES_PASSWORD: bookly_ci
+          POSTGRES_DB: bookly
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U bookly" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      # Same origin as production: the API serves the production build of the SPA (DEC-010).
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://localhost:5080
+      # Throwaway CI database: the connection string is composed in the step that starts the API.
+      E2E_DB_PASSWORD: bookly_ci
+      Auth__LoginPermitPerMinute: '1000'
+      Email__Host: smtp.invalid
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the SPA into the API
+        working-directory: apps/web
+        run: |
+          npm ci
+          npm run build
+          mkdir -p ../api/src/Bookly.Api/wwwroot
+          cp -r dist/. ../api/src/Bookly.Api/wwwroot/
+          find ../api/src/Bookly.Api/wwwroot -name '*.map' -delete
+      - name: Start the API on the demo data
+        working-directory: apps/api/src/Bookly.Api
+        run: |
+          dotnet build -c Release -p:OpenApiGenerateDocuments=false
+          export ConnectionStrings__Default="Host=localhost;Database=bookly;Username=bookly;Password=$E2E_DB_PASSWORD"
+          nohup dotnet run -c Release --no-build --no-launch-profile > "$RUNNER_TEMP/api.log" 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://localhost:5080/api/health/ready && exit 0; sleep 2; done
+          cat "$RUNNER_TEMP/api.log"; exit 1
+      - name: Install Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Playwright
+        working-directory: apps/web
+        run: npx playwright test
+      - name: API log
+        if: failure()
+        run: cat "$RUNNER_TEMP/api.log"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          retention-days: 7
+
   image:
     name: Docker image
     runs-on: ubuntu-latest
@@ -92,6 +159,8 @@ jobs:
           curl -fsS http://localhost:8080/ | grep -q '<div id="root">'
           curl -fsS http://localhost:8080/admin | grep -q '<div id="root">'
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/nope)" = "404"
+          curl -fsSI http://localhost:8080/ | grep -qi "content-security-policy: default-src 'self'"
+          test -z "$(docker exec bookly find /app/wwwroot -name '*.map')"
       - name: Container logs
         if: always()
         run: docker logs bookly || true

@@ -1,13 +1,17 @@
+import { useEffect } from 'react'
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router'
+import { reportError } from '@/lib/monitoring'
 
 /** Error element used by every layout route. */
 export function RouteError() {
   const error = useRouteError()
   const isNotFound = isRouteErrorResponse(error) && error.status === 404
 
-  if (import.meta.env.DEV && !isNotFound) {
-    console.error(error)
-  }
+  useEffect(() => {
+    if (isNotFound) return
+    if (import.meta.env.DEV) console.error(error)
+    reportError(error)
+  }, [error, isNotFound])
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
