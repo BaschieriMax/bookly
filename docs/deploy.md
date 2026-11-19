@@ -31,7 +31,7 @@ push su main ──► CI (web, api, e2e, image, codeql) ──► verde?
 |---|---|---|
 | Render free | 750 ore/mese di istanza, pausa dopo 15 min senza traffico, 512 MB RAM, 500 minuti di build/mese | Il cron dei promemoria chiama l'app ogni 15 minuti, quindi resta quasi sempre sveglia (~744 ore in un mese da 31 giorni): **un solo servizio free** per account. Ogni deploy costa 5-8 minuti di build |
 | Neon free | 100 CU-ore/mese, 1 GB, scale-to-zero dopo 5 min fisso, restore istantaneo entro 6 ore | Con compute fisso a 0,25 CU e i promemoria ogni 15 minuti si stimano 60-80 CU-ore/mese. Il restore copre solo le ultime 6 ore |
-| Resend free | 3.000 email/mese, 100/giorno, 1 dominio | Senza dominio verificato invia **solo** all'email dell'account Resend |
+| Resend free | 3.000 email/mese, 100/giorno, 1 dominio | Senza dominio verificato invia **solo** all'email dell'account Resend. Render free blocca le porte SMTP standard: si usa la **2465** |
 
 Verifica i limiti attuali sui siti dei provider prima di andare live con clienti veri.
 
@@ -223,4 +223,5 @@ rebuild.
 | App: `42501 permission denied for table/schema` | Default privileges mancanti (SQL eseguito dopo le migrazioni o con un altro ruolo) | Riesegui il blocco SQL della sezione 1 e in più: `GRANT USAGE ON SCHEMA ui TO bookly_app; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public, ui TO bookly_app; GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public, ui TO bookly_app;` |
 | Deploy: versione non live dopo 20 minuti | Build fallita o minuti di build finiti | Log del deploy su Render |
 | Email non arrivano | Dominio non verificato: Resend consegna solo all'email dell'account | Usa quell'indirizzo o verifica il dominio (sezione 7) |
+| Email non partono, nei log timeout verso `smtp.resend.com` | Render free blocca le porte SMTP 25, 465 e 587 | `Email__Port=2465` (TLS implicito, già nel Blueprint) |
 | Prima pagina lenta (30-60 s) | Istanza Render in pausa | Normale sul piano free (TD-001); il cron dei promemoria la tiene sveglia |
