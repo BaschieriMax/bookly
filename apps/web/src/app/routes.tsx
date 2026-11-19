@@ -32,6 +32,7 @@ const StaffPage = lazy(() => import('@/features/admin/StaffPage'))
 const SchedulePage = lazy(() => import('@/features/admin/SchedulePage'))
 const BrandPage = lazy(() => import('@/features/admin/BrandPage'))
 const SettingsPage = lazy(() => import('@/features/admin/SettingsPage'))
+const OwnerOnly = lazy(() => import('@/features/admin/OwnerOnly'))
 // Admin and platform shells are only downloaded by signed-in staff, never by customers.
 const AdminLayout = lazy(() =>
   import('./layouts/AdminLayout').then((m) => ({ default: m.AdminLayout })),
@@ -85,11 +86,16 @@ export const routes: RouteObject[] = [
         element: withSuspense(<AdminLayout />),
         children: [
           { path: paths.admin.calendar, element: withSuspense(<CalendarPage />) },
-          { path: paths.admin.services, element: withSuspense(<ServicesPage />) },
-          { path: paths.admin.staff, element: withSuspense(<StaffPage />) },
           { path: paths.admin.schedule, element: withSuspense(<SchedulePage />) },
-          { path: paths.admin.brand, element: withSuspense(<BrandPage />) },
-          { path: paths.admin.settings, element: withSuspense(<SettingsPage />) },
+          {
+            element: withSuspense(<OwnerOnly />),
+            children: [
+              { path: paths.admin.services, element: withSuspense(<ServicesPage />) },
+              { path: paths.admin.staff, element: withSuspense(<StaffPage />) },
+              { path: paths.admin.brand, element: withSuspense(<BrandPage />) },
+              { path: paths.admin.settings, element: withSuspense(<SettingsPage />) },
+            ],
+          },
         ],
       },
       {

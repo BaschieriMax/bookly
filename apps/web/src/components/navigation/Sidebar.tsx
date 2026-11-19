@@ -1,7 +1,8 @@
-import { CalendarCheck, ExternalLink, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, NavLink } from 'react-router'
+import { NavLink } from 'react-router'
+import { BooklyLogo } from '@/components/layout/BooklyLogo'
 import { iconRegistry } from './iconRegistry'
 import { useNavigation, type NavigationArea } from './navigationApi'
 import { translateLabel, usableItems } from './navigationItems'
@@ -9,26 +10,20 @@ import { translateLabel, usableItems } from './navigationItems'
 interface SidebarProps {
   area: NavigationArea
   header?: ReactNode
+  /** Extra links above logout (public page, other areas). */
+  footer?: ReactNode
   onNavigate?: () => void
   onLogout: () => void
 }
 
-export function Sidebar({ area, header, onNavigate, onLogout }: SidebarProps) {
+export function Sidebar({ area, header, footer, onNavigate, onLogout }: SidebarProps) {
   const { t } = useTranslation(['common', 'nav'])
   const { data, isPending, isError } = useNavigation(area)
   const items = usableItems(data ?? [])
 
   return (
     <div className="flex h-full flex-col gap-4 px-3 py-5">
-      <Link to="/" className="flex items-center gap-2 px-2" onClick={onNavigate}>
-        <span
-          aria-hidden="true"
-          className="flex size-7 items-center justify-center rounded-control bg-primary text-primary-fg"
-        >
-          <CalendarCheck className="size-4" />
-        </span>
-        <span className="font-heading text-xl font-bold tracking-tight">bookly</span>
-      </Link>
+      <BooklyLogo className="px-2" onClick={onNavigate} />
 
       {header}
 
@@ -62,16 +57,7 @@ export function Sidebar({ area, header, onNavigate, onLogout }: SidebarProps) {
       </nav>
 
       <div className="mt-auto flex flex-col gap-1">
-        {area === 'admin' && (
-          <Link
-            to="/"
-            onClick={onNavigate}
-            className="flex min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-primary hover:bg-subtle"
-          >
-            <ExternalLink aria-hidden="true" className="size-4" />
-            {t('nav:publicPage')}
-          </Link>
-        )}
+        {footer}
         <button
           type="button"
           onClick={onLogout}
