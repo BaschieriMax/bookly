@@ -159,6 +159,9 @@ app.UseRateLimiter();
 app.MapHealthChecks("/api/health", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/api/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
 
+// Deployed commit, polled by the deploy workflow (DEC-032).
+app.MapBooklyVersion();
+
 app.MapControllers();
 
 // Unknown API routes must return a JSON 404, never the SPA shell.
