@@ -30,8 +30,8 @@ push su main ──► CI (web, api, e2e, image, codeql) ──► verde?
 
 | Servizio | Limite | Effetto su Bookly |
 |---|---|---|
-| Render free | 750 ore/mese di istanza, pausa dopo 15 min senza traffico, 512 MB RAM, 500 minuti di build/mese | cron-job.org chiama l'app ogni 15 minuti, quindi resta quasi sempre sveglia (~744 ore in un mese da 31 giorni): **un solo servizio free** per account. Ogni deploy costa 5-8 minuti di build |
-| Neon free | 100 CU-ore/mese, 1 GB, scale-to-zero dopo 5 min fisso, restore istantaneo entro 6 ore | Con compute fisso a 0,25 CU e i promemoria ogni 15 minuti si stimano 60-80 CU-ore/mese. Il restore copre solo le ultime 6 ore |
+| Render free | 750 ore/mese di istanza, pausa dopo 15 min senza traffico, 512 MB RAM, 500 minuti di build/mese | cron-job.org chiama l'app ogni 15 minuti dalle 7 alle 22, quindi di giorno resta sveglia e di notte va in pausa (~470 ore al mese). Ogni deploy costa 5-8 minuti di build |
+| Neon free | 100 CU-ore/mese, 1 GB, scale-to-zero dopo 5 min fisso, restore istantaneo entro 6 ore | Con compute fisso a 0,25 CU e i promemoria ogni 15 minuti solo di giorno si stimano 40-60 CU-ore/mese. Il restore copre solo le ultime 6 ore |
 | Resend free | 3.000 email/mese, 100/giorno, 1 dominio | Senza dominio verificato invia **solo** all'email dell'account Resend. Render free blocca le porte SMTP standard: si usa la **2465** |
 
 Verifica i limiti attuali sui siti dei provider prima di andare live con clienti veri.
@@ -133,6 +133,8 @@ Verifica i limiti attuali sui siti dei provider prima di andare live con clienti
    della versione e smoke test. Deve finire in verde.
 5. **Actions → Reminders → Run workflow**: deve rispondere con un JSON e finire in verde.
 
+Da qui in poi ogni merge su `main` con CI verde va in produzione da solo.
+
 ## 6. cron-job.org — promemoria e retention
 
 Il cron di GitHub Actions è irregolare (nelle prime 18 ore è partito 2 volte invece di ~70, TD-002):
@@ -145,7 +147,8 @@ idempotenti, quindi due chiamate ravvicinate non mandano email doppie.
 2. **Cronjobs → Create cronjob**, scheda **Common**:
    - Title: `Bookly promemoria`
    - URL: `https://<servizio>.onrender.com/api/jobs/send-reminders`
-   - Execution schedule: **Every 15 minutes**
+   - Execution schedule: **Custom** — minuti `0, 15, 30, 45`, ore **dalle 7 alle 21**, tutti i giorni
+     (DEC-035: ultima chiamata alle 21:45, di notte nessuna)
 3. Scheda **Advanced**:
    - Request method: **POST**
    - Headers → **Add**: Key `X-Job-Secret`, Value = `Jobs__Secret` di Render (lo stesso di
@@ -156,13 +159,17 @@ idempotenti, quindi due chiamate ravvicinate non mandano email doppie.
 5. **Test run**: deve rispondere **200** con un JSON tipo `{"sent":0,"failed":0}`. **404** = segreto
    non configurato su Render; **401** = header o valore sbagliato. Poi **Create**.
 6. Ripeti per la retention: Title `Bookly retention`, URL `…/api/jobs/apply-retention`, POST, stesso
-   header, schedule **Every day** alle **03:43**.
+   header, schedule **Every day** alle **07:20**: i promemoria hanno già svegliato l'app.
 
-Con l'app in pausa (TD-001) la prima chiamata può superare il timeout di 30 secondi di
-cron-job.org: la richiesta la sveglia comunque e quella dopo riesce. Fallimenti isolati sono
-normali, più di tre di fila no (vedi problemi frequenti).
+**Perché questi orari (DEC-035).** Il promemoria non ha un orario suo: ogni chiamata invia quelli
+degli appuntamenti che iniziano entro 24 ore, quindi ogni 15 minuti significa un promemoria tra 24 ore e
+23 ore e 45 minuti prima. Gli appuntamenti sono in orario di negozio e lo sono anche i loro
+promemoria: di notte le chiamate non servirebbero, sveglierebbero solo Neon (CU-ore) e Render (ore
+d'istanza). Un appuntamento che inizia dopo le 21:45 riceve il promemoria alle 7:00 del giorno prima.
 
-Da qui in poi ogni merge su `main` con CI verde va in produzione da solo.
+Alla prima chiamata del mattino l'app può essere in pausa (TD-001) e superare il timeout di 30 secondi
+di cron-job.org: la richiesta la sveglia comunque e quella dopo riesce. Fallimenti isolati alle 7:00
+sono normali, più di tre di fila no (vedi problemi frequenti).
 
 ## 7. Primo super-admin e collaudo in produzione
 
@@ -256,4 +263,4 @@ rebuild.
 | cron-job.org: fallimenti di fila | 401: segreto diverso da `Jobs__Secret`; 404: segreto non impostato su Render; timeout: app in avvio | Correggi l'header o la variabile su Render; i timeout isolati si risolvono alla chiamata dopo |
 | Email non arrivano | Dominio non verificato: Resend consegna solo all'email dell'account | Usa quell'indirizzo o verifica il dominio (sezione 8) |
 | Email non partono, nei log timeout verso `smtp.resend.com` | Render free blocca le porte SMTP 25, 465 e 587 | `Email__Port=2465` (TLS implicito, già nel Blueprint) |
-| Prima pagina lenta (30-60 s) | Istanza Render in pausa | Normale sul piano free (TD-001); il cron dei promemoria la tiene sveglia: controlla che i job di cron-job.org siano attivi e verdi |
+| Prima pagina lenta (30-60 s) | Istanza Render in pausa | Normale sul piano free (TD-001): di giorno il cron dei promemoria la tiene sveglia, di notte no. Se succede di giorno, controlla che i job di cron-job.org siano attivi e verdi |

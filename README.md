@@ -104,7 +104,7 @@ In CI li esegue il job `E2E` (report e tracce come artifact se falliscono).
 
 ## Promemoria email
 
-Ogni 15 minuti **cron-job.org** chiama `POST /api/jobs/send-reminders` (segreto nell'header
+Ogni 15 minuti dalle 7 alle 22 **cron-job.org** chiama `POST /api/jobs/send-reminders` (segreto nell'header
 `X-Job-Secret`); il workflow `.github/workflows/reminders.yml` fa lo stesso come riserva (DEC-034,
 configurazione in `docs/deploy.md` §6). Il promemoria parte circa 24 ore prima, una sola volta, e non
 viene inviato per prenotazioni fatte a meno di 12 ore dall'appuntamento. Per attivarlo:
