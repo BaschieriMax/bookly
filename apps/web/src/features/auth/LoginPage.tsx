@@ -94,7 +94,10 @@ export default function LoginPage() {
       </form>
 
       <div className="flex flex-col gap-2 text-sm">
-        <Link to="/password-dimenticata" className="font-semibold text-primary">
+        <Link
+          to="/password-dimenticata"
+          className="inline-flex min-h-11 items-center self-start font-semibold text-primary"
+        >
           {t('forgotPassword')}
         </Link>
         <p className="text-muted">

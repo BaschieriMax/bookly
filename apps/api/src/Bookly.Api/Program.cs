@@ -5,6 +5,7 @@ using Bookly.Api.Data;
 using Bookly.Api.Infrastructure;
 using Bookly.Api.Infrastructure.Email;
 using Bookly.Api.Services;
+using Bookly.Api.Infrastructure.Http;
 using Bookly.Api.Infrastructure.Monitoring;
 using Bookly.Api.Infrastructure.Security;
 using Bookly.Api.Infrastructure.Seo;
@@ -99,6 +100,12 @@ if (behindProxy)
 {
     app.UseForwardedHeaders();
 }
+else if (!app.Environment.IsDevelopment() && !BuildTime.IsOpenApiGeneration)
+{
+    // Behind a TLS-terminating proxy (Render) requests look like plain HTTP without this, and the
+    // Secure-only auth/antiforgery cookies fail: see the deploy checklist in README (QA finding F4).
+    app.Logger.LogWarning("ReverseProxy:Enabled is false outside Development: cookies require HTTPS as seen by the app");
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -136,6 +143,8 @@ if (!BuildTime.IsOpenApiGeneration)
 app.UseBooklySecurityHeaders(
     app.Services.GetRequiredService<IOptions<SecurityOptions>>().Value,
     app.Environment.IsDevelopment());
+
+app.UseBooklyCacheHeaders();
 
 app.UseStatusCodePages();
 

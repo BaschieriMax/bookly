@@ -37,7 +37,7 @@ export default function TenantPage() {
               <Phone aria-hidden="true" className="size-[18px] text-primary-text" />
               <a
                 href={`tel:${tenant.phone.replaceAll(' ', '')}`}
-                className="underline-offset-2 hover:underline"
+                className="inline-flex min-h-11 items-center underline-offset-2 hover:underline"
               >
                 {tenant.phone}
               </a>
@@ -88,10 +88,10 @@ export default function TenantPage() {
       <footer className="mt-auto flex flex-col gap-1.5 border-t border-border px-5 pt-5 pb-28 text-[13px] text-muted sm:px-8">
         <span>{t('poweredBy')}</span>
         <span className="flex flex-wrap gap-x-4">
-          <Link to={paths.privacy} className="underline">
+          <Link to={paths.privacy} className="inline-flex min-h-11 items-center underline">
             {t('privacy')}
           </Link>
-          <Link to={paths.terms} className="underline">
+          <Link to={paths.terms} className="inline-flex min-h-11 items-center underline">
             {t('legal:footer.terms')}
           </Link>
         </span>

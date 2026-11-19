@@ -23,3 +23,16 @@ test('business pages carry their own title and Open Graph tags', async ({ reques
   await page.goto(`/b/${demo.slug}`)
   await expect(page.getByRole('link', { name: 'Barberia Demo' })).toBeVisible()
 })
+
+test('hashed assets are cached forever, the HTML shell is always revalidated', async ({
+  request,
+}) => {
+  const shell = await request.get('/')
+  expect(shell.headers()['cache-control']).toBe('no-cache')
+  const script = /<script type="module"[^>]*src="(\/assets\/[^"]+\.js)"/.exec(
+    await shell.text(),
+  )?.[1]
+  expect(script).toBeDefined()
+  const asset = await request.get(script!)
+  expect(asset.headers()['cache-control']).toBe('public, max-age=31536000, immutable')
+})

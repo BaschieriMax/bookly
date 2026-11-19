@@ -69,7 +69,7 @@ function OptionGroup<T extends string>({
 }) {
   const name = useId()
   return (
-    <fieldset className="flex flex-col gap-2">
+    <fieldset className="flex min-w-0 flex-col gap-2">
       <legend className="mb-1 text-sm font-semibold">{legend}</legend>
       <div className="grid auto-cols-fr grid-flow-col gap-2">
         {options.map((option) => (
@@ -120,7 +120,7 @@ function ColorPicker({
   }
 
   return (
-    <fieldset className="flex flex-col gap-3">
+    <fieldset className="flex min-w-0 flex-col gap-3">
       <legend className="mb-1 text-sm font-semibold">{t('brand.color')}</legend>
       <div className="flex flex-wrap gap-2">
         <button

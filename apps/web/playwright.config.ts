@@ -20,6 +20,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
+  // Chromium runs everywhere (locally PW_CHROMIUM_PATH can point to an installed build);
+  // Firefox and Safari's engine (WebKit, on an iPhone profile) run in CI.
   projects: [
     {
       name: 'mobile',
@@ -35,5 +37,7 @@ export default defineConfig({
         launchOptions: { executablePath: process.env.PW_CHROMIUM_PATH || undefined },
       },
     },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'iphone-webkit', use: { ...devices['iPhone 14'] } },
   ],
 })
