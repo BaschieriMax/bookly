@@ -338,7 +338,7 @@ export default function TenantsPage() {
                     <Link
                       to={`/b/${tenant.slug}`}
                       target="_blank"
-                      className="inline-flex items-center gap-1.5 self-start text-sm font-semibold text-primary-text"
+                      className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-semibold text-primary-text"
                     >
                       /b/{tenant.slug}
                       <span className="sr-only">

@@ -1,6 +1,8 @@
 import { ShieldAlert, TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Button } from '@/components/ui/Button'
 import { PageSpinner } from '@/components/ui/PageSpinner'
 import { isApiError } from '@/services/apiClient'
 
@@ -30,18 +32,36 @@ interface QueryStateProps {
 
 /** Spinner while loading, an inline message on 403 or other errors, otherwise the content. */
 export function QueryState({ isPending, error, children }: QueryStateProps) {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
+  const queryClient = useQueryClient()
 
   if (error) {
     const forbidden = isApiError(error, 403)
+    const offline = isApiError(error, 0)
     const Icon = forbidden ? ShieldAlert : TriangleAlert
     return (
       <div
         role="alert"
-        className="flex items-center gap-3 rounded-card border border-border bg-surface p-6 text-muted"
+        className="flex flex-wrap items-center gap-3 rounded-card border border-border bg-surface p-6 text-muted"
       >
         <Icon aria-hidden="true" className="size-5 shrink-0" />
-        <p>{forbidden ? t('errors.forbidden') : t('errors.load')}</p>
+        <p className="flex-1">
+          {forbidden
+            ? t('errors.forbidden')
+            : offline
+              ? t('common:errors.network')
+              : t('errors.load')}
+        </p>
+        {!forbidden && (
+          <Button
+            variant="secondary"
+            onClick={() =>
+              void queryClient.refetchQueries({ predicate: (q) => q.state.status === 'error' })
+            }
+          >
+            {t('common:retry')}
+          </Button>
+        )}
       </div>
     )
   }
