@@ -30,7 +30,7 @@ push su main ──► CI (web, api, e2e, image, codeql) ──► verde?
 | Servizio | Limite | Effetto su Bookly |
 |---|---|---|
 | Render free | 750 ore/mese di istanza, pausa dopo 15 min senza traffico, 512 MB RAM, 500 minuti di build/mese | Il cron dei promemoria chiama l'app ogni 15 minuti, quindi resta quasi sempre sveglia (~744 ore in un mese da 31 giorni): **un solo servizio free** per account. Ogni deploy costa 5-8 minuti di build |
-| Neon free | 100 CU-ore/mese, 0,5 GB, scale-to-zero dopo 5 min fisso, restore istantaneo entro 6 ore | Con compute fisso a 0,25 CU e i promemoria ogni 15 minuti si stimano 60-80 CU-ore/mese. Il restore copre solo le ultime 6 ore |
+| Neon free | 100 CU-ore/mese, 1 GB, scale-to-zero dopo 5 min fisso, restore istantaneo entro 6 ore | Con compute fisso a 0,25 CU e i promemoria ogni 15 minuti si stimano 60-80 CU-ore/mese. Il restore copre solo le ultime 6 ore |
 | Resend free | 3.000 email/mese, 100/giorno, 1 dominio | Senza dominio verificato invia **solo** all'email dell'account Resend |
 
 Verifica i limiti attuali sui siti dei provider prima di andare live con clienti veri.
@@ -62,13 +62,14 @@ Verifica i limiti attuali sui siti dei provider prima di andare live con clienti
    Se il ruolo owner del progetto non si chiama `neondb_owner`, usa il nome che vedi in
    **Roles**. Questo passaggio va fatto **prima** delle migrazioni.
 5. In **Connect** (dashboard del progetto) disattiva **Connection pooling** e copia host,
-   database e utente owner. Le connection string vanno in formato Npgsql, non in formato URL
-   `postgresql://`:
+   database e utente owner (menu **Role**: `neondb_owner`). Le connection string vanno in formato
+   Npgsql, non in formato URL `postgresql://` (`sslmode=require` → `SSL Mode=VerifyFull`, più
+   severo; `channel_binding=require` → `Channel Binding=Require`):
 
    | Uso | Dove va | Valore |
    |---|---|---|
-   | Migrazioni (owner) | GitHub, secret `DATABASE_MIGRATION_CONNECTION` | `Host=<ep-xxx>.eu-central-1.aws.neon.tech;Database=neondb;Username=neondb_owner;Password=<PASSWORD_OWNER>;SSL Mode=VerifyFull` |
-   | App (runtime) | Render, `ConnectionStrings__Default` | `Host=<ep-xxx>.eu-central-1.aws.neon.tech;Database=neondb;Username=bookly_app;Password=<PASSWORD_APP>;SSL Mode=VerifyFull;Maximum Pool Size=20;Connection Idle Lifetime=60` |
+   | Migrazioni (owner) | GitHub, secret `DATABASE_MIGRATION_CONNECTION` | `Host=<ep-xxx>.eu-central-1.aws.neon.tech;Database=neondb;Username=neondb_owner;Password=<PASSWORD_OWNER>;SSL Mode=VerifyFull;Channel Binding=Require` |
+   | App (runtime) | Render, `ConnectionStrings__Default` | `Host=<ep-xxx>.eu-central-1.aws.neon.tech;Database=neondb;Username=bookly_app;Password=<PASSWORD_APP>;SSL Mode=VerifyFull;Channel Binding=Require;Maximum Pool Size=20;Connection Idle Lifetime=60` |
 
    - Endpoint **diretto** (senza `-pooler` nell'host): una sola istanza dell'app non ha bisogno del
      pooler di Neon, e le migrazioni non devono passarci.
