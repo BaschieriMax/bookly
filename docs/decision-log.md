@@ -897,7 +897,7 @@ Il codice nuovo va live solo dopo test verdi e schema aggiornato, il workflow co
 proprio quel commit a rispondere, e un'eventuale SQL injection non può alterare lo schema.
 
 Status:
-Proposed (in attesa di conferma di Massimo con la PR dello Step 15)
+Approved (PR #24 unita da Massimo, 19/11/2026)
 ```
 
 ---
@@ -925,5 +925,38 @@ Motivation:
 Risolve con una sola variabile, mantiene l'invio via SMTP indipendente dal provider.
 
 Status:
-Proposed (correzione necessaria per il funzionamento in produzione, in attesa di conferma)
+Approved (PR #26 unita da Massimo, 19/11/2026)
+```
+
+---
+
+```text
+Decision:
+DEC-034 — cron-job.org come pianificatore di promemoria e retention
+
+Date:
+2026-11-19
+
+Context:
+In produzione il cron di GitHub Actions ogni 15 minuti è partito 2 volte in 18 ore (TD-002):
+promemoria in ritardo o persi, e l'istanza Render free non resta sveglia.
+
+Decision:
+cron-job.org (gratuito) chiama POST /api/jobs/send-reminders ogni 15 minuti e
+/api/jobs/apply-retention ogni giorno, con l'header X-Job-Secret e le notifiche dei fallimenti
+attive. I workflow GitHub restano come riserva e per l'avvio manuale: gli endpoint sono
+idempotenti (claim con UPDATE condizionale), quindi due pianificatori non producono doppioni.
+Nessuna modifica al codice.
+
+Alternatives:
+Solo GitHub Actions (irregolare); BackgroundService nell'app (non gira mentre Render free è in
+pausa, DEC-012); piano Render a pagamento con BackgroundService (costo fisso).
+
+Motivation:
+Puntualità dei promemoria e istanza sveglia a costo zero. Rischio accettato: il segreto dei job
+è custodito da un terzo; può solo avviare job idempotenti, l'account ha la verifica in due
+passaggi e il segreto si ruota come gli altri (docs/deploy.md §9).
+
+Status:
+Approved (Massimo, 19/11/2026)
 ```
