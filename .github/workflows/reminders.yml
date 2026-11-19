@@ -12,7 +12,8 @@ name: Reminders
 on:
   schedule:
     # Off the hour: scheduled runs at :00 are the most delayed on GitHub.
-    - cron: '7,22,37,52 * * * *'
+    # 05-20 UTC = 06:07-21:52 in winter, 07:07-22:52 in summer (Europe/Rome): no calls at night (DEC-035).
+    - cron: '7,22,37,52 5-20 * * *'
   workflow_dispatch:
 
 permissions: {}

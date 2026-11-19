@@ -5,7 +5,7 @@ name: Retention
 
 on:
   schedule:
-    - cron: '43 2 * * *' # 02:43 UTC, off-peak
+    - cron: '20 6 * * *' # 06:20 UTC: after the morning reminders woke the app (DEC-035)
   workflow_dispatch:
 
 permissions: {}

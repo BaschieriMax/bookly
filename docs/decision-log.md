@@ -960,3 +960,37 @@ passaggi e il segreto si ruota come gli altri (docs/deploy.md §9).
 Status:
 Approved (Massimo, 19/11/2026)
 ```
+
+---
+
+```text
+Decision:
+DEC-035 — Promemoria solo in orario diurno, retention al mattino
+
+Date:
+2026-11-19
+
+Context:
+Con DEC-034 cron-job.org chiamava i promemoria ogni 15 minuti anche di notte. Ogni chiamata
+sveglia Neon per 5 minuti (CU-ore gratuite) e tiene accesa l'istanza Render, ma gli appuntamenti,
+e quindi i loro promemoria a 24 ore, cadono in orario di negozio. La retention alle 03:43 trovava
+l'app in pausa e rischiava il timeout di 30 secondi di cron-job.org.
+
+Decision:
+- Promemoria: minuti 0, 15, 30, 45 dalle 7 alle 21 (Europe/Rome), ultima chiamata 21:45.
+  Precisione invariata di giorno (tra 24 h e 23 h 45 min prima); un appuntamento dopo le 21:45
+  riceve il promemoria alle 7:00 del giorno prima.
+- Retention: ogni giorno alle 07:20, quando i promemoria hanno già svegliato l'app.
+- Workflow GitHub di riserva allineati (05-20 UTC; retention 06:20 UTC).
+
+Alternatives:
+Ogni 15 minuti h24 (spreco di notte); ogni ora (promemoria meno precisi e Render in pausa di giorno,
+quindi attese per i clienti).
+
+Motivation:
+Circa il 35% di CU-ore Neon e metà delle ore Render in meno, senza perdere puntualità di giorno.
+Costo accettato: di notte il primo visitatore aspetta il risveglio dell'app (TD-001).
+
+Status:
+Approved (Massimo, 19/11/2026)
+```
