@@ -67,7 +67,7 @@ jobs:
     name: E2E (Playwright, a11y, CSP)
     runs-on: ubuntu-latest
     needs: [web, api]
-    timeout-minutes: 20
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:17-alpine
@@ -112,9 +112,9 @@ jobs:
           nohup dotnet run -c Release --no-build --no-launch-profile > "$RUNNER_TEMP/api.log" 2>&1 &
           for i in $(seq 1 60); do curl -fsS http://localhost:5080/api/health/ready && exit 0; sleep 2; done
           cat "$RUNNER_TEMP/api.log"; exit 1
-      - name: Install Chromium
+      - name: Install browsers (Chromium, Firefox, WebKit)
         working-directory: apps/web
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium firefox webkit
       - name: Playwright
         working-directory: apps/web
         run: npx playwright test
@@ -161,6 +161,9 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/nope)" = "404"
           curl -fsSI http://localhost:8080/ | grep -qi "content-security-policy: default-src 'self'"
           test -z "$(docker exec bookly find /app/wwwroot -name '*.map')"
+          ASSET=$(curl -fsS http://localhost:8080/ | grep -o '/assets/index-[^"]*\.js' | head -1)
+          curl -fsSI -H "Accept-Encoding: br" "http://localhost:8080$ASSET" | grep -qi "cache-control: public, max-age=31536000, immutable"
+          curl -fsSI -H "Accept-Encoding: br" "http://localhost:8080$ASSET" | grep -qi "content-encoding: br"
       - name: Container logs
         if: always()
         run: docker logs bookly || true

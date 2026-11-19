@@ -60,6 +60,9 @@ Aggiornare appena esce picomatch ≥ 4.0.8 (Dependabot) e riportare l'audit comp
 
 Priorità:
 Bassa
+
+Stato:
+Chiuso il 2026-11-19 (Step 14): `npm audit` (anche dipendenze di sviluppo) riporta 0 vulnerabilità.
 ```
 
 ```text
@@ -120,6 +123,27 @@ flusso di cambio email con token su entrambi gli indirizzi.
 
 Priorità:
 Media
+```
+
+```text
+ID: TD-007
+Problema:
+Gli account SuperAdmin e Owner sono protetti solo da password (niente secondo fattore).
+
+Motivo:
+MFA e passkey sono nice-to-have nell'MVP (overview §5).
+
+Impatto:
+Una password rubata del super-admin dà accesso alla gestione di tutte le attività (non ai loro
+appuntamenti). Mitigato da lockout dopo 5 tentativi, rate limit e password di almeno 10
+caratteri.
+
+Soluzione futura:
+Passkey (supportate da Identity in .NET 10) o TOTP, obbligatori per SuperAdmin e consigliati
+per gli Owner.
+
+Priorità:
+Media (Alta prima di avere molte attività sulla piattaforma)
 ```
 
 ## Revisione

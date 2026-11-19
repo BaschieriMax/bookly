@@ -44,10 +44,10 @@ export async function login(page: Page, email: string) {
   await page.waitForURL((url) => !url.pathname.startsWith('/login'))
 }
 
-/** WCAG 2.1 A/AA checks; serious and critical violations fail the test. */
+/** WCAG 2.2 A/AA checks (overview §16); serious and critical violations fail the test. */
 export async function expectAccessible(page: Page) {
   const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze()
   const blocking = results.violations.filter(
     (v) => v.impact === 'serious' || v.impact === 'critical',

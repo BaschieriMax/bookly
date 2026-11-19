@@ -323,7 +323,7 @@ Obiettivo **WCAG 2.2 AA**: HTML semantico, gerarchia dei titoli, focus visibile,
 - Target sulla pagina pubblica dell'attività (mobile 4G): LCP < 2.5 s, CLS < 0.1, INP < 200 ms.
 - Font self-hosted con `font-display: swap`, al massimo 2 famiglie.
 - Asset statici con hash e `Cache-Control: immutable`; `index.html` con `no-cache`.
-- API: proiezioni sui DTO, `AsNoTracking`, compressione Brotli/Gzip.
+- API: proiezioni sui DTO, `AsNoTracking`. Asset statici precompressi Brotli/Gzip; le risposte JSON dell'API restano non compresse (payload piccoli, si evita il rischio BREACH sulle risposte autenticate). Verificato nello Step 14 (docs/qa-report.md).
 - **Limite noto**: il cold start di Render free (30-60 s dopo 15 minuti di inattività) è fuori dal nostro controllo. Vedi Rischi R1.
 
 ## 18. SECURITY

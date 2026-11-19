@@ -69,6 +69,13 @@ password `bookly-demo-2026`:
 Tipi TypeScript dell'API: la build del backend aggiorna `apps/web/openapi/bookly-api.json`,
 poi `npm run gen:api` (in `apps/web`) rigenera `src/types/api.gen.ts`. La CI fallisce se non sono allineati.
 
+## Produzione: impostazioni obbligatorie
+
+Dietro il proxy HTTPS di Render l'app deve fidarsi degli header inoltrati, altrimenti vede le
+richieste come HTTP e i cookie Secure di login e antiforgery falliscono (500 su `/api/auth/me`,
+trovato nel collaudo, F4): imposta **`ReverseProxy__Enabled=true`**. All'avvio un warning lo
+segnala se manca. L'elenco completo delle variabili è in `.env.example`.
+
 ## Test end-to-end (Playwright)
 
 Girano contro lo stack reale: l'API serve la build di produzione della SPA (stessa origine, CSP
