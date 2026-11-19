@@ -18,11 +18,13 @@ async function loginFromHome(page: Page, email: string) {
   await page.getByRole('button', { name: 'Accedi', exact: true }).click()
 }
 
-/** On small screens the admin/platform sidebar is a drawer. */
+/**
+ * Below the md breakpoint (768 px) the admin/platform sidebar is a drawer. Decided by viewport,
+ * not by probing the button: right after navigation the lazy shell may not be rendered yet.
+ */
 async function openMenuIfCollapsed(page: Page) {
-  const openMenu = page.getByRole('button', { name: 'Apri il menu' })
-  if (await openMenu.isVisible()) {
-    await openMenu.click()
+  if ((page.viewportSize()?.width ?? 1280) < 768) {
+    await page.getByRole('button', { name: 'Apri il menu' }).click()
   }
 }
 
@@ -37,6 +39,7 @@ test('an owner moves between their areas with clicks only', async ({ page }) => 
 
   await page.getByRole('link', { name: 'Gestione attività' }).click()
   await expect(page).toHaveURL(/\/admin$/)
+  await expect(page.getByRole('heading', { name: 'Calendario' })).toBeVisible()
 
   await openMenuIfCollapsed(page)
   await page.getByRole('link', { name: 'Vedi pagina pubblica' }).click()
