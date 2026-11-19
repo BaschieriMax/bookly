@@ -1,0 +1,132 @@
+# Production deploy (DEC-032, overview §23). Runs after CI succeeds on a push to main:
+#   1. applies the EF Core migrations to Neon with a migration bundle (never at app start-up);
+#   2. calls the Render deploy hook for that exact commit;
+#   3. waits until /api/version reports the commit, then runs smoke checks.
+# Migrations must stay backward compatible (expand → contract): for a few minutes the previous
+# version runs against the new schema.
+#
+# Configure once (docs/deploy.md), in the GitHub environment "production":
+#   - secret DATABASE_MIGRATION_CONNECTION  owner role, direct (non-pooled) Neon endpoint
+#   - secret RENDER_DEPLOY_HOOK_URL
+# and the repository variable BOOKLY_BASE_URL. With only the database secret the workflow just
+# migrates (first setup: the schema must exist before the first Render start); with nothing
+# configured it skips itself.
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Migrate, deploy, smoke test
+    # workflow_run's branch filter also matches fork PR branches named "main": accept only
+    # successful pushes to this repository, or a manual run on main.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      BASE_URL: ${{ vars.BOOKLY_BASE_URL }}
+    steps:
+      - name: Check configuration
+        id: config
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          MIGRATION_CONNECTION: ${{ secrets.DATABASE_MIGRATION_CONNECTION }}
+        run: |
+          migrate=false; deploy=false
+          [ -n "$MIGRATION_CONNECTION" ] && migrate=true
+          [ "$migrate" = true ] && [ -n "$DEPLOY_HOOK" ] && [ -n "$BASE_URL" ] && deploy=true
+          [ "$migrate" = false ] && echo "::notice::Deploy not configured yet (docs/deploy.md): skipping."
+          [ "$migrate" = true ] && [ "$deploy" = false ] && echo "::notice::Render not configured yet: migrations only."
+          echo "migrate=$migrate" >> "$GITHUB_OUTPUT"
+          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.config.outputs.migrate == 'true'
+        with:
+          ref: ${{ env.SHA }}
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        if: steps.config.outputs.migrate == 'true'
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build the migration bundle
+        if: steps.config.outputs.migrate == 'true'
+        working-directory: apps/api
+        run: |
+          dotnet tool restore
+          dotnet ef migrations bundle --project src/Bookly.Api --configuration Release \
+            --output "$RUNNER_TEMP/efbundle" --force
+
+      - name: Apply migrations to production
+        if: steps.config.outputs.migrate == 'true'
+        env:
+          MIGRATION_CONNECTION: ${{ secrets.DATABASE_MIGRATION_CONNECTION }}
+        # Idempotent: already applied migrations are skipped. A failure stops the deploy before
+        # the new code goes live.
+        run: '"$RUNNER_TEMP/efbundle" --connection "$MIGRATION_CONNECTION"'
+
+      - name: Trigger the Render deploy
+        if: steps.config.outputs.deploy == 'true'
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          curl --fail --silent --show-error --max-time 60 --retry 3 --retry-delay 10 \
+            -X POST "${DEPLOY_HOOK}&ref=${SHA}" -o /dev/null
+          echo "Deploy of $SHA requested."
+
+      - name: Wait for the new version
+        if: steps.config.outputs.deploy == 'true'
+        # Docker build + start on the free plan takes several minutes.
+        run: |
+          deadline=$((SECONDS + 1200))
+          while [ $SECONDS -lt $deadline ]; do
+            live=$(curl --silent --max-time 90 "$BASE_URL/api/version" | jq -r '.commit // empty' 2>/dev/null || true)
+            if [ "$live" = "$SHA" ]; then
+              echo "Live: $live"
+              exit 0
+            fi
+            echo "Live commit: ${live:-unreachable}, waiting for $SHA..."
+            sleep 30
+          done
+          echo "::error::$SHA is not live after 20 minutes: check the deploy logs on Render."
+          exit 1
+
+      - name: Smoke checks
+        if: steps.config.outputs.deploy == 'true'
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$1"; exit 1; }
+
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "$BASE_URL/api/health/ready")
+          [ "$code" = "200" ] || fail "readiness returned $code (database unreachable?)"
+
+          # 204 for anonymous users. 500 here means ReverseProxy__Enabled is missing (QA F4).
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$BASE_URL/api/auth/me")
+          [ "$code" = "204" ] || fail "/api/auth/me returned $code"
+
+          headers=$(curl -s -D - -o /dev/null --max-time 30 "$BASE_URL/")
+          echo "$headers" | grep -qi '^content-security-policy:' || fail "CSP header missing"
+          echo "$headers" | grep -qi '^strict-transport-security:' || fail "HSTS header missing"
+          echo "$headers" | grep -qi '^content-type: text/html' || fail "SPA shell not served"
+
+          echo "Smoke checks passed for $SHA."
