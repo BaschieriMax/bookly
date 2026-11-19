@@ -35,14 +35,18 @@ Motivo:
 Con Render free un BackgroundService non gira mentre l'istanza è in pausa (DEC-012).
 
 Impatto:
-Possibili ritardi di alcuni minuti; dipendenza da GitHub per una funzione di prodotto.
+Possibili ritardi; dipendenza da GitHub per una funzione di prodotto.
+Osservato in produzione (19/11/2026): nelle prime 18 ore il cron ogni 15 minuti è partito solo
+2 volte. I promemoria possono arrivare tardi o saltare, e l'istanza Render non resta sveglia.
+Alternativa gratuita da valutare: un servizio cron esterno (es. cron-job.org) che chiama
+`POST /api/jobs/send-reminders` con l'header `X-Job-Secret`.
 
 Soluzione futura:
 Con un'istanza sempre attiva, spostare la logica in un BackgroundService con PeriodicTimer
 (la logica del service resta la stessa, cambia solo il trigger).
 
 Priorità:
-Bassa
+Media (Alta prima dei clienti veri se il cron di GitHub resta irregolare)
 ```
 
 ```text

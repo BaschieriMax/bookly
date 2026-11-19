@@ -141,12 +141,13 @@ Da qui in poi ogni merge su `main` con CI verde va in produzione da solo.
 2. Conferma l'email dal link ricevuto (mittente `onboarding@resend.dev`; controlla lo spam).
 3. Render → **Manual Deploy → Restart service**: all'avvio l'account confermato riceve il ruolo
    SuperAdmin.
-4. Accedi: nel menu c'è **Piattaforma**. Collaudo minimo:
-   - [ ] crea un'attività di prova in `/platform/tenant` e invita un owner (con un alias della tua
-     email, es. `tuonome+owner@…`, se il tuo provider li supporta: Resend consegna solo al tuo
-     indirizzo);
-   - [ ] accetta l'invito, configura servizio, operatore e orari;
-   - [ ] prenota da `/b/<slug>` con un account cliente e verifica l'email di conferma;
+4. Accedi: dopo il login arrivi in **Piattaforma**. Collaudo minimo. Senza dominio Resend
+   consegna **solo** all'indirizzo esatto dell'account (gli alias `+qualcosa` vengono rifiutati),
+   quindi fai tutto con il tuo account:
+   - [ ] crea un'attività di prova in `/platform/tenant` e aggiungi **te stesso** come titolare
+     (account già esistente: ricevi l'email "sei stato aggiunto" e la voce **Gestione attività**);
+   - [ ] configura servizio, operatore e orari;
+   - [ ] prenota da `/b/<slug>` con lo stesso account e verifica l'email di conferma;
    - [ ] sposta e annulla dal calendario admin;
    - [ ] esporta i dati da `/account/profilo`.
 5. Prima di clienti veri: testi legali validati da un professionista (**TD-005**).
