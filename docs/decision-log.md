@@ -899,3 +899,31 @@ proprio quel commit a rispondere, e un'eventuale SQL injection non può alterare
 Status:
 Proposed (in attesa di conferma di Massimo con la PR dello Step 15)
 ```
+
+---
+
+```text
+Decision:
+DEC-033 — SMTP Resend sulla porta 2465 in produzione
+
+Date:
+2026-11-19
+
+Context:
+Dal 26/09/2025 i web service free di Render bloccano il traffico in uscita verso le porte SMTP
+25, 465 e 587: le prime email di produzione non partivano.
+
+Decision:
+Email__Port=2465 con TLS implicito (SslOnConnect), porta alternativa offerta da Resend.
+Nessuna modifica al codice (MailKit, DEC-022).
+
+Alternatives:
+API HTTP di Resend sulla 443 (nuovo client da scrivere e testare); piano Render a pagamento
+(costo fisso mensile solo per sbloccare la porta).
+
+Motivation:
+Risolve con una sola variabile, mantiene l'invio via SMTP indipendente dal provider.
+
+Status:
+Proposed (correzione necessaria per il funzionamento in produzione, in attesa di conferma)
+```
