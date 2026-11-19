@@ -15,6 +15,9 @@ Vincolo di costo zero per l'MVP (DEC-010).
 Impatto:
 Il primo cliente che apre la pagina di un'attività dopo un periodo di inattività aspetta fino a un minuto:
 rischio di abbandono della prenotazione.
+Mitigato in parte (DEC-032): il cron dei promemoria chiama l'app ogni 15 minuti e la tiene quasi
+sempre sveglia, restando nelle 750 ore gratuite; i ritardi del cron di GitHub possono comunque
+lasciarla andare in pausa.
 
 Soluzione futura:
 Passare al piano Render a pagamento più economico (o a un'alternativa equivalente) al primo tenant pagante.

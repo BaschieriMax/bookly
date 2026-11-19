@@ -850,3 +850,52 @@ condivisi, errori di produzione visibili senza esporre dati personali.
 Status:
 Approved (Q4 confermata da Massimo il 2026-11-18)
 ```
+
+---
+
+```text
+Decision:
+DEC-032 — Pipeline di rilascio: CI verde → migrazioni → deploy hook Render → verifica
+
+Date:
+2026-11-19
+
+Context:
+Fase 4. Render free non offre il pre-deploy command, Neon free mette il compute in pausa dopo
+5 minuti, e le migrazioni non devono girare all'avvio dell'app (overview §23).
+
+Decision:
+- render.yaml (Blueprint): un web service Docker free a Frankfurt, autoDeployTrigger off,
+  health check di liveness (/api/health), variabili fisse nel file e segreti chiesti alla
+  creazione (sync: false), Jobs__Secret generato da Render.
+- deploy.yml parte con workflow_run dopo CI verde su push a main (solo da questo repo, il filtro
+  di branch da solo accetterebbe PR da fork chiamate "main") o a mano su main:
+  1. migration bundle EF Core applicato a Neon con il ruolo owner (endpoint diretto);
+  2. deploy hook di Render con ?ref=<commit>;
+  3. polling di GET /api/version finché riporta il commit (RENDER_GIT_COMMIT);
+  4. smoke test: readiness, /api/auth/me = 204 (rileva il caso F4), CSP, HSTS, HTML.
+  Con solo il secret del database esegue le migrazioni e basta (primo setup: lo schema esiste
+  prima del primo avvio su Render).
+- Segreti nell'environment GitHub "production"; BOOKLY_BASE_URL resta variabile di repo.
+- A runtime l'app usa il ruolo bookly_app con solo SELECT/INSERT/UPDATE/DELETE (default
+  privileges su schemi, tabelle e sequenze create dall'owner). Verificato: 28 E2E Chromium verdi
+  con quel ruolo, nessun 42501; CREATE TABLE negato.
+- Connessione diretta (non il pooler PgBouncer) con Maximum Pool Size=20 e Connection Idle
+  Lifetime=60, per lasciare andare Neon in pausa; la retry di EF Core copre le connessioni chiuse.
+- Rollback: Rollback di Render (riusa l'immagine) + restore di Neon entro 6 ore; branch Neon di
+  backup prima delle migrazioni distruttive; regola expand → contract.
+
+Alternatives:
+Auto-deploy di Render a ogni push (le migrazioni andrebbero all'avvio o dopo il deploy);
+migrazioni all'avvio (più istanze o crash a metà lasciano lo schema incoerente, e l'app
+avrebbe bisogno dei permessi DDL); pre-deploy command di Render (solo piani a pagamento);
+immagine costruita su GitHub e pubblicata su GHCR (doppio registry senza vantaggi sul free);
+pooler di Neon (inutile con un'istanza sola, e le migrazioni non possono usarlo).
+
+Motivation:
+Il codice nuovo va live solo dopo test verdi e schema aggiornato, il workflow conferma che sia
+proprio quel commit a rispondere, e un'eventuale SQL injection non può alterare lo schema.
+
+Status:
+Proposed (in attesa di conferma di Massimo con la PR dello Step 15)
+```
