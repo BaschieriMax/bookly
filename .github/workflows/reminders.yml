@@ -1,5 +1,7 @@
 # Reminder emails ~24 h before each appointment (DEC-012, TD-002).
-# Calls the API every 15 minutes; the endpoint is idempotent, so late or repeated runs are safe.
+# The primary scheduler is cron-job.org (DEC-034, docs/deploy.md §6): GitHub's schedule proved
+# irregular. This workflow stays as a backup and for manual runs; the endpoint is idempotent, so
+# late or repeated runs from both schedulers are safe.
 #
 # Configure once in Settings → Secrets and variables → Actions:
 #   - variable BOOKLY_BASE_URL   e.g. https://bookly.onrender.com (no trailing slash)

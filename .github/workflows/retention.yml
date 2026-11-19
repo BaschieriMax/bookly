@@ -1,5 +1,6 @@
 # Daily data retention (DEC-030): clears appointment notes after 24 months and deletes
-# accounts never confirmed within 30 days. Same configuration as reminders.yml.
+# accounts never confirmed within 30 days. Same configuration as reminders.yml; cron-job.org is
+# the primary scheduler (DEC-034), this workflow is the backup. The job is idempotent.
 name: Retention
 
 on:

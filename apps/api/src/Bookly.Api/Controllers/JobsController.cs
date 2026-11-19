@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 namespace Bookly.Api.Controllers;
 
 /// <summary>
-/// Endpoints called by the scheduler (GitHub Actions cron, DEC-012). They authenticate with a
+/// Endpoints called by the schedulers (cron-job.org, GitHub Actions as backup: DEC-012, DEC-034). They authenticate with a
 /// shared secret instead of a user session, so antiforgery does not apply.
 /// </summary>
 [ApiController]

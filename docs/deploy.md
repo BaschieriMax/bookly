@@ -1,7 +1,8 @@
 # Rilascio in produzione — Bookly
 
 Runbook di messa in produzione e di esercizio (DEC-032). Servizi: **Neon** (database), **Resend**
-(email), **Render** (app), **GitHub Actions** (migrazioni, deploy, promemoria). Tutti a costo zero.
+(email), **Render** (app), **GitHub Actions** (migrazioni e deploy), **cron-job.org** (promemoria e
+retention). Tutti a costo zero.
 
 Segui le sezioni **nell'ordine**: lo schema del database deve esistere prima del primo avvio
 dell'app su Render.
@@ -29,7 +30,7 @@ push su main ──► CI (web, api, e2e, image, codeql) ──► verde?
 
 | Servizio | Limite | Effetto su Bookly |
 |---|---|---|
-| Render free | 750 ore/mese di istanza, pausa dopo 15 min senza traffico, 512 MB RAM, 500 minuti di build/mese | Il cron dei promemoria chiama l'app ogni 15 minuti, quindi resta quasi sempre sveglia (~744 ore in un mese da 31 giorni): **un solo servizio free** per account. Ogni deploy costa 5-8 minuti di build |
+| Render free | 750 ore/mese di istanza, pausa dopo 15 min senza traffico, 512 MB RAM, 500 minuti di build/mese | cron-job.org chiama l'app ogni 15 minuti, quindi resta quasi sempre sveglia (~744 ore in un mese da 31 giorni): **un solo servizio free** per account. Ogni deploy costa 5-8 minuti di build |
 | Neon free | 100 CU-ore/mese, 1 GB, scale-to-zero dopo 5 min fisso, restore istantaneo entro 6 ore | Con compute fisso a 0,25 CU e i promemoria ogni 15 minuti si stimano 60-80 CU-ore/mese. Il restore copre solo le ultime 6 ore |
 | Resend free | 3.000 email/mese, 100/giorno, 1 dominio | Senza dominio verificato invia **solo** all'email dell'account Resend. Render free blocca le porte SMTP standard: si usa la **2465** |
 
@@ -95,7 +96,7 @@ Verifica i limiti attuali sui siti dei provider prima di andare live con clienti
 2. **API Keys → Create API key**: permesso **Sending access**. Copiala subito (si vede una volta
    sola): sarà `Email__Password` su Render.
 3. Mittente provvisorio, senza dominio: `Bookly <onboarding@resend.dev>`. Col dominio vedi la
-   sezione 7.
+   sezione 8.
 
 ## 4. Render — servizio web
 
@@ -132,9 +133,38 @@ Verifica i limiti attuali sui siti dei provider prima di andare live con clienti
    della versione e smoke test. Deve finire in verde.
 5. **Actions → Reminders → Run workflow**: deve rispondere con un JSON e finire in verde.
 
+## 6. cron-job.org — promemoria e retention
+
+Il cron di GitHub Actions è irregolare (nelle prime 18 ore è partito 2 volte invece di ~70, TD-002):
+la pianificazione la fa **cron-job.org**, gratuito, che chiama gli stessi endpoint. I workflow
+`Reminders` e `Retention` di GitHub restano come riserva e per l'avvio manuale: gli endpoint sono
+idempotenti, quindi due chiamate ravvicinate non mandano email doppie.
+
+1. Registrati su <https://cron-job.org> e conferma l'email. In **Settings** attiva la verifica in due
+   passaggi: l'account conterrà il segreto dei job.
+2. **Cronjobs → Create cronjob**, scheda **Common**:
+   - Title: `Bookly promemoria`
+   - URL: `https://<servizio>.onrender.com/api/jobs/send-reminders`
+   - Execution schedule: **Every 15 minutes**
+3. Scheda **Advanced**:
+   - Request method: **POST**
+   - Headers → **Add**: Key `X-Job-Secret`, Value = `Jobs__Secret` di Render (lo stesso di
+     `BOOKLY_JOB_SECRET` su GitHub)
+   - Time zone: `Europe/Rome`
+4. Scheda **Notifications**: attiva l'avviso per esecuzione fallita (dopo 2-3 fallimenti di fila)
+   e per il ritorno alla normalità.
+5. **Test run**: deve rispondere **200** con un JSON tipo `{"sent":0,"failed":0}`. **404** = segreto
+   non configurato su Render; **401** = header o valore sbagliato. Poi **Create**.
+6. Ripeti per la retention: Title `Bookly retention`, URL `…/api/jobs/apply-retention`, POST, stesso
+   header, schedule **Every day** alle **03:43**.
+
+Con l'app in pausa (TD-001) la prima chiamata può superare il timeout di 30 secondi di
+cron-job.org: la richiesta la sveglia comunque e quella dopo riesce. Fallimenti isolati sono
+normali, più di tre di fila no (vedi problemi frequenti).
+
 Da qui in poi ogni merge su `main` con CI verde va in produzione da solo.
 
-## 6. Primo super-admin e collaudo in produzione
+## 7. Primo super-admin e collaudo in produzione
 
 1. Apri `https://<servizio>.onrender.com/registrati` e registrati con l'email di
    `Platform__SuperAdminEmails__0`.
@@ -152,7 +182,7 @@ Da qui in poi ogni merge su `main` con CI verde va in produzione da solo.
    - [ ] esporta i dati da `/account/profilo`.
 5. Prima di clienti veri: testi legali validati da un professionista (**TD-005**).
 
-## 7. Dominio (quando lo acquisti)
+## 8. Dominio (quando lo acquisti)
 
 L'app funziona già su `onrender.com`; il dominio serve per l'immagine e per inviare email a
 chiunque. Scegli nome e registrar: qualsiasi registrar va bene se il pannello DNS permette record
@@ -175,7 +205,7 @@ CNAME, TXT e MX (e A o ALIAS per il dominio principale).
 
 Gli header HSTS includono i sottodomini: tutti i sottodomini web del dominio dovranno usare HTTPS.
 
-## 8. Esercizio
+## 9. Esercizio
 
 ### Rollback del codice
 Render → **Events/Deploys** → deploy precedente riuscito → **Rollback**. È immediato (riusa
@@ -204,7 +234,7 @@ Mai rinominare o eliminare una colonna nello stesso rilascio che smette di usarl
 | Password `bookly_app` | Neon SQL: `ALTER ROLE bookly_app WITH PASSWORD '…';` → Render `ConnectionStrings__Default` |
 | Password owner | Neon → Roles → Reset password → GitHub `DATABASE_MIGRATION_CONNECTION` |
 | API key Resend | Resend → nuova key → Render `Email__Password` → revoca la vecchia |
-| `Jobs__Secret` | Render (nuovo valore ≥ 32 caratteri) e GitHub `BOOKLY_JOB_SECRET` insieme |
+| `Jobs__Secret` | Render (nuovo valore ≥ 32 caratteri), GitHub `BOOKLY_JOB_SECRET` e l'header dei due job di cron-job.org, insieme |
 | Deploy hook | Render → Settings → Regenerate → GitHub `RENDER_DEPLOY_HOOK_URL` |
 
 ### Error tracking (facoltativo, DEC-031)
@@ -213,7 +243,7 @@ Crea un progetto su Sentry (regione EU) e imposta su Render `Sentry__Dsn`, `Sent
 `VITE_SENTRY_DSN`: Render passa le variabili d'ambiente al build Docker come build arg, serve un
 rebuild.
 
-## 9. Problemi frequenti
+## 10. Problemi frequenti
 
 | Sintomo | Causa probabile | Soluzione |
 |---|---|---|
@@ -223,6 +253,7 @@ rebuild.
 | Migrazioni: `permission denied` | Secret con l'utente `bookly_app` invece dell'owner | `DATABASE_MIGRATION_CONNECTION` usa l'owner |
 | App: `42501 permission denied for table/schema` | Default privileges mancanti (SQL eseguito dopo le migrazioni o con un altro ruolo) | Riesegui il blocco SQL della sezione 1 e in più: `GRANT USAGE ON SCHEMA ui TO bookly_app; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public, ui TO bookly_app; GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public, ui TO bookly_app;` |
 | Deploy: versione non live dopo 20 minuti | Build fallita o minuti di build finiti | Log del deploy su Render |
-| Email non arrivano | Dominio non verificato: Resend consegna solo all'email dell'account | Usa quell'indirizzo o verifica il dominio (sezione 7) |
+| cron-job.org: fallimenti di fila | 401: segreto diverso da `Jobs__Secret`; 404: segreto non impostato su Render; timeout: app in avvio | Correggi l'header o la variabile su Render; i timeout isolati si risolvono alla chiamata dopo |
+| Email non arrivano | Dominio non verificato: Resend consegna solo all'email dell'account | Usa quell'indirizzo o verifica il dominio (sezione 8) |
 | Email non partono, nei log timeout verso `smtp.resend.com` | Render free blocca le porte SMTP 25, 465 e 587 | `Email__Port=2465` (TLS implicito, già nel Blueprint) |
-| Prima pagina lenta (30-60 s) | Istanza Render in pausa | Normale sul piano free (TD-001); il cron dei promemoria la tiene sveglia |
+| Prima pagina lenta (30-60 s) | Istanza Render in pausa | Normale sul piano free (TD-001); il cron dei promemoria la tiene sveglia: controlla che i job di cron-job.org siano attivi e verdi |
