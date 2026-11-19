@@ -1,0 +1,50 @@
+# Render Blueprint (DEC-032): one Docker web service with API + SPA (DEC-010).
+# Database: Neon (not managed here). Email: Resend SMTP. Full guide: docs/deploy.md.
+#
+# Deploys are NOT triggered by Render on push (autoDeployTrigger: off): the Deploy workflow
+# applies the database migrations first, then calls the deploy hook with the exact commit.
+services:
+  - type: web
+    name: bookly
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeployTrigger: 'off'
+    # Liveness only: a short database hiccup must not make Render restart the instance.
+    # The deploy workflow checks /api/health/ready after every deploy.
+    healthCheckPath: /api/health
+    envVars:
+      # --- fixed values ---
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: PORT
+        value: '8080' # the port Kestrel listens on (ASPNETCORE_HTTP_PORTS in the Dockerfile)
+      - key: ReverseProxy__Enabled
+        value: 'true' # mandatory behind Render's TLS proxy (QA finding F4)
+      - key: DOTNET_gcServer
+        value: '0' # workstation GC: lower memory on the 512 MB free instance
+      - key: Email__Host
+        value: smtp.resend.com
+      - key: Email__Port
+        value: '465'
+      - key: Email__Security
+        value: SslOnConnect
+      - key: Email__Username
+        value: resend
+      - key: Jobs__Secret
+        generateValue: true # copy it into the GitHub secret BOOKLY_JOB_SECRET
+
+      # --- asked by Render when the Blueprint is created (see docs/deploy.md) ---
+      - key: ConnectionStrings__Default
+        sync: false
+      - key: App__PublicBaseUrl
+        sync: false
+      - key: Email__Password
+        sync: false # Resend API key
+      - key: Email__From
+        sync: false
+      - key: Platform__SuperAdminEmails__0
+        sync: false

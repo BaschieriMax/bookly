@@ -402,20 +402,21 @@ Copertura mirata alle parti critiche (disponibilità, prenotazione, autorizzazio
 | Componente | Provider | Costo | Limiti rilevanti |
 |---|---|---|---|
 | App (API + SPA) | Render — Web Service free (Docker) | 0 € | Pausa dopo 15 min di inattività, cold start 30-60 s, 512 MB RAM, banda ridotta (da riverificare) |
-| Database | Neon — Free | 0 € | 1 GB per progetto, 100 CU-ore al mese, scale-to-zero |
+| Database | Neon — Free | 0 € | 0,5 GB per progetto, 100 CU-ore al mese, scale-to-zero dopo 5 min, restore entro 6 ore |
 | Email | Resend — Free | 0 € | 3.000 al mese, 100 al giorno, 1 dominio |
 | Cron promemoria | GitHub Actions `schedule` | 0 € | Ritardi possibili di qualche minuto nei picchi |
 
 **Quando pagare**: con il primo cliente pagante conviene il piano Render a pagamento più economico, per eliminare il cold start dalla pagina pubblica. Oltre 100 email al giorno serve Resend Pro (circa 20 $/mese). I prezzi vanno verificati in Fase 4.
 
 **CI/CD (GitHub Actions)**
-- `ci.yml` su ogni PR: lint e typecheck del web, test web, build web; build e test dell'API con Testcontainers; verifica che il client OpenAPI generato sia aggiornato; audit delle dipendenze.
+- `ci.yml` su ogni PR e su `main`: lint, typecheck, test e build del web; build e test dell'API con Testcontainers; verifica che il client OpenAPI generato e le migrazioni siano aggiornati; audit delle dipendenze; E2E Playwright (Chromium, Firefox, WebKit) contro la build di produzione; build e smoke test dell'immagine Docker.
 - `codeql.yml`: analisi C# e TypeScript.
-- `deploy.yml` su `main`: build dell'immagine, poi deploy hook Render. Le migrazioni EF si applicano con un **migration bundle** eseguito come step separato prima dello switch, non all'avvio dell'app.
-- `e2e.yml`: Playwright su PR verso `main` (contro docker compose).
-- `reminders.yml`: cron ogni 15 minuti → `POST /api/jobs/send-reminders`.
+- `deploy.yml` dopo CI verde su `main` (DEC-032): **migration bundle** EF Core applicato a Neon col ruolo owner, poi deploy hook Render col commit esatto (`autoDeployTrigger: off`), attesa di `/api/version` e smoke test. Le migrazioni non girano all'avvio dell'app, che usa un ruolo senza permessi DDL.
+- `reminders.yml`: cron ogni 15 minuti → `POST /api/jobs/send-reminders`; `retention.yml`: ogni notte → `POST /api/jobs/apply-retention`.
 
-**Rollback**: si rifà il deploy dell'immagine precedente da Render. Le migrazioni sono progettate per essere retrocompatibili (expand → contract). Prima di ogni migrazione distruttiva si crea un branch Neon come backup istantaneo.
+Runbook completo (account, variabili, dominio, rollback): [`docs/deploy.md`](./deploy.md).
+
+**Rollback**: Rollback di Render al deploy precedente (riusa l'immagine). Le migrazioni sono retrocompatibili (expand → contract). Database: restore di Neon entro 6 ore sul piano free; prima di ogni migrazione distruttiva si crea un branch Neon di backup.
 
 ## 24. ENVIRONMENTS
 
@@ -423,9 +424,9 @@ Copertura mirata alle parti critiche (disponibilità, prenotazione, autorizzazio
 |---|---|---|---|---|
 | Development | `localhost:5173` (Vite, proxy `/api` → `localhost:5080`) | Postgres in Docker | Mailpit | `dotnet user-secrets`, `.env.local` |
 | Test (CI) | — | Testcontainers | Fake in memoria | GitHub Secrets (nessuno reale) |
-| Production | `bookly-xxxx.onrender.com` (dominio custom opzionale) | Neon | Resend | Env vars di Render, GitHub Secrets per il job secret |
+| Production | `bookly.onrender.com` (dominio custom quando acquistato) | Neon (app: ruolo `bookly_app` senza DDL) | Resend | Env vars di Render; environment GitHub `production` per connection string owner e deploy hook; secret di repo per il job secret |
 
-Variabili principali: `ConnectionStrings__Default`, `Resend__ApiKey`, `Email__From`, `Jobs__Secret`, `App__PublicBaseUrl`, `Sentry__Dsn`, `VITE_SENTRY_DSN`. Nel repo c'è solo `.env.example`, senza valori reali.
+Variabili principali: `ConnectionStrings__Default`, `Email__Password` (API key Resend), `Email__From`, `Jobs__Secret`, `App__PublicBaseUrl`, `Sentry__Dsn`, `VITE_SENTRY_DSN`. Nel repo c'è solo `.env.example`, senza valori reali.
 
 ## 25. PROJECT STRUCTURE
 

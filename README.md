@@ -69,12 +69,16 @@ password `bookly-demo-2026`:
 Tipi TypeScript dell'API: la build del backend aggiorna `apps/web/openapi/bookly-api.json`,
 poi `npm run gen:api` (in `apps/web`) rigenera `src/types/api.gen.ts`. La CI fallisce se non sono allineati.
 
-## Produzione: impostazioni obbligatorie
+## Produzione
 
-Dietro il proxy HTTPS di Render l'app deve fidarsi degli header inoltrati, altrimenti vede le
-richieste come HTTP e i cookie Secure di login e antiforgery falliscono (500 su `/api/auth/me`,
-trovato nel collaudo, F4): imposta **`ReverseProxy__Enabled=true`**. All'avvio un warning lo
-segnala se manca. L'elenco completo delle variabili è in `.env.example`.
+Rilascio su Render (app), Neon (database) e Resend (email), tutto gratuito: la guida passo per
+passo, il rollback e i problemi frequenti sono in **[docs/deploy.md](./docs/deploy.md)**.
+
+- Ogni merge su `main` con CI verde va in produzione da solo con il workflow `Deploy`: migrazioni
+  del database, deploy su Render del commit esatto, attesa di `/api/version` e smoke test.
+- Il servizio è descritto in `render.yaml` (Blueprint). L'elenco delle variabili è in `.env.example`.
+- Dietro il proxy HTTPS di Render serve **`ReverseProxy__Enabled=true`** (già nel Blueprint):
+  senza, i cookie Secure di login e antiforgery falliscono (500 su `/api/auth/me`, collaudo F4).
 
 ## Test end-to-end (Playwright)
 
@@ -93,8 +97,8 @@ In CI li esegue il job `E2E` (report e tracce come artifact se falliscono).
 
 ## Primo super-admin (produzione)
 
-1. Registrati sul sito con la tua email e confermala dal link ricevuto.
-2. Imposta la variabile `Platform__SuperAdminEmails__0=<la tua email>` sul servizio e riavvialo.
+1. Imposta `Platform__SuperAdminEmails__0=<la tua email>` sul servizio.
+2. Registrati sul sito con quell'email e confermala dal link ricevuto, poi riavvia il servizio.
 3. All'avvio l'API ti assegna il ruolo SuperAdmin (solo se l'email è confermata, DEC-028). Da
    `/platform/tenant` crei le attività e inviti i titolari.
 
@@ -104,7 +108,8 @@ Il workflow `.github/workflows/reminders.yml` chiama ogni 15 minuti `POST /api/j
 (segreto nell'header `X-Job-Secret`). Il promemoria parte circa 24 ore prima, una sola volta, e non
 viene inviato per prenotazioni fatte a meno di 12 ore dall'appuntamento. Per attivarlo:
 
-1. genera un segreto di almeno 32 caratteri (`openssl rand -base64 48`);
+1. genera un segreto di almeno 32 caratteri (`openssl rand -base64 48`); su Render lo genera il
+   Blueprint;
 2. impostalo come `Jobs__Secret` sul servizio;
 3. su GitHub aggiungi il secret `BOOKLY_JOB_SECRET` (stesso valore) e la variabile
    `BOOKLY_BASE_URL`.
@@ -141,3 +146,4 @@ Settings → Code security: attiva **Dependabot alerts**, **Dependabot security 
 - [Project overview](./docs/project-overview.md)
 - [Decision log](./docs/decision-log.md)
 - [Technical debt](./docs/tech-debt.md)
+- [Rilascio in produzione](./docs/deploy.md)
