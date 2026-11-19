@@ -1,8 +1,10 @@
-import { CalendarCheck, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router'
+import { NavLink, Outlet, useNavigate } from 'react-router'
 import { paths } from '@/app/paths'
+import { BooklyLogo } from '@/components/layout/BooklyLogo'
 import { LegalFooter } from '@/components/layout/LegalFooter'
+import { AreaLinks } from '@/features/auth/AreaLinks'
 import { useLogout } from '@/features/auth/useMe'
 
 /** Customer area: global account, Bookly neutral brand (DEC-016). */
@@ -14,25 +16,20 @@ export default function AccountLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-2 sm:px-6">
-        <Link to="/" className="flex min-h-11 items-center gap-2">
-          <span
-            aria-hidden="true"
-            className="flex size-7 items-center justify-center rounded-control bg-primary text-primary-fg"
+        <BooklyLogo />
+        <div className="flex flex-wrap items-center justify-end gap-1">
+          <AreaLinks current="account" variant="inline" />
+          <button
+            type="button"
+            onClick={() =>
+              logout.mutate(undefined, { onSettled: () => void navigate('/', { replace: true }) })
+            }
+            className="flex min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-muted hover:bg-subtle"
           >
-            <CalendarCheck className="size-4" />
-          </span>
-          <span className="font-heading text-xl font-bold tracking-tight">bookly</span>
-        </Link>
-        <button
-          type="button"
-          onClick={() =>
-            logout.mutate(undefined, { onSettled: () => void navigate('/', { replace: true }) })
-          }
-          className="flex min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-muted hover:bg-subtle"
-        >
-          <LogOut aria-hidden="true" className="size-4" />
-          {t('common:logout')}
-        </button>
+            <LogOut aria-hidden="true" className="size-4" />
+            {t('common:logout')}
+          </button>
+        </div>
       </header>
       <nav
         aria-label={t('account:tabs.label')}

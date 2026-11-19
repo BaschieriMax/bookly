@@ -6,8 +6,8 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/TextField'
 import { isApiError } from '@/services/apiClient'
-import { safeRedirect } from './safeRedirect'
 import { useLogin } from './useMe'
+import { landingPath } from './userAreas'
 
 const schema = z.object({
   email: z.string().min(1, 'emailRequired').email('emailInvalid'),
@@ -33,12 +33,13 @@ export default function LoginPage() {
   })
 
   const onSubmit = handleSubmit(async (values) => {
+    let me
     try {
-      await loginMutation.mutateAsync(values)
+      me = await loginMutation.mutateAsync(values)
     } catch {
       return // shown through loginMutation.error
     }
-    await navigate(safeRedirect(params.get('redirect')), { replace: true })
+    await navigate(landingPath(me, params.get('redirect')), { replace: true })
   })
 
   const apiError = loginMutation.error
@@ -52,7 +53,7 @@ export default function LoginPage() {
   })()
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center gap-6 px-6 py-12">
+    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-6 py-12">
       <div className="flex flex-col gap-1">
         <h1 className="font-heading text-3xl font-semibold tracking-tight">{t('loginTitle')}</h1>
         <p className="text-muted">{t('loginSubtitle')}</p>
