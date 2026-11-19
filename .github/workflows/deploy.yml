@@ -74,6 +74,8 @@ jobs:
         working-directory: apps/api
         run: |
           dotnet tool restore
+          # dotnet ef builds the project but does not restore it: a clean runner has no obj/.
+          dotnet restore src/Bookly.Api/Bookly.Api.csproj
           dotnet ef migrations bundle --project src/Bookly.Api --configuration Release \
             --output "$RUNNER_TEMP/efbundle" --force
 

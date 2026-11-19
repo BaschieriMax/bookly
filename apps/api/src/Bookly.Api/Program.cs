@@ -118,7 +118,9 @@ else
 }
 
 // Local convenience only: production applies migrations with a migration bundle before the deploy (overview §23).
-if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+// Never during build-time OpenAPI generation: `dotnet ef` runs it with the Development environment
+// while building the migration bundle, where no database exists (CI deploy runner).
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup") && !BuildTime.IsOpenApiGeneration)
 {
     await using var scope = app.Services.CreateAsyncScope();
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();

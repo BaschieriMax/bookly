@@ -402,7 +402,7 @@ Copertura mirata alle parti critiche (disponibilità, prenotazione, autorizzazio
 | Componente | Provider | Costo | Limiti rilevanti |
 |---|---|---|---|
 | App (API + SPA) | Render — Web Service free (Docker) | 0 € | Pausa dopo 15 min di inattività, cold start 30-60 s, 512 MB RAM, banda ridotta (da riverificare) |
-| Database | Neon — Free | 0 € | 0,5 GB per progetto, 100 CU-ore al mese, scale-to-zero dopo 5 min, restore entro 6 ore |
+| Database | Neon — Free | 0 € | 1 GB per progetto, 100 CU-ore al mese, scale-to-zero dopo 5 min, restore entro 6 ore |
 | Email | Resend — Free | 0 € | 3.000 al mese, 100 al giorno, 1 dominio |
 | Cron promemoria | GitHub Actions `schedule` | 0 € | Ritardi possibili di qualche minuto nei picchi |
 
