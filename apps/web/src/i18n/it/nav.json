@@ -9,5 +9,15 @@
   "navigation": "Navigazione",
   "adminMenu": "Menu dell'attività",
   "platformMenu": "Menu della piattaforma",
-  "publicPage": "Vedi pagina pubblica"
+  "publicPage": "Vedi pagina pubblica",
+  "areas": {
+    "platform": "Piattaforma",
+    "admin": "Gestione attività",
+    "account": "Le mie prenotazioni"
+  },
+  "otherAreas": "Altre aree",
+  "siteMenu": "Menu del sito",
+  "goToYourArea": "Vai alla tua area",
+  "backHome": "Torna alla home",
+  "yourArea": "La tua area"
 }

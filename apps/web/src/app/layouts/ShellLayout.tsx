@@ -4,15 +4,18 @@ import { useTranslation } from 'react-i18next'
 import { Outlet, useNavigate } from 'react-router'
 import { Sidebar } from '@/components/navigation/Sidebar'
 import type { NavigationArea } from '@/components/navigation/navigationApi'
+import { AreaLinks } from '@/features/auth/AreaLinks'
 import { useLogout } from '@/features/auth/useMe'
 
 interface ShellLayoutProps {
   area: NavigationArea
   sidebarHeader?: ReactNode
+  /** Area-specific links above the links to the user's other areas. */
+  sidebarFooter?: ReactNode
 }
 
 /** Sidebar + content shell for the admin and platform areas. On small screens the sidebar is a drawer. */
-export function ShellLayout({ area, sidebarHeader }: ShellLayoutProps) {
+export function ShellLayout({ area, sidebarHeader, sidebarFooter }: ShellLayoutProps) {
   const { t } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
   const logout = useLogout()
@@ -26,6 +29,12 @@ export function ShellLayout({ area, sidebarHeader }: ShellLayoutProps) {
     <Sidebar
       area={area}
       header={sidebarHeader}
+      footer={
+        <>
+          {sidebarFooter}
+          <AreaLinks current={area} variant="sidebar" onNavigate={() => setMenuOpen(false)} />
+        </>
+      }
       onNavigate={() => setMenuOpen(false)}
       onLogout={handleLogout}
     />

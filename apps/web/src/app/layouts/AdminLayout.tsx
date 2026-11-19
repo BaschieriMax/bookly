@@ -1,8 +1,11 @@
+import { ExternalLink } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import { NoAccess } from '@/components/ui/NoAccess'
 import { PageSpinner } from '@/components/ui/PageSpinner'
 import { useMe } from '@/features/auth/useMe'
+import { homePathFor } from '@/features/auth/userAreas'
 import { useActiveTenantStore } from '@/stores/activeTenantStore'
 import type { Membership } from '@/types/api'
 import { ShellLayout } from './ShellLayout'
@@ -45,6 +48,20 @@ function TenantSwitcher({
   )
 }
 
+/** Public page of the tenant being managed, as its customers see it. */
+function PublicPageLink({ slug }: { slug: string }) {
+  const { t } = useTranslation('nav')
+  return (
+    <Link
+      to={`/b/${slug}`}
+      className="flex min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-primary hover:bg-subtle"
+    >
+      <ExternalLink aria-hidden="true" className="size-4" />
+      {t('publicPage')}
+    </Link>
+  )
+}
+
 /** Admin area of a tenant: requires a membership; the active tenant is chosen among them. */
 export function AdminLayout() {
   const { data: me } = useMe()
@@ -53,6 +70,7 @@ export function AdminLayout() {
   const memberships = me?.memberships ?? []
   const activeIsValid = memberships.some((m) => m.tenantId === tenantId)
   const firstTenantId = memberships[0]?.tenantId
+  const activeSlug = memberships.find((m) => m.tenantId === tenantId)?.tenantSlug
 
   useEffect(() => {
     if (!activeIsValid && firstTenantId) {
@@ -61,7 +79,7 @@ export function AdminLayout() {
   }, [activeIsValid, firstTenantId, setTenantId])
 
   if (memberships.length === 0) {
-    return <NoAccess />
+    return <NoAccess homePath={homePathFor(me)} />
   }
 
   if (!activeIsValid || !tenantId) {
@@ -72,6 +90,7 @@ export function AdminLayout() {
     <ShellLayout
       area="admin"
       sidebarHeader={<TenantSwitcher memberships={memberships} activeId={tenantId} />}
+      sidebarFooter={activeSlug && <PublicPageLink slug={activeSlug} />}
     />
   )
 }

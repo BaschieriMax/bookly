@@ -2,6 +2,7 @@ import { lazy } from 'react'
 import type { RouteObject } from 'react-router'
 import { RedirectIfAuthenticated } from './guards/RedirectIfAuthenticated'
 import { RequireAuth } from './guards/RequireAuth'
+import OwnerOnly from '@/features/admin/OwnerOnly'
 import { PublicLayout } from './layouts/PublicLayout'
 import { NotFoundPage } from './NotFoundPage'
 import { paths } from './paths'
@@ -85,11 +86,17 @@ export const routes: RouteObject[] = [
         element: withSuspense(<AdminLayout />),
         children: [
           { path: paths.admin.calendar, element: withSuspense(<CalendarPage />) },
-          { path: paths.admin.services, element: withSuspense(<ServicesPage />) },
-          { path: paths.admin.staff, element: withSuspense(<StaffPage />) },
           { path: paths.admin.schedule, element: withSuspense(<SchedulePage />) },
-          { path: paths.admin.brand, element: withSuspense(<BrandPage />) },
-          { path: paths.admin.settings, element: withSuspense(<SettingsPage />) },
+          {
+            // Not lazy: a guard in front of lazy pages would add a second loading step.
+            element: <OwnerOnly />,
+            children: [
+              { path: paths.admin.services, element: withSuspense(<ServicesPage />) },
+              { path: paths.admin.staff, element: withSuspense(<StaffPage />) },
+              { path: paths.admin.brand, element: withSuspense(<BrandPage />) },
+              { path: paths.admin.settings, element: withSuspense(<SettingsPage />) },
+            ],
+          },
         ],
       },
       {
