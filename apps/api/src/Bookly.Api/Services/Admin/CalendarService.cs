@@ -70,6 +70,7 @@ public sealed class CalendarService(
         var appointmentsQuery = db.Appointments.AsNoTracking()
             .Include(a => a.Service)
             .Include(a => a.Customer)
+            .Include(a => a.TenantCustomer)
             .Where(a => staffIds.Contains(a.StaffMemberId) && a.StartUtc < rangeEnd && a.EndUtc > rangeStart);
         if (!includeCancelled)
         {
@@ -169,19 +170,210 @@ public sealed class CalendarService(
             return saved;
         }
 
-        if (oldStart != newStart)
+        var contact = CustomerContact.Of(appointment);
+        if (oldStart != newStart && contact.NotifyEmail(appointment) is { } to)
         {
             await TrySendAsync(EmailTemplates.AppointmentMovedByBusiness(
-                appointment.Customer.Email!,
-                appointment.Customer.FirstName,
+                to,
+                contact.FirstName,
                 tenant.Name,
                 appointment.Service.Name,
                 DateFormatting.LongItalian(oldStart, timeZone),
                 DateFormatting.LongItalian(newStart, timeZone),
-                $"{BaseUrl}/account/appuntamenti"), cancellationToken);
+                CustomerLink(contact, tenant),
+                contact.HasAccount,
+                tenant.Phone), cancellationToken);
         }
 
         return ServiceResult<AdminAppointmentDto>.Ok(ToDto(appointment, timeZone, now));
+    }
+
+    /// <summary>
+    /// The business enters an appointment from its calendar (phone, walk-in; DEC-037). Unlike an
+    /// online booking it skips minimum notice and horizon; outside working hours or during time off
+    /// it needs <see cref="CreateBusinessAppointmentRequest.AllowOutsideHours"/>. Overlaps are always
+    /// stopped by the database constraint. Staff members only enter appointments for themselves.
+    /// </summary>
+    public async Task<ServiceResult<AdminAppointmentDto>> CreateAsync(CreateBusinessAppointmentRequest request, CancellationToken cancellationToken)
+    {
+        // Tracked: the new appointment's navigations are fixed up from these for the response.
+        var service = await db.Services.SingleOrDefaultAsync(s => s.Id == request.ServiceId && s.IsActive, cancellationToken);
+        if (service is null)
+        {
+            return ServiceResult<AdminAppointmentDto>.Fail(StatusCodes.Status404NotFound, ErrorCodes.ServiceNotFound, "Service not found.");
+        }
+
+        var staff = await db.StaffMembers.AsNoTracking()
+            .Where(s => s.Id == request.StaffId)
+            .Select(s => new { s.Id, s.UserId, s.IsActive, s.DisplayName, Offers = s.Services.Any(x => x.ServiceId == service.Id) })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (staff is null)
+        {
+            return ServiceResult<AdminAppointmentDto>.Fail(StatusCodes.Status404NotFound, ErrorCodes.NotFound, "Staff member not found.");
+        }
+
+        if (!admin.IsOwner && staff.UserId != admin.UserId)
+        {
+            return StaffScope();
+        }
+
+        if (!staff.IsActive || !staff.Offers)
+        {
+            return ServiceResult<AdminAppointmentDto>.Fail(
+                StatusCodes.Status422UnprocessableEntity, ErrorCodes.ServiceNotOffered, "This staff member does not offer the service.");
+        }
+
+        var tenant = await db.Tenants.AsNoTracking().SingleAsync(t => t.Id == admin.TenantId, cancellationToken);
+        var timeZone = AvailabilityService.TimeZoneOf(tenant);
+        var now = timeProvider.GetUtcNow();
+
+        if (AvailabilityCalculator.ToUtc(request.Date, request.Time, timeZone, roundUpIfInvalid: false) is not { } start)
+        {
+            return ServiceResult<AdminAppointmentDto>.Fail(
+                StatusCodes.Status400BadRequest, ErrorCodes.InvalidRange, "This local time does not exist (daylight saving change).");
+        }
+
+        if (start <= now)
+        {
+            return ServiceResult<AdminAppointmentDto>.Fail(StatusCodes.Status422UnprocessableEntity, ErrorCodes.InPast, "Choose a future time.");
+        }
+
+        var end = start.AddMinutes(service.DurationMinutes);
+        var blockedUntil = end.AddMinutes(service.BufferMinutes);
+        if (!request.AllowOutsideHours
+            && (!await IsWithinWorkingHoursAsync(staff.Id, request.Date, start, blockedUntil, timeZone, cancellationToken)
+                || await db.TimeOffs.AnyAsync(t => t.StaffMemberId == staff.Id && t.StartUtc < blockedUntil && t.EndUtc > start, cancellationToken)))
+        {
+            return ServiceResult<AdminAppointmentDto>.Fail(
+                StatusCodes.Status422UnprocessableEntity,
+                ErrorCodes.OutsideWorkingHours,
+                "Outside the staff member's working hours or during time off: confirm to enter it anyway.");
+        }
+
+        var appointment = new Appointment
+        {
+            Id = Guid.CreateVersion7(),
+            TenantId = tenant.Id,
+            StaffMemberId = staff.Id,
+            ServiceId = service.Id,
+            StartUtc = start,
+            EndUtc = end,
+            BlockedUntilUtc = blockedUntil,
+            Status = AppointmentStatus.Confirmed,
+            Origin = AppointmentOrigin.Business,
+            CreatedByUserId = admin.UserId,
+            NotifyCustomer = request.NotifyCustomer,
+            CustomerNote = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+
+        var customerFailure = await AssignCustomerAsync(appointment, request, now, cancellationToken);
+        if (customerFailure is not null)
+        {
+            return customerFailure;
+        }
+
+        db.Appointments.Add(appointment);
+        var saved = await SaveAsync(cancellationToken);
+        if (saved is not null)
+        {
+            return saved;
+        }
+
+        var contact = CustomerContact.Of(appointment);
+        if (contact.NotifyEmail(appointment) is { } to)
+        {
+            await TrySendAsync(EmailTemplates.AppointmentBookedByBusiness(
+                to,
+                contact.FirstName,
+                tenant.Name,
+                service.Name,
+                staff.DisplayName,
+                DateFormatting.LongItalian(start, timeZone),
+                tenant.Address,
+                tenant.Phone,
+                CustomerLink(contact, tenant),
+                contact.HasAccount), cancellationToken);
+        }
+
+        return ServiceResult<AdminAppointmentDto>.Ok(ToDto(appointment, timeZone, now), StatusCodes.Status201Created);
+    }
+
+    /// <summary>
+    /// Exactly one customer. An account must already have booked with this business (the tenant
+    /// filter scopes the check), so the endpoint cannot be used to attach arbitrary accounts. A new
+    /// customer reuses an address-book entry with the same name and phone instead of duplicating it.
+    /// </summary>
+    private async Task<ServiceResult<AdminAppointmentDto>?> AssignCustomerAsync(
+        Appointment appointment, CreateBusinessAppointmentRequest request, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var chosen = (request.CustomerAccountId is null ? 0 : 1) + (request.TenantCustomerId is null ? 0 : 1) + (request.NewCustomer is null ? 0 : 1);
+        if (chosen != 1)
+        {
+            return ServiceResult<AdminAppointmentDto>.Fail(
+                StatusCodes.Status400BadRequest, ErrorCodes.CustomerRequired, "Choose one customer: an account, an address-book entry or a new one.");
+        }
+
+        if (request.CustomerAccountId is { } accountId)
+        {
+            appointment.Customer = await db.Users.SingleOrDefaultAsync(
+                u => u.Id == accountId && u.DeletedAt == null && db.Appointments.Any(a => a.CustomerId == u.Id), cancellationToken);
+            appointment.CustomerId = appointment.Customer?.Id;
+        }
+        else if (request.TenantCustomerId is { } entryId)
+        {
+            appointment.TenantCustomer = await db.TenantCustomers.SingleOrDefaultAsync(
+                c => c.Id == entryId && c.AnonymizedAt == null, cancellationToken);
+            appointment.TenantCustomerId = appointment.TenantCustomer?.Id;
+        }
+        else
+        {
+            var input = request.NewCustomer!;
+            var firstName = input.FirstName.Trim();
+            var lastName = input.LastName.Trim();
+            var phone = input.Phone.Trim();
+            var digits = TenantCustomer.Digits(phone);
+            var email = string.IsNullOrWhiteSpace(input.Email) ? null : input.Email.Trim();
+
+            var existing = await db.TenantCustomers.FirstOrDefaultAsync(
+                c => c.AnonymizedAt == null
+                    && c.PhoneDigits == digits
+                    && c.FirstName.ToLower() == firstName.ToLower()
+                    && c.LastName.ToLower() == lastName.ToLower(),
+                cancellationToken);
+            if (existing is not null)
+            {
+                if (email is not null && existing.Email != email)
+                {
+                    existing.Email = email;
+                    existing.UpdatedAt = now;
+                }
+
+                appointment.TenantCustomer = existing;
+            }
+            else
+            {
+                appointment.TenantCustomer = new TenantCustomer
+                {
+                    Id = Guid.CreateVersion7(),
+                    TenantId = appointment.TenantId,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Phone = phone,
+                    PhoneDigits = digits,
+                    Email = email,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                };
+            }
+
+            appointment.TenantCustomerId = appointment.TenantCustomer.Id;
+        }
+
+        return appointment.Customer is null && appointment.TenantCustomer is null
+            ? ServiceResult<AdminAppointmentDto>.Fail(StatusCodes.Status404NotFound, ErrorCodes.CustomerNotFound, "Customer not found.")
+            : null;
     }
 
     /// <summary>The business can always cancel a confirmed appointment; the customer is notified.</summary>
@@ -211,11 +403,12 @@ public sealed class CalendarService(
 
         var tenant = await db.Tenants.AsNoTracking().SingleAsync(t => t.Id == admin.TenantId, cancellationToken);
         var timeZone = AvailabilityService.TimeZoneOf(tenant);
-        if (appointment.StartUtc > now)
+        var contact = CustomerContact.Of(appointment);
+        if (appointment.StartUtc > now && contact.NotifyEmail(appointment) is { } to)
         {
             await TrySendAsync(EmailTemplates.AppointmentCancelledByBusiness(
-                appointment.Customer.Email!,
-                appointment.Customer.FirstName,
+                to,
+                contact.FirstName,
                 tenant.Name,
                 appointment.Service.Name,
                 DateFormatting.LongItalian(appointment.StartUtc, timeZone),
@@ -270,6 +463,7 @@ public sealed class CalendarService(
         var appointment = await db.Appointments
             .Include(a => a.Service)
             .Include(a => a.Customer)
+            .Include(a => a.TenantCustomer)
             .Include(a => a.StaffMember)
             .SingleOrDefaultAsync(a => a.Id == id, cancellationToken);
 
@@ -329,17 +523,23 @@ public sealed class CalendarService(
             TimeZoneInfo.ConvertTime(a.EndUtc, timeZone),
             TimeZoneInfo.ConvertTime(a.BlockedUntilUtc, timeZone),
             a.Status.ToString(),
+            a.Origin.ToString(),
             a.CustomerNote,
             a.CancellationReason,
             a.Service.PriceCents,
             a.Service.PriceIsFrom,
-            a.Customer.DeletedAt is null
-                ? new CalendarCustomerDto(a.Customer.FirstName, a.Customer.LastName, a.Customer.Email, a.Customer.PhoneNumber)
-                : new CalendarCustomerDto(a.Customer.FirstName, a.Customer.LastName, null, null),
+            ToCustomerDto(CustomerContact.Of(a)),
             CanMove: confirmed && a.StartUtc > now,
             CanCancel: confirmed,
             CanMark: confirmed && a.StartUtc <= now);
     }
+
+    private static CalendarCustomerDto ToCustomerDto(CustomerContact c) =>
+        new(c.FirstName, c.LastName, c.Email, c.Phone, c.HasAccount);
+
+    /// <summary>Customers with an account manage their bookings; the others get the business's page.</summary>
+    private string CustomerLink(CustomerContact contact, Tenant tenant) =>
+        contact.HasAccount ? $"{BaseUrl}/account/appuntamenti" : $"{BaseUrl}/b/{tenant.Slug}";
 
     private static ServiceResult<AdminAppointmentDto> InvalidStatus() =>
         ServiceResult<AdminAppointmentDto>.Fail(StatusCodes.Status409Conflict, ErrorCodes.InvalidStatus, "Only confirmed appointments can be changed.");

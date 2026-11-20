@@ -152,6 +152,28 @@ Priorità:
 Media (Alta prima di avere molte attività sulla piattaforma)
 ```
 
+```text
+ID: TD-008
+Problema:
+La rubrica clienti dell'attività (DEC-037) si alimenta solo dal dialog "Nuovo appuntamento":
+non c'è una pagina per vedere, correggere o eliminare una voce.
+
+Motivo:
+Lo step 1 copre l'inserimento degli appuntamenti; la gestione della rubrica è una funzione a sé.
+
+Impatto:
+Un numero sbagliato si corregge solo creando una nuova voce. Una richiesta GDPR di un cliente
+senza account (accesso, rettifica, cancellazione) oggi va gestita dal supporto sul database;
+l'anonimizzazione automatica dopo 24 mesi senza appuntamenti funziona già.
+
+Soluzione futura:
+Pagina "Clienti" nell'area dell'attività: elenco con ricerca, modifica, anonimizzazione su
+richiesta e storico appuntamenti del cliente.
+
+Priorità:
+Media
+```
+
 ## Revisione
 
 Il log si rivede a ogni release e nella manutenzione mensile. Un debito con priorità `Alta` non può restare aperto alla release senza una decisione esplicita di Massimo registrata nel Decision Log.

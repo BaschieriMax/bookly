@@ -10,7 +10,22 @@ public class Appointment : ITenantOwned
 
     public Guid ServiceId { get; set; }
 
-    public Guid CustomerId { get; set; }
+    /// <summary>The customer's Bookly account; null when the customer is in the business's address book.</summary>
+    public Guid? CustomerId { get; set; }
+
+    /// <summary>Address-book customer (no account). Exactly one of the two customer ids is set (DEC-037).</summary>
+    public Guid? TenantCustomerId { get; set; }
+
+    public AppointmentOrigin Origin { get; set; } = AppointmentOrigin.Online;
+
+    /// <summary>Owner or staff member who entered a <see cref="AppointmentOrigin.Business"/> appointment.</summary>
+    public Guid? CreatedByUserId { get; set; }
+
+    /// <summary>
+    /// Whether the customer gets emails about this appointment (confirmation, reminder, changes).
+    /// Always true online; the business can turn it off when it enters the appointment.
+    /// </summary>
+    public bool NotifyCustomer { get; set; } = true;
 
     public DateTimeOffset StartUtc { get; set; }
 
@@ -39,5 +54,7 @@ public class Appointment : ITenantOwned
 
     public Service Service { get; set; } = null!;
 
-    public AppUser Customer { get; set; } = null!;
+    public AppUser? Customer { get; set; }
+
+    public TenantCustomer? TenantCustomer { get; set; }
 }

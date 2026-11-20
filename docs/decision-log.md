@@ -1030,3 +1030,49 @@ Limite accettato: il cron di GitHub può ritardare o saltare una notte (TD-002).
 Status:
 Approved (Massimo, 20/11/2026)
 ```
+
+---
+
+```text
+DEC-037 — Appuntamenti inseriti dall'attività e rubrica clienti
+
+Date:
+2026-11-20
+
+Context:
+Le attività prendono molti appuntamenti per telefono o di persona, spesso da clienti senza
+account Bookly. Finora ogni appuntamento richiedeva un account (CustomerId obbligatorio).
+
+Decision:
+- Nuova tabella TenantCustomers (per attività): nome, cognome, telefono (+ cifre normalizzate
+  per ricerca e anti-doppioni), email facoltativa. L'attività è titolare di questi dati.
+- Appointment: CustomerId facoltativo + TenantCustomerId, con vincolo nel database
+  CK_Appointments_OneCustomer (esattamente uno dei due); Origin (Online/Business),
+  CreatedByUserId e NotifyCustomer (email di conferma, promemoria e modifiche).
+- POST /api/admin/appointments: titolare per tutti, staff solo per sé; niente preavviso né
+  orizzonte; fuori orario o durante un'assenza serve allowOutsideHours (422
+  admin.outside_working_hours, la UI chiede conferma); sovrapposizioni sempre bloccate dal
+  vincolo (409); niente orari nel passato.
+- Cliente: un account che ha già prenotato presso l'attività, una voce della rubrica o un nuovo
+  cliente (stesso nome e telefono = stessa voce). Un account mai visto dall'attività non si
+  può agganciare né trovare: la ricerca non rivela gli utenti della piattaforma.
+- GET /api/admin/customers?q=: rubrica + account che hanno prenotato qui (min 2 caratteri).
+- Email solo se c'è un indirizzo e l'attività lascia attiva la casella; senza account il link
+  porta alla pagina dell'attività e per disdire si chiama l'attività.
+- Retention: le voci della rubrica senza appuntamenti negli ultimi 24 mesi vengono anonimizzate.
+- Migrazione compatibile con la versione precedente (default Online e NotifyCustomer = true).
+
+Alternatives:
+Dati del cliente scritti sull'appuntamento (niente rubrica: clienti abituali da riscrivere);
+account "ombra" senza password (la piattaforma creerebbe account a persone che non l'hanno
+chiesto, email obbligatoria); solo orari liberi come online (non copre il cliente dopo la chiusura).
+
+Motivation:
+Copre il caso più frequente delle attività locali senza obbligare il cliente a registrarsi,
+mantiene la garanzia anti-sovrapposizione nel database e separa chiaramente i dati di cui è
+titolare l'attività da quelli dell'account Bookly.
+
+Status:
+Approved (Massimo, 20/11/2026)
+```
+

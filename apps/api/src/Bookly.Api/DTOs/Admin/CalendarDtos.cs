@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Bookly.Api.DTOs.Admin;
 
-public sealed record CalendarCustomerDto(string FirstName, string LastName, string? Email, string? Phone);
+/// <summary>HasAccount false: the customer is in the business's address book (DEC-037).</summary>
+public sealed record CalendarCustomerDto(string FirstName, string LastName, string? Email, string? Phone, bool HasAccount);
 
 /// <summary>An appointment as the business sees it. Instants carry the tenant's offset.</summary>
 public sealed record AdminAppointmentDto(
@@ -14,6 +15,8 @@ public sealed record AdminAppointmentDto(
     DateTimeOffset End,
     DateTimeOffset BlockedUntil,
     string Status,
+    /// <summary>Online (booked by the customer) or Business (entered from the calendar).</summary>
+    string Origin,
     string? CustomerNote,
     string? CancellationReason,
     int? PriceCents,
@@ -46,3 +49,31 @@ public sealed record MoveAppointmentRequest(
     Guid? StaffId);
 
 public sealed record CancelAppointmentByBusinessRequest([MaxLength(200)] string? Reason);
+
+/// <summary>A customer the business types in: saved in its address book (DEC-037).</summary>
+public sealed record NewCustomerRequest(
+    [Required, MaxLength(100)] string FirstName,
+    [Required, MaxLength(100)] string LastName,
+    // At least 6 digits; spaces, dots, dashes, brackets and a leading + allowed.
+    [Required, MaxLength(30), RegularExpression(@"^(?=(?:\D*\d){6})\+?[0-9\s./()-]+$")] string Phone,
+    [MaxLength(256), EmailAddress] string? Email);
+
+/// <summary>
+/// An appointment entered by the business (phone, walk-in). Exactly one customer: an account that
+/// already booked with the business, an address-book entry or a new one. Local date and time in
+/// the tenant's time zone. Outside working hours or during time off needs AllowOutsideHours.
+/// </summary>
+public sealed record CreateBusinessAppointmentRequest(
+    [Required] Guid ServiceId,
+    [Required] Guid StaffId,
+    [Required] DateOnly Date,
+    [Required] TimeOnly Time,
+    Guid? CustomerAccountId,
+    Guid? TenantCustomerId,
+    NewCustomerRequest? NewCustomer,
+    [MaxLength(500)] string? Note,
+    bool NotifyCustomer,
+    bool AllowOutsideHours);
+
+/// <summary>Kind: "Account" (a customer who booked online) or "AddressBook" (DEC-037).</summary>
+public sealed record CustomerSearchResultDto(string Kind, Guid Id, string FirstName, string LastName, string? Phone, string? Email);

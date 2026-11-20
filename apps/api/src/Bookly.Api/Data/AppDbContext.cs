@@ -33,6 +33,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
 
     public DbSet<Appointment> Appointments => Set<Appointment>();
 
+    public DbSet<TenantCustomer> TenantCustomers => Set<TenantCustomer>();
+
     public DbSet<NavigationItem> NavigationItems => Set<NavigationItem>();
 
     public DbSet<NavigationItemRole> NavigationItemRoles => Set<NavigationItemRole>();

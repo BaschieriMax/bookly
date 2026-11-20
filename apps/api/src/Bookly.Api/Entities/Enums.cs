@@ -13,6 +13,16 @@ public enum TenantRole
     Staff,
 }
 
+/// <summary>Who created the appointment (DEC-037).</summary>
+public enum AppointmentOrigin
+{
+    /// <summary>The customer booked online.</summary>
+    Online,
+
+    /// <summary>The business entered it from the calendar (phone, walk-in).</summary>
+    Business,
+}
+
 public enum AppointmentStatus
 {
     Confirmed,

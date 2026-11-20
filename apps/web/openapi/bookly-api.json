@@ -67,6 +67,95 @@
         }
       }
     },
+    "/api/admin/appointments": {
+      "post": {
+        "tags": [
+          "AdminAppointments"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBusinessAppointmentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBusinessAppointmentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBusinessAppointmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/appointments/{id}/move": {
       "post": {
         "tags": [
@@ -270,6 +359,37 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/customers": {
+      "get": {
+        "tags": [
+          "AdminCustomers"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerSearchResultDto"
+                  }
                 }
               }
             }
@@ -2380,6 +2500,7 @@
           "end",
           "blockedUntil",
           "status",
+          "origin",
           "customerNote",
           "cancellationReason",
           "priceCents",
@@ -2419,6 +2540,9 @@
             "format": "date-time"
           },
           "status": {
+            "type": "string"
+          },
+          "origin": {
             "type": "string"
           },
           "customerNote": {
@@ -2605,7 +2729,8 @@
           "firstName",
           "lastName",
           "email",
-          "phone"
+          "phone",
+          "hasAccount"
         ],
         "type": "object",
         "properties": {
@@ -2626,6 +2751,9 @@
               "null",
               "string"
             ]
+          },
+          "hasAccount": {
+            "type": "boolean"
           }
         }
       },
@@ -2825,6 +2953,75 @@
           }
         }
       },
+      "CreateBusinessAppointmentRequest": {
+        "required": [
+          "serviceId",
+          "staffId",
+          "date",
+          "time",
+          "customerAccountId",
+          "tenantCustomerId",
+          "newCustomer",
+          "note",
+          "notifyCustomer",
+          "allowOutsideHours"
+        ],
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "staffId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "time": {
+            "type": "string",
+            "format": "time"
+          },
+          "customerAccountId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "tenantCustomerId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "newCustomer": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/NewCustomerRequest"
+              }
+            ]
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "notifyCustomer": {
+            "type": "boolean"
+          },
+          "allowOutsideHours": {
+            "type": "boolean"
+          }
+        }
+      },
       "CreatedTimeOffDto": {
         "required": [
           "timeOff",
@@ -2905,6 +3102,44 @@
             "format": "time"
           },
           "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CustomerSearchResultDto": {
+        "required": [
+          "kind",
+          "id",
+          "firstName",
+          "lastName",
+          "phone",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "email": {
             "type": [
               "null",
               "string"
@@ -3387,6 +3622,32 @@
           }
         }
       },
+      "NewCustomerRequest": {
+        "required": [
+          "firstName",
+          "lastName",
+          "phone",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "PlatformOwnerDto": {
         "required": [
           "userId",
@@ -3795,6 +4056,11 @@
           "unconfirmedAccountsDeleted": {
             "type": "integer",
             "format": "int32"
+          },
+          "addressBookEntriesAnonymized": {
+            "type": "integer",
+            "format": "int32",
+            "default": 0
           }
         }
       },
@@ -4229,6 +4495,9 @@
   "tags": [
     {
       "name": "AdminAppointments"
+    },
+    {
+      "name": "AdminCustomers"
     },
     {
       "name": "AdminServices"
