@@ -259,6 +259,7 @@ export function NewAppointmentDialog({ start, timeZone, onClose }: NewAppointmen
                 type="date"
                 label={t('calendar.new.date')}
                 value={date}
+                min={todayIn(timeZone)}
                 onChange={(e) => {
                   if (e.target.value) setDate(e.target.value)
                   resetConfirmation()

@@ -15,6 +15,7 @@ function freeTuesday(project: string, retry: number): string {
 
 test('the owner enters a phone booking for a new customer from the calendar', async ({
   page,
+  browserName,
 }, testInfo) => {
   const lastName = `Prova${testInfo.project.name.replace(/\W/g, '')}${Date.now() % 100000}`
   await login(page, demo.owner)
@@ -33,7 +34,10 @@ test('the owner enters a phone booking for a new customer from the calendar', as
   await dialog.getByRole('button', { name: 'Nuovo cliente' }).click()
   await expect(dialog.getByLabel('Cognome')).toHaveValue(lastName)
   await dialog.getByLabel('Telefono').fill('333 000 1234')
-  await expectAccessible(page)
+  // Playwright's Firefox crashes the page when a script reads the DOM with this dialog open
+  // (axe, or reading the <option> elements); clicks and typing work. Bisected in CI on PR #34:
+  // not caused by a single element. The check runs on Chromium and WebKit.
+  if (browserName !== 'firefox') await expectAccessible(page)
 
   await dialog.getByRole('button', { name: 'Salva appuntamento' }).click()
   await expect(page.getByText('Appuntamento inserito.').first()).toBeVisible()
