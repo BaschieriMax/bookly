@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
@@ -21,6 +21,8 @@ import {
   visibleRange,
   type CalendarView,
 } from './calendarModel'
+import { NewAppointmentDialog, type NewAppointmentStart } from './NewAppointmentDialog'
+import { toTime } from './newAppointmentModel'
 import { TimeGrid, type GridColumn } from './TimeGrid'
 
 const DATE_PARAM = 'data'
@@ -62,6 +64,7 @@ export default function CalendarPage() {
   const { data, isPending, error } = useCalendar({ from, to, staffId, includeCancelled })
   const { data: allStaff } = useAdminStaff()
   const [selected, setSelected] = useState<AdminAppointment | null>(null)
+  const [creating, setCreating] = useState<NewAppointmentStart | null>(null)
 
   const timeZone = data?.timeZone ?? 'Europe/Rome'
   const today = todayIn(timeZone)
@@ -100,6 +103,16 @@ export default function CalendarPage() {
       ? longDate(`${date}T12:00:00Z`, 'UTC', true)
       : `${shortDateOfKey(from)} – ${shortDateOfKey(to)}`
 
+  // A click on free space of the grid, but not in the past.
+  const createAt = (column: GridColumn, minutes: number) => {
+    if (column.date < today || (column.date === today && minutes < nowMinutes)) return
+    setCreating({
+      date: column.date,
+      time: toTime(minutes),
+      staffId: column.staffIds.length === 1 ? column.staffIds[0] : undefined,
+    })
+  }
+
   const staffOptions = [
     { value: '', label: t('calendar.allStaff') },
     ...(allStaff ?? []).map((s) => ({ value: s.id, label: s.displayName })),
@@ -107,7 +120,19 @@ export default function CalendarPage() {
 
   return (
     <section className="flex flex-col gap-5">
-      <AdminPageHeader title={t('calendar.title')} />
+      <AdminPageHeader
+        title={t('calendar.title')}
+        action={
+          <Button
+            onClick={() =>
+              setCreating({ date: date < today ? today : date, staffId: staffId ?? undefined })
+            }
+          >
+            <Plus aria-hidden="true" className="size-5" />
+            {t('calendar.new.open')}
+          </Button>
+        }
+      />
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex flex-wrap items-center gap-2">
@@ -205,11 +230,22 @@ export default function CalendarPage() {
                 nowMinutes={nowMinutes}
                 staffName={staffName}
                 onSelect={setSelected}
+                onCreateAt={createAt}
               />
             </div>
           </>
         )}
       </QueryState>
+
+      {creating && (
+        <NewAppointmentDialog
+          // Keyed: each opening starts from its own date, time and staff member.
+          key={`${creating.date}-${creating.time ?? ''}-${creating.staffId ?? ''}`}
+          start={creating}
+          timeZone={timeZone}
+          onClose={() => setCreating(null)}
+        />
+      )}
 
       {selected && data && (
         <AppointmentDialog

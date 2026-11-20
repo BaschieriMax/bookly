@@ -8,6 +8,8 @@ interface DialogProps {
   children: ReactNode
   /** Buttons row, usually Cancel + primary action. */
   footer?: ReactNode
+  /** "wide" for two-column forms on desktop (still a bottom sheet on phones). */
+  size?: 'default' | 'wide'
   onClose: () => void
 }
 
@@ -15,7 +17,15 @@ interface DialogProps {
  * Accessible modal: focus moves to the first field, Escape and the backdrop close it,
  * focus returns to the trigger. On mobile it opens as a bottom sheet.
  */
-export function Dialog({ open, title, closeLabel, children, footer, onClose }: DialogProps) {
+export function Dialog({
+  open,
+  title,
+  closeLabel,
+  children,
+  footer,
+  size = 'default',
+  onClose,
+}: DialogProps) {
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
@@ -51,7 +61,7 @@ export function Dialog({ open, title, closeLabel, children, footer, onClose }: D
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-card bg-surface sm:rounded-card"
+        className={`relative flex max-h-[92vh] w-full flex-col rounded-t-card bg-surface sm:rounded-card ${size === 'wide' ? 'max-w-3xl' : 'max-w-lg'}`}
       >
         <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
           <h2 id={titleId} className="font-heading text-xl font-semibold">
