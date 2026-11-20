@@ -19,10 +19,24 @@ public sealed record CustomerListItemDto(
 
 public sealed record CustomerListDto(int Total, int Page, int PageSize, IReadOnlyList<CustomerListItemDto> Items);
 
-/// <summary>An appointment of a customer at this business, newest first.</summary>
+/// <summary>An appointment of a customer at this business. Start in the tenant's time zone.</summary>
 public sealed record CustomerAppointmentDto(Guid Id, DateTimeOffset Start, string ServiceName, string StaffName, string Status, string Origin);
 
-/// <summary>A customer with their appointments here. CreatedAt: when they entered the address book.</summary>
+/// <summary>
+/// The numbers on top of the "Appuntamenti" tab. Upcoming / Past split by start time; LastVisit is
+/// the latest past appointment that was not cancelled or missed, NextAppointment the next confirmed one.
+/// </summary>
+public sealed record CustomerStatsDto(
+    int Total,
+    int Upcoming,
+    int Past,
+    int Completed,
+    int NoShow,
+    int Cancelled,
+    DateTimeOffset? LastVisit,
+    DateTimeOffset? NextAppointment);
+
+/// <summary>A customer with the summary of their appointments here. CreatedAt: when they entered the address book.</summary>
 public sealed record CustomerDetailDto(
     string Kind,
     Guid Id,
@@ -31,7 +45,10 @@ public sealed record CustomerDetailDto(
     string? Phone,
     string? Email,
     DateTimeOffset? CreatedAt,
-    IReadOnlyList<CustomerAppointmentDto> Appointments);
+    CustomerStatsDto Stats);
+
+/// <summary>A page of a customer's appointments: upcoming soonest first, past newest first.</summary>
+public sealed record CustomerAppointmentPageDto(int Total, int Page, int PageSize, IReadOnlyList<CustomerAppointmentDto> Items);
 
 /// <summary>Correction of an address-book entry; same rules as a new customer.</summary>
 public sealed record UpdateCustomerRequest(

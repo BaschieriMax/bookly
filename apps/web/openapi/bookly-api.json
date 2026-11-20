@@ -636,6 +636,160 @@
         }
       }
     },
+    "/api/admin/customers/address-book/{id}/appointments": {
+      "get": {
+        "tags": [
+          "AdminCustomers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "when",
+            "in": "query",
+            "schema": {
+              "pattern": "^(upcoming|past)$",
+              "type": "string",
+              "default": "past"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAppointmentPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/customers/account/{id}/appointments": {
+      "get": {
+        "tags": [
+          "AdminCustomers"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "when",
+            "in": "query",
+            "schema": {
+              "pattern": "^(upcoming|past)$",
+              "type": "string",
+              "default": "past"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAppointmentPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/customers/address-book/{id}/export": {
       "get": {
         "tags": [
@@ -3417,6 +3571,35 @@
           }
         }
       },
+      "CustomerAppointmentPageDto": {
+        "required": [
+          "total",
+          "page",
+          "pageSize",
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerAppointmentDto"
+            }
+          }
+        }
+      },
       "CustomerDetailDto": {
         "required": [
           "kind",
@@ -3426,7 +3609,7 @@
           "phone",
           "email",
           "createdAt",
-          "appointments"
+          "stats"
         ],
         "type": "object",
         "properties": {
@@ -3462,11 +3645,8 @@
             ],
             "format": "date-time"
           },
-          "appointments": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CustomerAppointmentDto"
-            }
+          "stats": {
+            "$ref": "#/components/schemas/CustomerStatsDto"
           }
         }
       },
@@ -3593,6 +3773,59 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "CustomerStatsDto": {
+        "required": [
+          "total",
+          "upcoming",
+          "past",
+          "completed",
+          "noShow",
+          "cancelled",
+          "lastVisit",
+          "nextAppointment"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "upcoming": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "past": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "completed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "noShow": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cancelled": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastVisit": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "nextAppointment": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Bookly.Api.Auth.Policies;
 using Bookly.Api.DTOs.Admin;
 using Bookly.Api.Infrastructure.Http;
@@ -54,6 +55,34 @@ public sealed class AdminCustomersController(CustomerDirectoryService directory)
             ? Results.Ok(customer)
             : NotFoundProblem();
 
+    /// <summary>Appointments of an address-book entry: when = upcoming (soonest first) | past (newest first).</summary>
+    [HttpGet("address-book/{id:guid}/appointments")]
+    [Authorize(Policy = Policies.TenantOwner)]
+    [ProducesResponseType<CustomerAppointmentPageDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public Task<IResult> AddressBookAppointments(
+        Guid id,
+        [FromQuery, RegularExpression(WhenPattern)] string when = CustomerDirectoryService.Past,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = CustomerDirectoryService.AppointmentPageSize,
+        CancellationToken cancellationToken = default) =>
+        AppointmentsAsync(CustomerDirectoryService.AddressBookKind, id, when, page, pageSize, cancellationToken);
+
+    /// <summary>Appointments here of an account that booked here; 404 for any other account.</summary>
+    [HttpGet("account/{id:guid}/appointments")]
+    [Authorize(Policy = Policies.TenantOwner)]
+    [ProducesResponseType<CustomerAppointmentPageDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public Task<IResult> AccountAppointments(
+        Guid id,
+        [FromQuery, RegularExpression(WhenPattern)] string when = CustomerDirectoryService.Past,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = CustomerDirectoryService.AppointmentPageSize,
+        CancellationToken cancellationToken = default) =>
+        AppointmentsAsync(CustomerDirectoryService.AccountKind, id, when, page, pageSize, cancellationToken);
+
     [HttpPut("address-book/{id:guid}")]
     [Authorize(Policy = Policies.TenantOwner)]
     [ProducesResponseType<CustomerDetailDto>(StatusCodes.Status200OK)]
@@ -85,6 +114,14 @@ public sealed class AdminCustomersController(CustomerDirectoryService directory)
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     public async Task<IResult> EraseAddressBook(Guid id, CancellationToken cancellationToken) =>
         (await directory.EraseAddressBookAsync(id, cancellationToken)).ToResult();
+
+    private const string WhenPattern = "^(upcoming|past)$";
+
+    private async Task<IResult> AppointmentsAsync(
+        string kind, Guid id, string when, int page, int pageSize, CancellationToken cancellationToken) =>
+        await directory.AppointmentsAsync(kind, id, when, page, pageSize, cancellationToken) is { } appointments
+            ? Results.Ok(appointments)
+            : NotFoundProblem();
 
     private static IResult NotFoundProblem() =>
         ApiProblems.Create(StatusCodes.Status404NotFound, ErrorCodes.CustomerNotFound, "Customer not found.");

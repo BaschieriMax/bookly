@@ -588,6 +588,124 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/customers/address-book/{id}/appointments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    when?: string;
+                    page?: number;
+                    pageSize?: number;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CustomerAppointmentPageDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/customers/account/{id}/appointments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    when?: string;
+                    page?: number;
+                    pageSize?: number;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CustomerAppointmentPageDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/customers/address-book/{id}/export": {
         parameters: {
             query?: never;
@@ -2979,6 +3097,15 @@ export interface components {
             status: string;
             origin: string;
         };
+        CustomerAppointmentPageDto: {
+            /** Format: int32 */
+            total: number;
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            items: components["schemas"]["CustomerAppointmentDto"][];
+        };
         CustomerDetailDto: {
             kind: string;
             /** Format: uuid */
@@ -2989,7 +3116,7 @@ export interface components {
             email: null | string;
             /** Format: date-time */
             createdAt: null | string;
-            appointments: components["schemas"]["CustomerAppointmentDto"][];
+            stats: components["schemas"]["CustomerStatsDto"];
         };
         CustomerListDto: {
             /** Format: int32 */
@@ -3023,6 +3150,24 @@ export interface components {
             lastName: string;
             phone: null | string;
             email: null | string;
+        };
+        CustomerStatsDto: {
+            /** Format: int32 */
+            total: number;
+            /** Format: int32 */
+            upcoming: number;
+            /** Format: int32 */
+            past: number;
+            /** Format: int32 */
+            completed: number;
+            /** Format: int32 */
+            noShow: number;
+            /** Format: int32 */
+            cancelled: number;
+            /** Format: date-time */
+            lastVisit: null | string;
+            /** Format: date-time */
+            nextAppointment: null | string;
         };
         DataExportDto: {
             /** Format: date-time */

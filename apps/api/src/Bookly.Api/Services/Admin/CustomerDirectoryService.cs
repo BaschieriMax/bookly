@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
 using Bookly.Api.Data;
@@ -21,7 +22,10 @@ public sealed class CustomerDirectoryService(AppDbContext db, AdminContext admin
     public const int MinQueryLength = 2;
     public const int Limit = 10;
     public const int MaxPageSize = 100;
-    public const int HistoryLimit = 200;
+    public const int AppointmentPageSize = 10;
+    public const int MaxAppointmentPageSize = 50;
+    public const string Upcoming = "upcoming";
+    public const string Past = "past";
 
     public const string AccountKind = "Account";
     public const string AddressBookKind = "AddressBook";
@@ -144,7 +148,7 @@ public sealed class CustomerDirectoryService(AppDbContext db, AdminContext admin
             entry.Phone,
             entry.Email,
             entry.CreatedAt,
-            await HistoryAsync(a => a.TenantCustomerId == entry.Id, timeZone, cancellationToken));
+            await StatsAsync(a => a.TenantCustomerId == entry.Id, timeZone, cancellationToken));
     }
 
     /// <summary>An account that booked here, read-only; null otherwise (no account is revealed).</summary>
@@ -165,7 +169,53 @@ public sealed class CustomerDirectoryService(AppDbContext db, AdminContext admin
             user.PhoneNumber,
             user.Email,
             null,
-            await HistoryAsync(a => a.CustomerId == user.Id, timeZone, cancellationToken));
+            await StatsAsync(a => a.CustomerId == user.Id, timeZone, cancellationToken));
+    }
+
+    /// <summary>
+    /// A page of the appointments of an address-book entry (kind AddressBook) or of an account that
+    /// booked here (kind Account); null when the customer is not one of this business.
+    /// </summary>
+    public async Task<CustomerAppointmentPageDto?> AppointmentsAsync(
+        string kind, Guid id, string when, int page, int pageSize, CancellationToken cancellationToken)
+    {
+        Expression<Func<Appointment, bool>> ofCustomer;
+        if (kind == AddressBookKind)
+        {
+            if (!await db.TenantCustomers.AnyAsync(c => c.Id == id && c.AnonymizedAt == null, cancellationToken))
+            {
+                return null;
+            }
+
+            ofCustomer = a => a.TenantCustomerId == id;
+        }
+        else
+        {
+            if (!await Accounts(null).AnyAsync(u => u.Id == id, cancellationToken))
+            {
+                return null;
+            }
+
+            ofCustomer = a => a.CustomerId == id;
+        }
+
+        var now = timeProvider.GetUtcNow();
+        var size = Math.Clamp(pageSize, 1, MaxAppointmentPageSize);
+        var number = Math.Max(page, 1);
+        var query = db.Appointments.AsNoTracking().Where(ofCustomer);
+        query = when == Upcoming
+            ? query.Where(a => a.StartUtc >= now).OrderBy(a => a.StartUtc).ThenBy(a => a.Id)
+            : query.Where(a => a.StartUtc < now).OrderByDescending(a => a.StartUtc).ThenBy(a => a.Id);
+
+        var total = await query.CountAsync(cancellationToken);
+        var rows = await query
+            .Skip((number - 1) * size)
+            .Take(size)
+            .Select(a => new { a.Id, a.StartUtc, Service = a.Service.Name, Staff = a.StaffMember.DisplayName, a.Status, a.Origin })
+            .ToListAsync(cancellationToken);
+        var timeZone = await TimeZoneAsync(cancellationToken);
+        return new CustomerAppointmentPageDto(total, number, size, [.. rows.Select(a => new CustomerAppointmentDto(
+            a.Id, TimeZoneInfo.ConvertTime(a.StartUtc, timeZone), a.Service, a.Staff, a.Status.ToString(), a.Origin.ToString()))]);
     }
 
     /// <summary>Corrects an address-book entry (a wrong number, a typo in the name).</summary>
@@ -328,16 +378,29 @@ public sealed class CustomerDirectoryService(AppDbContext db, AdminContext admin
         return ($"%{EscapeLike(text)}%", digits.Length >= 3 ? $"%{digits}%" : null);
     }
 
-    private async Task<IReadOnlyList<CustomerAppointmentDto>> HistoryAsync(
-        System.Linq.Expressions.Expression<Func<Appointment, bool>> ofCustomer, TimeZoneInfo timeZone, CancellationToken cancellationToken) =>
-        [.. (await db.Appointments.AsNoTracking()
-                .Where(ofCustomer)
-                .OrderByDescending(a => a.StartUtc)
-                .Take(HistoryLimit)
-                .Select(a => new { a.Id, a.StartUtc, Service = a.Service.Name, Staff = a.StaffMember.DisplayName, a.Status, a.Origin })
-                .ToListAsync(cancellationToken))
-            .Select(a => new CustomerAppointmentDto(
-                a.Id, TimeZoneInfo.ConvertTime(a.StartUtc, timeZone), a.Service, a.Staff, a.Status.ToString(), a.Origin.ToString()))];
+    // A customer has at most a few hundred appointments here: two columns each, counted in memory.
+    private async Task<CustomerStatsDto> StatsAsync(
+        Expression<Func<Appointment, bool>> ofCustomer, TimeZoneInfo timeZone, CancellationToken cancellationToken)
+    {
+        var now = timeProvider.GetUtcNow();
+        var rows = await db.Appointments.AsNoTracking()
+            .Where(ofCustomer)
+            .Select(a => new { a.StartUtc, a.Status })
+            .ToListAsync(cancellationToken);
+        var upcoming = rows.Where(a => a.StartUtc >= now).ToList();
+        var past = rows.Where(a => a.StartUtc < now).ToList();
+        return new CustomerStatsDto(
+            rows.Count,
+            upcoming.Count,
+            past.Count,
+            rows.Count(a => a.Status == AppointmentStatus.Completed),
+            rows.Count(a => a.Status == AppointmentStatus.NoShow),
+            rows.Count(a => a.Status is AppointmentStatus.CancelledByCustomer or AppointmentStatus.CancelledByBusiness),
+            Local(past.Where(a => a.Status is AppointmentStatus.Completed or AppointmentStatus.Confirmed)
+                .Max(a => (DateTimeOffset?)a.StartUtc), timeZone),
+            Local(upcoming.Where(a => a.Status == AppointmentStatus.Confirmed)
+                .Min(a => (DateTimeOffset?)a.StartUtc), timeZone));
+    }
 
     private async Task<TimeZoneInfo> TimeZoneAsync(CancellationToken cancellationToken) =>
         AvailabilityService.TimeZoneOf(await db.Tenants.AsNoTracking().SingleAsync(t => t.Id == admin.TenantId, cancellationToken));

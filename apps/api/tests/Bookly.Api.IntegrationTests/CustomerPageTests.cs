@@ -95,18 +95,20 @@ public sealed class CustomerPageTests(PostgresFixture database) : IDisposable
 
         using var list = await session.Client.GetAsync("/api/admin/customers/list");
         using var detail = await session.Client.GetAsync($"/api/admin/customers/address-book/{shop.Giulia.Id}");
+        using var appointments = await session.Client.GetAsync($"/api/admin/customers/address-book/{shop.Giulia.Id}/appointments");
         using var erase = await session.SendAsync(HttpMethod.Delete, $"/api/admin/customers/address-book/{shop.Giulia.Id}");
         // The search for the calendar dialog stays available to them.
         using var search = await session.Client.GetAsync("/api/admin/customers?q=ross");
 
         Assert.Equal(HttpStatusCode.Forbidden, list.StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, detail.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, appointments.StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, erase.StatusCode);
         Assert.Equal(HttpStatusCode.OK, search.StatusCode);
     }
 
     [Fact]
-    public async Task Details_show_the_history_and_never_reveal_other_accounts()
+    public async Task Details_show_the_numbers_and_never_reveal_other_accounts()
     {
         var shop = await ArrangeShopAsync();
         var other = await ArrangeShopAsync();
@@ -114,18 +116,78 @@ public sealed class CustomerPageTests(PostgresFixture database) : IDisposable
 
         var giulia = await session.Client.GetFromJsonAsync<JsonElement>($"/api/admin/customers/address-book/{shop.Giulia.Id}");
         Assert.Equal("AddressBook", giulia.GetProperty("kind").GetString());
+        var stats = giulia.GetProperty("stats");
         Assert.Equal(
-            ["2027-03-02T10:00:00+01:00 Confirmed", "2027-02-15T10:00:00+01:00 Completed"],
-            giulia.GetProperty("appointments").EnumerateArray().Select(a => $"{a.GetProperty("start").GetString()} {a.GetProperty("status").GetString()}"));
+            "total 2, upcoming 1, past 1, completed 1, noShow 0, cancelled 0",
+            $"total {stats.GetProperty("total").GetInt32()}, upcoming {stats.GetProperty("upcoming").GetInt32()}, past {stats.GetProperty("past").GetInt32()}, "
+            + $"completed {stats.GetProperty("completed").GetInt32()}, noShow {stats.GetProperty("noShow").GetInt32()}, cancelled {stats.GetProperty("cancelled").GetInt32()}");
+        Assert.Equal("2027-02-15T10:00:00+01:00", stats.GetProperty("lastVisit").GetString());
+        Assert.Equal("2027-03-02T10:00:00+01:00", stats.GetProperty("nextAppointment").GetString());
 
         var mario = await session.Client.GetFromJsonAsync<JsonElement>($"/api/admin/customers/account/{shop.Account.Id}");
         Assert.Equal("Account", mario.GetProperty("kind").GetString());
-        Assert.Single(mario.GetProperty("appointments").EnumerateArray());
+        Assert.Equal(1, mario.GetProperty("stats").GetProperty("total").GetInt32());
+        Assert.Equal(JsonValueKind.Null, mario.GetProperty("stats").GetProperty("nextAppointment").ValueKind);
 
         using var foreignAccount = await session.Client.GetAsync($"/api/admin/customers/account/{other.Account.Id}");
         using var foreignEntry = await session.Client.GetAsync($"/api/admin/customers/address-book/{other.Giulia.Id}");
+        using var foreignAccountAppointments = await session.Client.GetAsync($"/api/admin/customers/account/{other.Account.Id}/appointments");
+        using var foreignEntryAppointments = await session.Client.GetAsync($"/api/admin/customers/address-book/{other.Giulia.Id}/appointments");
         Assert.Equal(HttpStatusCode.NotFound, foreignAccount.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, foreignEntry.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, foreignAccountAppointments.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, foreignEntryAppointments.StatusCode);
+    }
+
+    [Fact]
+    public async Task A_regular_customer_s_appointments_come_ten_at_a_time()
+    {
+        var shop = await ArrangeShopAsync();
+        await using (var db = database.CreateDbContext())
+        {
+            // 23 more past visits, one a week before 15 Feb, and two more upcoming ones.
+            for (var week = 1; week <= 23; week++)
+            {
+                var visit = TestData.NewBusinessAppointment(shop.Tenant.Id, shop.Staff.Id, shop.Service, shop.Giulia.Id, Past.AddDays(-7 * week));
+                visit.Status = week == 5 ? AppointmentStatus.NoShow : AppointmentStatus.Completed;
+                db.Appointments.Add(visit);
+            }
+
+            var cancelled = TestData.NewBusinessAppointment(shop.Tenant.Id, shop.Staff.Id, shop.Service, shop.Giulia.Id, Future.AddDays(7));
+            cancelled.Status = AppointmentStatus.CancelledByBusiness;
+            db.Appointments.AddRange(cancelled, TestData.NewBusinessAppointment(shop.Tenant.Id, shop.Staff.Id, shop.Service, shop.Giulia.Id, Future.AddDays(14)));
+            await db.SaveChangesAsync();
+        }
+
+        using var session = await TestUsers.LoginAsync(_factory, shop.Owner);
+        var path = $"/api/admin/customers/address-book/{shop.Giulia.Id}/appointments";
+
+        var first = await session.Client.GetFromJsonAsync<JsonElement>(path);
+        Assert.Equal(24, first.GetProperty("total").GetInt32());
+        Assert.Equal(10, first.GetProperty("pageSize").GetInt32());
+        var starts = first.GetProperty("items").EnumerateArray().Select(a => a.GetProperty("start").GetString()).ToList();
+        Assert.Equal(10, starts.Count);
+        Assert.Equal("2027-02-15T10:00:00+01:00", starts[0]); // newest first
+        Assert.Equal("2027-02-08T10:00:00+01:00", starts[1]);
+
+        var third = await session.Client.GetFromJsonAsync<JsonElement>($"{path}?when=past&page=3");
+        Assert.Equal(4, third.GetProperty("items").GetArrayLength());
+
+        var upcoming = await session.Client.GetFromJsonAsync<JsonElement>($"{path}?when=upcoming");
+        Assert.Equal(
+            ["2027-03-02T10:00:00+01:00 Confirmed", "2027-03-09T10:00:00+01:00 CancelledByBusiness", "2027-03-16T10:00:00+01:00 Confirmed"],
+            upcoming.GetProperty("items").EnumerateArray().Select(a => $"{a.GetProperty("start").GetString()} {a.GetProperty("status").GetString()}"));
+
+        var stats = (await session.Client.GetFromJsonAsync<JsonElement>($"/api/admin/customers/address-book/{shop.Giulia.Id}")).GetProperty("stats");
+        Assert.Equal(27, stats.GetProperty("total").GetInt32());
+        Assert.Equal(3, stats.GetProperty("upcoming").GetInt32());
+        Assert.Equal(24, stats.GetProperty("past").GetInt32());
+        Assert.Equal(23, stats.GetProperty("completed").GetInt32());
+        Assert.Equal(1, stats.GetProperty("noShow").GetInt32());
+        Assert.Equal(1, stats.GetProperty("cancelled").GetInt32());
+
+        using var wrongWhen = await session.Client.GetAsync($"{path}?when=tomorrow");
+        Assert.Equal(HttpStatusCode.BadRequest, wrongWhen.StatusCode);
     }
 
     [Fact]

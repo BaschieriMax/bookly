@@ -1092,13 +1092,17 @@ Decision:
 - Pagina "Clienti" solo per i titolari: elenco unico con la rubrica e gli account che hanno già
   prenotato presso l'attività (in sola lettura: i loro dati li gestiscono loro dal profilo),
   ricerca e filtro, numero di appuntamenti, ultima visita e prossimo appuntamento.
-- Scheda cliente con lo storico degli appuntamenti presso l'attività.
+- Scheda cliente a due schede: "Dati" e "Appuntamenti". Un cliente abituale può avere centinaia
+  di appuntamenti, quindi la scheda riceve solo i conteggi (totali, prossimi, passati, completati,
+  non presentati, annullati, ultima visita, prossimo) e gli appuntamenti arrivano a pagine di 10
+  (prossimi dal più vicino, passati dal più recente) con "Mostra altri". Il dialog ha altezza fissa.
 - Voci della rubrica: correzione (stesse regole del nuovo cliente), "Scarica dati" (JSON con
   anagrafica, appuntamenti e note: diritto di accesso) e "Cancella dati" (diritto all'oblio).
 - La cancellazione anonimizza la voce, cancella le note dei suoi appuntamenti e annulla quelli
   futuri senza email (motivo interno "Dati del cliente cancellati"); lo storico passato resta
   come "Cliente anonimo".
 - API: GET /api/admin/customers/list, GET .../address-book/{id} e .../account/{id},
+  GET .../{address-book|account}/{id}/appointments?when=upcoming|past&page=&pageSize=10,
   PUT e DELETE .../address-book/{id}, GET .../address-book/{id}/export (tutti TenantOwner).
   Un account che non ha mai prenotato presso l'attività risponde 404.
 - L'elenco unisce le due fonti in memoria e poi pagina: dimensioni da attività locale.
