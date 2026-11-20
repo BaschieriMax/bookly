@@ -77,6 +77,8 @@ passo, il rollback e i problemi frequenti sono in **[docs/deploy.md](./docs/depl
 - Ogni merge su `main` con CI verde va in produzione da solo con il workflow `Deploy`: migrazioni
   del database, deploy su Render del commit esatto, attesa di `/api/version` e smoke test.
 - Il servizio è descritto in `render.yaml` (Blueprint). L'elenco delle variabili è in `.env.example`.
+- Ogni notte il workflow `Backup` salva il database, ne verifica il ripristino e lo conserva cifrato
+  per 30 giorni (DEC-036, ripristino in `docs/deploy.md` §9).
 - Dietro il proxy HTTPS di Render serve **`ReverseProxy__Enabled=true`** (già nel Blueprint):
   senza, i cookie Secure di login e antiforgery falliscono (500 su `/api/auth/me`, collaudo F4).
 

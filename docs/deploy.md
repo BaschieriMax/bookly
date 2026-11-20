@@ -31,7 +31,7 @@ push su main ──► CI (web, api, e2e, image, codeql) ──► verde?
 | Servizio | Limite | Effetto su Bookly |
 |---|---|---|
 | Render free | 750 ore/mese di istanza, pausa dopo 15 min senza traffico, 512 MB RAM, 500 minuti di build/mese | cron-job.org chiama l'app ogni 15 minuti dalle 7 alle 22, quindi di giorno resta sveglia e di notte va in pausa (~470 ore al mese). Ogni deploy costa 5-8 minuti di build |
-| Neon free | 100 CU-ore/mese, 1 GB, scale-to-zero dopo 5 min fisso, restore istantaneo entro 6 ore | Con compute fisso a 0,25 CU e i promemoria ogni 15 minuti solo di giorno si stimano 40-60 CU-ore/mese. Il restore copre solo le ultime 6 ore |
+| Neon free | 100 CU-ore/mese, 1 GB, scale-to-zero dopo 5 min fisso, restore istantaneo entro 6 ore | Con compute fisso a 0,25 CU e i promemoria ogni 15 minuti solo di giorno si stimano 40-60 CU-ore/mese. Il restore copre solo le ultime 6 ore: per il resto ci sono i backup notturni (30 giorni) |
 | Resend free | 3.000 email/mese, 100/giorno, 1 dominio | Senza dominio verificato invia **solo** all'email dell'account Resend. Render free blocca le porte SMTP standard: si usa la **2465** |
 
 Verifica i limiti attuali sui siti dei provider prima di andare live con clienti veri.
@@ -132,6 +132,10 @@ Verifica i limiti attuali sui siti dei provider prima di andare live con clienti
 4. **Actions → Deploy → Run workflow**: ora fa migrazioni (nessuna da applicare), deploy, attesa
    della versione e smoke test. Deve finire in verde.
 5. **Actions → Reminders → Run workflow**: deve rispondere con un JSON e finire in verde.
+6. **Backup notturno** (DEC-036): nell'environment `production` aggiungi il secret
+   **`BACKUP_PASSPHRASE`**, una frase di almeno 24 caratteri generata dal password manager e salvata
+   **anche lì**: senza di lei i backup non si possono aprire. Poi **Actions → Backup → Run
+   workflow**: deve finire in verde con il riepilogo del test di ripristino.
 
 Da qui in poi ogni merge su `main` con CI verde va in produzione da solo.
 
@@ -221,10 +225,46 @@ l'immagine). Il workflow successivo su `main` riporterà la versione nuova: corr
 ### Rollback del database
 - Neon free permette il **restore** del branch a un istante delle **ultime 6 ore**: Console →
   **Branches → Restore**.
+- Oltre le 6 ore servono i **backup notturni** (sotto).
 - Prima di una migrazione **distruttiva** (drop di colonne o tabelle, cambi di tipo) crea un branch
   di backup: Console → **Branches → New branch** da quello di produzione, nome
   `backup-<data>`. Cancellalo dopo aver verificato il rilascio (il piano free ha un numero
   limitato di branch).
+
+### Backup notturni (DEC-036)
+
+Ogni notte il workflow **Backup** salva il database con `pg_dump`, lo **ripristina in un PostgreSQL
+di prova** (un backup che non si ripristina fa fallire il workflow), lo cifra con AES-256 e lo tiene
+**30 giorni** tra gli artifact di GitHub. Il riepilogo di ogni esecuzione mostra quante attività,
+appuntamenti e utenti contiene.
+
+- Il repo è pubblico e i suoi artifact li scarica qualsiasi utente GitHub: per questo il file è
+  cifrato, e la `BACKUP_PASSPHRASE` non va mai scritta altrove che nel password manager.
+- Il cron di GitHub può partire in ritardo o saltare una notte (TD-002): controlla ogni tanto che in
+  **Actions → Backup** ci siano esecuzioni recenti, o lancialo a mano prima di operazioni rischiose.
+
+**Ripristinare un backup**
+
+1. **Actions → Backup** → l'esecuzione del giorno voluto → **Artifacts** → scarica lo zip ed
+   estrai `bookly-db-<data>.dump.gpg`.
+2. Decifra (GnuPG; su Windows Gpg4win) e inserisci la passphrase quando la chiede:
+
+   ```bash
+   gpg --output bookly.dump --decrypt bookly-db-<data>.dump.gpg
+   ```
+
+3. **Prima su un branch di prova**: Neon → **Branches → New branch**, poi copia la sua connection
+   string (formato URL `postgresql://…`) e ripristina con PostgreSQL 17:
+
+   ```bash
+   pg_restore --clean --if-exists --no-owner --dbname "<URL del branch>" bookly.dump
+   ```
+
+   Controlla i dati dal SQL Editor del branch.
+4. Se è tutto giusto, ripeti il comando sul branch di produzione, oppure fai di quel branch la
+   produzione (Neon: **Set as default**) e aggiorna le connection string su Render e GitHub.
+5. Se dopo il ripristino l'app dà errori `42501 permission denied`, riassegna i permessi a
+   `bookly_app` con il blocco SQL della sezione 10.
 
 ### Regola expand → contract per le migrazioni
 Durante il deploy la versione precedente gira sul nuovo schema. Quindi:
@@ -243,6 +283,7 @@ Mai rinominare o eliminare una colonna nello stesso rilascio che smette di usarl
 | API key Resend | Resend → nuova key → Render `Email__Password` → revoca la vecchia |
 | `Jobs__Secret` | Render (nuovo valore ≥ 32 caratteri), GitHub `BOOKLY_JOB_SECRET` e l'header dei due job di cron-job.org, insieme |
 | Deploy hook | Render → Settings → Regenerate → GitHub `RENDER_DEPLOY_HOOK_URL` |
+| `BACKUP_PASSPHRASE` | Nuova frase nel password manager e su GitHub. I backup già fatti restano cifrati con la vecchia: conservala finché non scadono (30 giorni) |
 
 ### Error tracking (facoltativo, DEC-031)
 Crea un progetto su Sentry (regione EU) e imposta su Render `Sentry__Dsn`, `Sentry__Environment=production`,

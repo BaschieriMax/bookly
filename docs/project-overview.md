@@ -416,7 +416,7 @@ Copertura mirata alle parti critiche (disponibilità, prenotazione, autorizzazio
 
 Runbook completo (account, variabili, dominio, rollback): [`docs/deploy.md`](./deploy.md).
 
-**Rollback**: Rollback di Render al deploy precedente (riusa l'immagine). Le migrazioni sono retrocompatibili (expand → contract). Database: restore di Neon entro 6 ore sul piano free; prima di ogni migrazione distruttiva si crea un branch Neon di backup.
+**Rollback**: Rollback di Render al deploy precedente (riusa l'immagine). Le migrazioni sono retrocompatibili (expand → contract). Database: restore di Neon entro 6 ore sul piano free, backup notturni cifrati con test di ripristino conservati 30 giorni (DEC-036); prima di ogni migrazione distruttiva si crea un branch Neon di backup.
 
 ## 24. ENVIRONMENTS
 

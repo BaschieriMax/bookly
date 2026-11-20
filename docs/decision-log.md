@@ -994,3 +994,39 @@ Costo accettato: di notte il primo visitatore aspetta il risveglio dell'app (TD-
 Status:
 Approved (Massimo, 19/11/2026)
 ```
+
+---
+
+```text
+Decision:
+DEC-036 — Backup notturno del database con test di ripristino
+
+Date:
+2026-11-20
+
+Context:
+Neon free ripristina solo le ultime 6 ore: un errore scoperto il giorno dopo (cancellazione,
+migrazione sbagliata, bug che corrompe dati) non sarebbe recuperabile.
+
+Decision:
+Workflow GitHub Actions `Backup`, ogni notte e a mano:
+- pg_dump 17 (formato custom) con la connessione owner già salvata per le migrazioni
+  (DATABASE_MIGRATION_CONNECTION, convertita da Npgsql a variabili libpq da uno script testato);
+- ripristino di prova in un PostgreSQL 17 usa e getta: senza storico delle migrazioni il run fallisce;
+  il riepilogo mostra i conteggi di attività, appuntamenti e utenti;
+- cifratura AES-256 (gpg simmetrico) con BACKUP_PASSPHRASE, perché gli artifact di un repo
+  pubblico sono scaricabili da qualsiasi utente GitHub;
+- artifact conservato 30 giorni. Ripristino documentato in docs/deploy.md §9.
+
+Alternatives:
+Solo il restore di Neon (6 ore); piano Neon a pagamento (fino a 7-30 giorni, costo fisso);
+storage esterno S3/R2 (un altro account e altre credenziali); backup senza test di ripristino
+(si scopre che non funziona quando serve).
+
+Motivation:
+30 giorni di storico a costo zero, con la prova ogni notte che il backup si ripristina davvero.
+Limite accettato: il cron di GitHub può ritardare o saltare una notte (TD-002).
+
+Status:
+Approved (Massimo, 20/11/2026)
+```
