@@ -152,7 +152,7 @@ export default function StaffPage() {
 
       <QueryState isPending={isPending} error={error}>
         {staff?.length === 0 && <EmptyState>{t('staff.empty')}</EmptyState>}
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="grid gap-3 lg:grid-cols-2">
           {staff?.map((member) => (
             <li
               key={member.id}

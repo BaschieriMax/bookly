@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { CheckboxField } from '@/components/ui/CheckboxField'
 import { SelectField } from '@/components/ui/SelectField'
-import { addDays, dateKey, longDate, shortDateOfKey, todayIn } from '@/lib/format'
+import { addDays, compactDate, dateKey, longDate, shortDateOfKey, todayIn } from '@/lib/format'
 import type { AdminAppointment } from '@/types/api'
 import { useAdminStaff } from '../adminApi'
 import { AdminPageHeader, EmptyState, QueryState } from '../AdminUi'
@@ -89,7 +89,7 @@ export default function CalendarPage() {
         }))
       : days.map((day) => ({
           key: day,
-          label: shortDateOfKey(day),
+          label: compactDate(day),
           date: day,
           staffIds: staff.map((s) => s.id),
           appointments: appointments.filter((a) => dateOf(a.start) === day),

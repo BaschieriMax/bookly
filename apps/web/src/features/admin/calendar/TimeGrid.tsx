@@ -57,13 +57,16 @@ export function TimeGrid({
     <div data-time-grid className="overflow-x-auto rounded-card border border-border bg-surface">
       <div
         className="grid min-w-full"
-        style={{ gridTemplateColumns: `4rem repeat(${columns.length}, minmax(9rem, 1fr))` }}
+        // A week (7 days) fits from 1024 px with the sidebar; staff columns keep more room.
+        style={{
+          gridTemplateColumns: `4rem repeat(${columns.length}, minmax(${columns.length > 4 ? 6 : 9}rem, 1fr))`,
+        }}
       >
         <div className="sticky top-0 z-20 border-b border-border bg-surface" />
         {columns.map((column) => (
           <div
             key={column.key}
-            className={`sticky top-0 z-20 truncate border-b border-l border-border bg-surface px-2 py-3 text-center text-sm font-semibold first-letter:uppercase ${column.isToday ? 'text-primary-text' : ''}`}
+            className={`sticky top-0 z-20 truncate border-b border-l border-border bg-surface px-1 py-3 text-center text-sm font-semibold first-letter:uppercase ${column.isToday ? 'text-primary-text' : ''}`}
           >
             {column.label}
           </div>
