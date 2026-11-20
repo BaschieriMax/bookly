@@ -1,0 +1,141 @@
+# Nightly database backup (DEC-036). Neon free restores only the last 6 hours: this keeps 30 days.
+#   1. pg_dump of the production database (custom format, compressed) with the owner connection
+#      already stored for migrations (DATABASE_MIGRATION_CONNECTION, Npgsql format, converted);
+#   2. restore test into a throwaway PostgreSQL: a backup that cannot be restored fails the run;
+#   3. AES-256 encryption with BACKUP_PASSPHRASE (the repository is public, and so are its
+#      artifacts to any signed-in GitHub user), then a 30-day artifact.
+# Restore runbook: docs/deploy.md §9. Without the secrets the workflow skips itself.
+name: Backup
+
+on:
+  schedule:
+    - cron: '17 1 * * *' # 01:17 UTC, off-peak (GitHub may run it late)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    services:
+      # Throwaway server for the restore test, reachable only from this runner.
+      verify:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - name: Check configuration
+        id: config
+        env:
+          MIGRATION_CONNECTION: ${{ secrets.DATABASE_MIGRATION_CONNECTION }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$MIGRATION_CONNECTION" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::notice::Backup not configured yet (docs/deploy.md §5): skipping."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          elif [ "${#BACKUP_PASSPHRASE}" -lt 24 ]; then
+            echo "::error::BACKUP_PASSPHRASE must be at least 24 characters."
+            exit 1
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "name=bookly-db-$(date -u +%Y-%m-%dT%H%MZ)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.config.outputs.ready == 'true'
+        with:
+          persist-credentials: false
+
+      - name: Dump the production database
+        if: steps.config.outputs.ready == 'true'
+        env:
+          NPGSQL_CONNECTION: ${{ secrets.DATABASE_MIGRATION_CONNECTION }}
+          NAME: ${{ steps.config.outputs.name }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/backup"
+          umask 077
+          python3 .github/scripts/npgsql_to_pgenv.py > "$RUNNER_TEMP/pg.env"
+          trap 'rm -f "$RUNNER_TEMP/pg.env"' EXIT
+          # pg_dump 17 matches the Neon server; the runner's CA bundle verifies Neon's certificate.
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            --env-file "$RUNNER_TEMP/pg.env" \
+            -e PGSSLROOTCERT=/etc/ssl/certs/ca-certificates.crt \
+            -v /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro \
+            -v "$RUNNER_TEMP/backup:/backup" \
+            postgres:17 pg_dump --format=custom --compress=9 --file="/backup/$NAME.dump"
+          ls -l "$RUNNER_TEMP/backup"
+
+      - name: Restore test
+        if: steps.config.outputs.ready == 'true'
+        env:
+          NAME: ${{ steps.config.outputs.name }}
+        run: |
+          set -euo pipefail
+          psql_verify() {
+            docker run --rm --network host -v "$RUNNER_TEMP/backup:/backup:ro" postgres:17 "$@"
+          }
+          psql_verify createdb -h localhost -U postgres restore_test
+          # Neon may add its own extensions to the database; a plain PostgreSQL lacks them. Keep
+          # only the ones Bookly's migrations create (btree_gist) and the built-in plpgsql.
+          psql_verify pg_restore --list "/backup/$NAME.dump" \
+            | awk '!/ EXTENSION / || / (btree_gist|plpgsql) /' > "$RUNNER_TEMP/backup/restore.list"
+          # Roles and grants belong to Neon: the test restores data and schema only.
+          psql_verify pg_restore -h localhost -U postgres -d restore_test \
+            --no-owner --no-privileges --exit-on-error \
+            --use-list=/backup/restore.list "/backup/$NAME.dump"
+          migrations=$(psql_verify psql -h localhost -U postgres -d restore_test -tAc 'SELECT count(*) FROM "__EFMigrationsHistory"')
+          tenants=$(psql_verify psql -h localhost -U postgres -d restore_test -tAc 'SELECT count(*) FROM "Tenants"')
+          appointments=$(psql_verify psql -h localhost -U postgres -d restore_test -tAc 'SELECT count(*) FROM "Appointments"')
+          users=$(psql_verify psql -h localhost -U postgres -d restore_test -tAc 'SELECT count(*) FROM "AspNetUsers"')
+          if [ "$migrations" -lt 1 ]; then
+            echo "::error::Restored database has no migration history: the backup is not usable."
+            exit 1
+          fi
+          {
+            echo "### Backup $NAME"
+            echo ""
+            echo "| Check | Value |"
+            echo "| --- | --- |"
+            echo "| Migrations | $migrations |"
+            echo "| Tenants | $tenants |"
+            echo "| Appointments | $appointments |"
+            echo "| Users | $users |"
+            echo "| Size | $(du -h "$RUNNER_TEMP/backup/$NAME.dump" | cut -f1) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Encrypt
+        if: steps.config.outputs.ready == 'true'
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          NAME: ${{ steps.config.outputs.name }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/backup"
+          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback \
+            --passphrase-fd 0 --symmetric --cipher-algo AES256 --output "$NAME.dump.gpg" "$NAME.dump"
+          rm -f "$NAME.dump"
+          ls -l
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.config.outputs.ready == 'true'
+        with:
+          name: ${{ steps.config.outputs.name }}
+          path: ${{ runner.temp }}/backup/${{ steps.config.outputs.name }}.dump.gpg
+          retention-days: 30
+          compression-level: 0
+          if-no-files-found: error
