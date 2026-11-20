@@ -1,9 +1,13 @@
 import { demo, expect, expectAccessible, login, test } from './fixtures'
 
-/** A Tuesday at least five weeks ahead (demo staff work Monday–Saturday), as yyyy-MM-dd. */
-function futureTuesday(): string {
+/**
+ * A Tuesday (demo staff work Monday–Saturday 09:00–13:00) far beyond the month the booking spec
+ * uses, different for every project and retry: 09:00 is then free in every run.
+ */
+function freeTuesday(project: string, retry: number): string {
+  const projects = ['mobile', 'desktop', 'firefox', 'iphone-webkit']
   const day = new Date()
-  day.setDate(day.getDate() + 35)
+  day.setDate(day.getDate() + 70 + 7 * Math.max(0, projects.indexOf(project)) + 28 * retry)
   while (day.getDay() !== 2) day.setDate(day.getDate() + 1)
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`
@@ -14,21 +18,15 @@ test('the owner enters a phone booking for a new customer from the calendar', as
 }, testInfo) => {
   const lastName = `Prova${testInfo.project.name.replace(/\W/g, '')}${Date.now() % 100000}`
   await login(page, demo.owner)
-  await page.goto(`/admin?data=${futureTuesday()}`)
+  await page.goto(`/admin?data=${freeTuesday(testInfo.project.name, testInfo.retry)}`)
 
   await page.getByRole('button', { name: 'Nuovo appuntamento' }).click()
   const dialog = page.getByRole('dialog', { name: 'Nuovo appuntamento' })
   await expect(dialog.getByRole('button', { pressed: true }).first()).toBeVisible()
 
-  // First time that is free and inside the working hours (earlier runs may have taken some).
-  const time = dialog.getByLabel('Ora')
-  const free = await time
-    .locator('option')
-    .evaluateAll((options) =>
-      options.map((o) => o.textContent ?? '').find((label) => /^\d{2}:\d{2}$/.test(label)),
-    )
-  expect(free).toBeDefined()
-  await time.selectOption(free!)
+  await dialog.getByLabel('Ora').selectOption('09:00')
+  await expect(dialog.getByText(/Fuori dall'orario/)).toBeHidden()
+  await expect(dialog.getByRole('alert')).toBeHidden()
 
   await dialog.getByRole('searchbox', { name: /Cerca cliente/ }).fill(`e2e ${lastName}`)
   await expect(dialog.getByText(/Nessun cliente trovato/)).toBeVisible()
