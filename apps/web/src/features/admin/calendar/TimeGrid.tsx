@@ -8,6 +8,7 @@ import {
   timeOffOnDay,
   workingIntervals,
 } from './calendarModel'
+import { SLOT_STEP } from './newAppointmentModel'
 import { statusBlock, type AppointmentStatus } from './statusStyles'
 
 export interface GridColumn {
@@ -29,6 +30,8 @@ interface TimeGridProps {
   nowMinutes: number
   staffName: (id: string) => string
   onSelect: (appointment: AdminAppointment) => void
+  /** Click on free space: start a new appointment there (minutes since midnight, 15-minute steps). */
+  onCreateAt?: (column: GridColumn, minutes: number) => void
 }
 
 const px = (minutes: number) => (minutes / 60) * HOUR_PX
@@ -41,6 +44,7 @@ export function TimeGrid({
   nowMinutes,
   staffName,
   onSelect,
+  onCreateAt,
 }: TimeGridProps) {
   const { t } = useTranslation('admin')
   const height = px(range.end - range.start)
@@ -109,6 +113,19 @@ export function TimeGrid({
                   style={{ top: px(m - range.start) }}
                 />
               ))}
+              {onCreateAt && (
+                // Pointer shortcut only: keyboard and screen-reader users have the
+                // "Nuovo appuntamento" button, so this layer stays out of the tab order.
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 cursor-pointer"
+                  onClick={(event) => {
+                    const offset = event.clientY - event.currentTarget.getBoundingClientRect().top
+                    const minutes = range.start + (offset / HOUR_PX) * 60
+                    onCreateAt(column, Math.floor(minutes / SLOT_STEP) * SLOT_STEP)
+                  }}
+                />
+              )}
               {column.timeOff.map((off) => {
                 const part = timeOffOnDay(off, column.date)
                 if (!part) return null

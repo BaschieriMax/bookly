@@ -139,6 +139,11 @@ export function AppointmentDialog({
             <Row label={t('calendar.details.staff')}>{staffName}</Row>
             <Row label={t('calendar.details.customer')}>
               <span className="block font-medium">{customer}</span>
+              {!appointment.customer.hasAccount && (
+                <span className="block text-sm text-muted">
+                  {t('calendar.details.addressBook')}
+                </span>
+              )}
               {appointment.customer.phone && (
                 <a
                   href={`tel:${appointment.customer.phone.replaceAll(' ', '')}`}
@@ -160,7 +165,15 @@ export function AppointmentDialog({
             </Row>
             {price && <Row label={t('calendar.details.price')}>{price}</Row>}
             {appointment.customerNote && (
-              <Row label={t('calendar.details.note')}>{appointment.customerNote}</Row>
+              <Row
+                label={t(
+                  appointment.origin === 'Business'
+                    ? 'calendar.details.noteBusiness'
+                    : 'calendar.details.note',
+                )}
+              >
+                {appointment.customerNote}
+              </Row>
             )}
             {appointment.cancellationReason && (
               <Row label={t('calendar.details.reason')}>{appointment.cancellationReason}</Row>

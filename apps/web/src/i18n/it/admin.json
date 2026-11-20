@@ -26,7 +26,10 @@
       "service_not_offered": "Questo operatore non offre il servizio.",
       "invalid_status": "L'appuntamento non è più confermato: ricarica il calendario.",
       "not_started": "Puoi segnarlo solo dopo l'inizio dell'appuntamento.",
-      "in_past": "Scegli un orario futuro."
+      "in_past": "Scegli un orario futuro.",
+      "outside_working_hours": "L'orario è fuori dal turno dell'operatore o durante un'assenza: spunta «Inserisci comunque» per confermare.",
+      "customer_required": "Scegli un cliente o inseriscine uno nuovo.",
+      "customer_not_found": "Cliente non trovato: cercalo di nuovo o inseriscilo come nuovo."
     },
     "booking": {
       "invalid_range": "La fine deve essere successiva all'inizio (massimo un anno).",
@@ -40,7 +43,8 @@
       "number": "Inserisci un numero valido.",
       "range": "Valore fuori dall'intervallo consentito ({{min}}–{{max}}).",
       "price": "Inserisci un prezzo valido, ad esempio 25 o 12,50.",
-      "phone": "Numero di telefono non valido."
+      "phone": "Numero di telefono non valido.",
+      "email": "Email non valida."
     }
   },
   "services": {
@@ -235,7 +239,9 @@
       "price": "Prezzo",
       "note": "Nota del cliente",
       "reason": "Motivo dell'annullamento",
-      "bufferNote": "Più {{minutes}} min di pausa per l'operatore."
+      "bufferNote": "Più {{minutes}} min di pausa per l'operatore.",
+      "addressBook": "In rubrica, senza account",
+      "noteBusiness": "Nota"
     },
     "actions": {
       "complete": "Completato",
@@ -260,6 +266,43 @@
       "done": "Appuntamento annullato."
     },
     "marked": "Stato aggiornato.",
-    "appointmentDetails": "fino alle {{end}}, {{staff}}, {{status}}"
+    "appointmentDetails": "fino alle {{end}}, {{staff}}, {{status}}",
+    "new": {
+      "open": "Nuovo appuntamento",
+      "title": "Nuovo appuntamento",
+      "service": "Servizio",
+      "staff": "Operatore",
+      "date": "Giorno",
+      "time": "Ora",
+      "summary": "{{service}}: dalle {{start}} alle {{end}} con {{staff}}.",
+      "busyOption": "{{time}} · occupato",
+      "outsideOption": "{{time}} · fuori orario",
+      "clash": "{{staff}} è occupato dalle {{start}} alle {{end}}. Scegli un altro orario o operatore.",
+      "outside": "Fuori dall'orario di lavoro di {{staff}} o durante un'assenza.",
+      "outsideConfirm": "Inserisci comunque",
+      "customer": "Cliente",
+      "searchLabel": "Cerca cliente per nome, telefono o email",
+      "searchPlaceholder": "Nome o telefono",
+      "searchHint": "Scrivi almeno 2 lettere o cifre: cerco nella rubrica e tra chi ha già prenotato online.",
+      "results": "Clienti trovati",
+      "noResults": "Nessun cliente trovato con «{{query}}».",
+      "kindAccount": "Account",
+      "kindAddressBook": "Rubrica",
+      "newCustomer": "Nuovo cliente",
+      "searchInstead": "Cerca un cliente esistente",
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "phone": "Telefono",
+      "email": "Email (facoltativa)",
+      "emailHint": "Serve solo per conferma e promemoria.",
+      "addressBookNote": "Il cliente viene salvato nella rubrica dell'attività.",
+      "customerRequired": "Scegli un cliente o inseriscine uno nuovo.",
+      "note": "Nota (facoltativa)",
+      "notify": "Invia conferma e promemoria via email",
+      "noEmail": "Il cliente non ha un'email: nessun invio.",
+      "submit": "Salva appuntamento",
+      "done": "Appuntamento inserito.",
+      "noServices": "Prima aggiungi un servizio attivo con almeno un operatore."
+    }
   }
 }

@@ -1,7 +1,13 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/services/apiClient'
 import { useActiveTenantStore } from '@/stores/activeTenantStore'
-import type { AdminAppointment, Calendar, MoveAppointmentRequest } from '@/types/api'
+import type {
+  AdminAppointment,
+  Calendar,
+  CreateBusinessAppointmentRequest,
+  CustomerSearchResult,
+  MoveAppointmentRequest,
+} from '@/types/api'
 
 export interface CalendarQuery {
   from: string
@@ -14,7 +20,12 @@ export const calendarKeys = {
   all: (tenantId: string | null) => ['admin', tenantId, 'calendar'] as const,
   range: (tenantId: string | null, query: CalendarQuery) =>
     ['admin', tenantId, 'calendar', query] as const,
+  customers: (tenantId: string | null, query: string) =>
+    ['admin', tenantId, 'customers', query] as const,
 }
+
+/** Minimum length the API searches with (CustomerDirectoryService.MinQueryLength). */
+export const CUSTOMER_QUERY_MIN = 2
 
 /** Appointments change from outside (online bookings): always fresh, refreshed every minute. */
 export function useCalendar(query: CalendarQuery) {
@@ -66,3 +77,28 @@ export const useMarkAppointment = () =>
     async ({ id, outcome }: { id: string; outcome: 'complete' | 'no-show' }) =>
       (await apiClient.post<AdminAppointment>(`/admin/appointments/${id}/${outcome}`)).data,
   )
+
+/** Appointment entered by the business (phone, walk-in; DEC-037). */
+export const useCreateAppointment = () =>
+  useAppointmentMutation(
+    async (body: CreateBusinessAppointmentRequest) =>
+      (await apiClient.post<AdminAppointment>('/admin/appointments', body)).data,
+  )
+
+/**
+ * Address book + accounts that booked with the business. The caller debounces the query;
+ * the previous results stay on screen while the next ones load.
+ */
+export function useCustomerSearch(query: string) {
+  const tenantId = useActiveTenantStore((s) => s.tenantId)
+  const trimmed = query.trim()
+  return useQuery({
+    queryKey: calendarKeys.customers(tenantId, trimmed),
+    queryFn: async () =>
+      (await apiClient.get<CustomerSearchResult[]>('/admin/customers', { params: { q: trimmed } }))
+        .data,
+    enabled: tenantId !== null && trimmed.length >= CUSTOMER_QUERY_MIN,
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  })
+}
