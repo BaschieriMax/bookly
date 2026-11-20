@@ -17,48 +17,49 @@ async function openLoaded(page: Page) {
   return dialog
 }
 
-test('d1 service options', async ({ page }) => {
-  const dialog = await openLoaded(page)
-  const n = await dialog
-    .getByLabel('Servizio')
+test('e1 calendar staff filter options, no dialog', async ({ page }) => {
+  await login(page, demo.owner)
+  await page.goto('/admin')
+  await page.waitForLoadState('networkidle')
+  const n = await page
+    .getByLabel('Operatore')
     .locator('option')
     .evaluateAll((o) => o.length)
   expect(n).toBeGreaterThan(0)
 })
 
-test('d2 time options', async ({ page }) => {
-  const dialog = await openLoaded(page)
-  const n = await dialog
-    .getByLabel('Ora')
-    .locator('option')
-    .evaluateAll((o) => o.length)
-  expect(n).toBe(65)
+test('e2 axe on the customer picker', async ({ page }) => {
+  await openLoaded(page)
+  await new AxeBuilder({ page }).include('[role=dialog] section').analyze()
 })
 
-test('d3 axe on the date input only', async ({ page }) => {
+test('e3 axe on the staff pills', async ({ page }) => {
   await openLoaded(page)
-  await new AxeBuilder({ page }).include('[role=dialog] input[type=date]').analyze()
+  await new AxeBuilder({ page }).include('[role=dialog] fieldset').analyze()
 })
 
-test('d4 axe on the dialog without the date input', async ({ page }) => {
+test('e4 axe on textarea and checkboxes', async ({ page }) => {
   await openLoaded(page)
-  await new AxeBuilder({ page }).include('[role=dialog]').exclude('input[type=date]').analyze()
+  await new AxeBuilder({ page })
+    .include('[role=dialog] textarea')
+    .include('[role=dialog] input[type=checkbox]')
+    .analyze()
 })
 
-test('d5 axe on the dialog selects only', async ({ page }) => {
+test('e5 axe on the dialog title', async ({ page }) => {
   await openLoaded(page)
-  await new AxeBuilder({ page }).include('[role=dialog] select').analyze()
+  await new AxeBuilder({ page }).include('[role=dialog] h2').analyze()
 })
 
-test('d6 computed style of every element', async ({ page }) => {
-  await openLoaded(page)
-  const n = await page.evaluate(
-    () => [...document.querySelectorAll('*')].map((e) => getComputedStyle(e).color).length,
-  )
-  expect(n).toBeGreaterThan(0)
+test('e6 axe with the new service dialog open', async ({ page }) => {
+  await login(page, demo.owner)
+  await page.goto('/admin/servizi')
+  await page.getByRole('button', { name: /nuovo servizio/i }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await new AxeBuilder({ page }).analyze()
 })
 
-test('d7 axe on the calendar behind, dialog excluded', async ({ page }) => {
+test('e7 axe on the dialog footer', async ({ page }) => {
   await openLoaded(page)
-  await new AxeBuilder({ page }).exclude('[role=dialog]').analyze()
+  await new AxeBuilder({ page }).include('[role=dialog] > div:last-child').analyze()
 })
