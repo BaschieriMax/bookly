@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   addDays,
+  compactDate,
+  compactDateTime,
   dateKey,
   formatDuration,
+  fullDate,
   formatPrice,
   fromDateKey,
   longDate,
@@ -37,5 +40,13 @@ describe('format', () => {
   it('round-trips calendar dates', () => {
     expect(dateKey(fromDateKey('2027-03-28'))).toBe('2027-03-28')
     expect(addDays('2027-03-31', 1)).toBe('2027-04-01')
+  })
+
+  it('writes compact dates from the local part of an instant, with the year only when needed', () => {
+    const now = new Date(2026, 10, 20)
+    // 23:30 local on 31 January: the date stays the local one whatever the browser zone.
+    expect(compactDate('2026-11-06T23:30:00+01:00', now)).toBe('ven 6 nov')
+    expect(compactDateTime('2025-01-31T16:30:00+01:00', now)).toBe('ven 31 gen 2025, 16:30')
+    expect(fullDate('2025-01-31T00:15:00+01:00')).toBe('31 gennaio 2025')
   })
 })

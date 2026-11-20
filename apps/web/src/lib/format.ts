@@ -73,3 +73,32 @@ export function shortDateOfKey(key: string): string {
     month: 'long',
   }).format(fromDateKey(key))
 }
+
+/**
+ * "ven 6 nov" from an instant with the tenant offset ("2026-11-06T16:30:00+01:00"): the date
+ * part is already local, so no time zone is involved. The year is added when it is not the
+ * current one ("ven 31 gen 2025").
+ */
+export function compactDate(isoWithOffset: string, now: Date = new Date()): string {
+  const date = fromDateKey(isoWithOffset.slice(0, 10))
+  return new Intl.DateTimeFormat('it-IT', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    ...(date.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}),
+  }).format(date)
+}
+
+/** "ven 6 nov, 16:30" (see compactDate). */
+export function compactDateTime(isoWithOffset: string, now: Date = new Date()): string {
+  return `${compactDate(isoWithOffset, now)}, ${timeOf(isoWithOffset)}`
+}
+
+/** "31 gennaio 2025" from an instant with the tenant offset (see compactDate). */
+export function fullDate(isoWithOffset: string): string {
+  return new Intl.DateTimeFormat('it-IT', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(fromDateKey(isoWithOffset.slice(0, 10)))
+}

@@ -20,6 +20,7 @@ for (const path of publicPages) {
 
 const ownerPages = [
   '/admin',
+  '/admin/clienti',
   '/admin/servizi',
   '/admin/staff',
   '/admin/orari',

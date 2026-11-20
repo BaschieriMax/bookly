@@ -29,6 +29,7 @@ const CalendarPage = lazy(() => import('@/features/admin/calendar/CalendarPage')
 const TenantsPage = lazy(() => import('@/features/platform/TenantsPage'))
 const NavigationAdminPage = lazy(() => import('@/features/platform/NavigationAdminPage'))
 const ServicesPage = lazy(() => import('@/features/admin/ServicesPage'))
+const CustomersPage = lazy(() => import('@/features/admin/customers/CustomersPage'))
 const StaffPage = lazy(() => import('@/features/admin/StaffPage'))
 const SchedulePage = lazy(() => import('@/features/admin/SchedulePage'))
 const BrandPage = lazy(() => import('@/features/admin/BrandPage'))
@@ -91,6 +92,7 @@ export const routes: RouteObject[] = [
             // Not lazy: a guard in front of lazy pages would add a second loading step.
             element: <OwnerOnly />,
             children: [
+              { path: paths.admin.customers, element: withSuspense(<CustomersPage />) },
               { path: paths.admin.services, element: withSuspense(<ServicesPage />) },
               { path: paths.admin.staff, element: withSuspense(<StaffPage />) },
               { path: paths.admin.brand, element: withSuspense(<BrandPage />) },

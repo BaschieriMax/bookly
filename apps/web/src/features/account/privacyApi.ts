@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { authKeys, fetchMe } from '@/features/auth/authApi'
+import { saveDownloadedFile } from '@/lib/download'
 import { apiClient } from '@/services/apiClient'
 import type { Profile, UpdateProfileRequest } from '@/types/api'
 
@@ -29,16 +30,7 @@ export function useDownloadExport() {
   return useMutation({
     mutationFn: async () => {
       const response = await apiClient.get<Blob>('/me/export', { responseType: 'blob' })
-      const disposition = String(response.headers['content-disposition'] ?? '')
-      const name = /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? 'bookly-dati.json'
-      const url = URL.createObjectURL(response.data)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = name
-      document.body.append(link)
-      link.click()
-      link.remove()
-      URL.revokeObjectURL(url)
+      saveDownloadedFile(response, 'bookly-dati.json')
     },
   })
 }

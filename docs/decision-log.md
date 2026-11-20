@@ -1106,6 +1106,8 @@ Decision:
   PUT e DELETE .../address-book/{id}, GET .../address-book/{id}/export (tutti TenantOwner).
   Un account che non ha mai prenotato presso l'attività risponde 404.
 - L'elenco unisce le due fonti in memoria e poi pagina: dimensioni da attività locale.
+- Voce di menu "Clienti" (solo titolari) subito dopo "Calendario" (migrazione CustomersPage).
+  Interfaccia: schede su telefono e tablet, tabella da 1024 px; dialog a due schede ad altezza fissa.
 
 Alternatives:
 Solo la rubrica (il titolare non vedrebbe in un posto solo tutti i suoi clienti); cancellazione

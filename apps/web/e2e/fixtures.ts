@@ -58,3 +58,41 @@ export async function expectAccessible(page: Page) {
     ),
   ).toEqual([])
 }
+
+/** A phone booking for a new address-book customer, through the API the calendar dialog uses. */
+export async function addPhoneBooking(page: Page, lastName: string, date: string) {
+  const status = await page.evaluate(
+    async ({ lastName, date }) => {
+      const json = { Accept: 'application/json', 'Content-Type': 'application/json' }
+      const services = (await (await fetch('/api/admin/services')).json()) as {
+        id: string
+        isActive: boolean
+        staffIds: string[]
+      }[]
+      const service = services.find((s) => s.isActive && s.staffIds.length > 0)!
+      const xsrf = decodeURIComponent(
+        document.cookie
+          .split('; ')
+          .find((c) => c.startsWith('XSRF-TOKEN='))!
+          .slice('XSRF-TOKEN='.length),
+      )
+      const response = await fetch('/api/admin/appointments', {
+        method: 'POST',
+        headers: { ...json, 'X-XSRF-TOKEN': xsrf },
+        body: JSON.stringify({
+          serviceId: service.id,
+          staffId: service.staffIds[0],
+          date,
+          time: '09:00',
+          newCustomer: { firstName: 'E2e', lastName, phone: '333 000 1234', email: null },
+          note: null,
+          notifyCustomer: false,
+          allowOutsideHours: true,
+        }),
+      })
+      return response.status
+    },
+    { lastName, date },
+  )
+  expect(status).toBe(201)
+}

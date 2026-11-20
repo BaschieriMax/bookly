@@ -10,6 +10,12 @@ interface DialogProps {
   footer?: ReactNode
   /** "wide" for two-column forms on desktop (still a bottom sheet on phones). */
   size?: 'default' | 'wide'
+  /** Shown next to the title, e.g. a badge. */
+  titleAddon?: ReactNode
+  /** Fixed between the header and the scrolling content, e.g. tabs. */
+  toolbar?: ReactNode
+  /** Same height whatever the content (tabs with lists of different length): the content scrolls. */
+  fixedHeight?: boolean
   onClose: () => void
 }
 
@@ -24,6 +30,9 @@ export function Dialog({
   children,
   footer,
   size = 'default',
+  titleAddon,
+  toolbar,
+  fixedHeight = false,
   onClose,
 }: DialogProps) {
   const titleId = useId()
@@ -61,12 +70,17 @@ export function Dialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`relative flex max-h-[92vh] w-full flex-col rounded-t-card bg-surface sm:rounded-card ${size === 'wide' ? 'max-w-3xl' : 'max-w-lg'}`}
+        className={`relative flex max-h-[92vh] w-full flex-col rounded-t-card bg-surface sm:rounded-card ${size === 'wide' ? 'max-w-3xl' : 'max-w-lg'} ${fixedHeight ? 'h-[92vh] sm:h-[min(46rem,92vh)]' : ''}`}
       >
-        <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
-          <h2 id={titleId} className="font-heading text-xl font-semibold">
-            {title}
-          </h2>
+        <div
+          className={`flex items-center justify-between gap-4 px-6 ${toolbar ? 'pt-4 pb-2' : 'border-b border-border py-4'}`}
+        >
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+            <h2 id={titleId} className="font-heading text-xl font-semibold">
+              {title}
+            </h2>
+            {titleAddon}
+          </div>
           <button
             type="button"
             data-dialog-close
@@ -77,7 +91,12 @@ export function Dialog({
             <X aria-hidden="true" className="size-5" />
           </button>
         </div>
-        <div className="flex flex-col gap-4 overflow-y-auto px-6 py-5">{children}</div>
+        {toolbar}
+        <div
+          className={`flex flex-col gap-4 overflow-y-auto px-6 py-5 ${fixedHeight ? 'min-h-0 flex-1' : ''}`}
+        >
+          {children}
+        </div>
         {footer && (
           <div className="flex flex-col-reverse gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-end">
             {footer}

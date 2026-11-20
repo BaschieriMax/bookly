@@ -36,7 +36,10 @@ public sealed record CustomerStatsDto(
     DateTimeOffset? LastVisit,
     DateTimeOffset? NextAppointment);
 
-/// <summary>A customer with the summary of their appointments here. CreatedAt: when they entered the address book.</summary>
+/// <summary>
+/// A customer with the summary of their appointments here. CreatedAt: when they entered the
+/// address book, in the tenant's time zone.
+/// </summary>
 public sealed record CustomerDetailDto(
     string Kind,
     Guid Id,

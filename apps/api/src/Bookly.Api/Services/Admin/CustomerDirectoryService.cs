@@ -147,7 +147,7 @@ public sealed class CustomerDirectoryService(AppDbContext db, AdminContext admin
             entry.LastName,
             entry.Phone,
             entry.Email,
-            entry.CreatedAt,
+            Local(entry.CreatedAt, timeZone),
             await StatsAsync(a => a.TenantCustomerId == entry.Id, timeZone, cancellationToken));
     }
 
