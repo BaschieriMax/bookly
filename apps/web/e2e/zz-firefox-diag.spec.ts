@@ -17,49 +17,28 @@ async function openLoaded(page: Page) {
   return dialog
 }
 
-test('e1 calendar staff filter options, no dialog', async ({ page }) => {
-  await login(page, demo.owner)
-  await page.goto('/admin')
-  await page.waitForLoadState('networkidle')
-  const n = await page
-    .getByLabel('Operatore')
-    .locator('option')
-    .evaluateAll((o) => o.length)
-  expect(n).toBeGreaterThan(0)
-})
+// Round 4: the date input has no "min" any more; these crashed before.
+for (let round = 1; round <= 2; round++) {
+  test(`f1 service options #${round}`, async ({ page }) => {
+    const dialog = await openLoaded(page)
+    const n = await dialog
+      .getByLabel('Servizio')
+      .locator('option')
+      .evaluateAll((o) => o.length)
+    expect(n).toBeGreaterThan(0)
+  })
 
-test('e2 axe on the customer picker', async ({ page }) => {
-  await openLoaded(page)
-  await new AxeBuilder({ page }).include('[role=dialog] section').analyze()
-})
+  test(`f2 time options #${round}`, async ({ page }) => {
+    const dialog = await openLoaded(page)
+    const n = await dialog
+      .getByLabel('Ora')
+      .locator('option')
+      .evaluateAll((o) => o.length)
+    expect(n).toBe(65)
+  })
 
-test('e3 axe on the staff pills', async ({ page }) => {
-  await openLoaded(page)
-  await new AxeBuilder({ page }).include('[role=dialog] fieldset').analyze()
-})
-
-test('e4 axe on textarea and checkboxes', async ({ page }) => {
-  await openLoaded(page)
-  await new AxeBuilder({ page })
-    .include('[role=dialog] textarea')
-    .include('[role=dialog] input[type=checkbox]')
-    .analyze()
-})
-
-test('e5 axe on the dialog title', async ({ page }) => {
-  await openLoaded(page)
-  await new AxeBuilder({ page }).include('[role=dialog] h2').analyze()
-})
-
-test('e6 axe with the new service dialog open', async ({ page }) => {
-  await login(page, demo.owner)
-  await page.goto('/admin/servizi')
-  await page.getByRole('button', { name: /nuovo servizio/i }).click()
-  await expect(page.getByRole('dialog')).toBeVisible()
-  await new AxeBuilder({ page }).analyze()
-})
-
-test('e7 axe on the dialog footer', async ({ page }) => {
-  await openLoaded(page)
-  await new AxeBuilder({ page }).include('[role=dialog] > div:last-child').analyze()
-})
+  test(`f3 axe on the whole page #${round}`, async ({ page }) => {
+    await openLoaded(page)
+    await new AxeBuilder({ page }).analyze()
+  })
+}
