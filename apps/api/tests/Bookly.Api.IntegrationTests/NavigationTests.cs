@@ -35,7 +35,7 @@ public sealed class NavigationTests(PostgresFixture database) : IDisposable
 
         using var response = await session.Client.GetAsync("/api/navigation/admin");
 
-        Assert.Equal(["/admin", "/admin/servizi", "/admin/staff", "/admin/orari", "/admin/brand", "/admin/impostazioni"], await RoutesAsync(response));
+        Assert.Equal(["/admin", "/admin/clienti", "/admin/servizi", "/admin/staff", "/admin/orari", "/admin/brand", "/admin/impostazioni"], await RoutesAsync(response));
     }
 
     [Fact]

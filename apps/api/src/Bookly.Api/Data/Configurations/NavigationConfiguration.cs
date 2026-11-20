@@ -51,6 +51,7 @@ internal static class NavigationSeed
     public static readonly NavigationItem[] Items =
     [
         Item(1, "admin.calendar", "nav.calendar", "calendar-days", "/admin", NavigationArea.Admin, 10),
+        Item(7, "admin.customers", "nav.customers", "contact-round", "/admin/clienti", NavigationArea.Admin, 15),
         Item(2, "admin.services", "nav.services", "scissors", "/admin/servizi", NavigationArea.Admin, 20),
         Item(3, "admin.staff", "nav.staff", "users", "/admin/staff", NavigationArea.Admin, 30),
         Item(4, "admin.schedule", "nav.schedule", "clock", "/admin/orari", NavigationArea.Admin, 40),
@@ -68,6 +69,7 @@ internal static class NavigationSeed
         Role(4, Owner), Role(4, Staff),
         Role(5, Owner),
         Role(6, Owner),
+        Role(7, Owner),
         Role(101, SuperAdmin),
         Role(102, SuperAdmin),
     ];

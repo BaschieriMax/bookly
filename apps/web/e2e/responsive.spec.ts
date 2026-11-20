@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { demo, expect, login, test } from './fixtures'
+import { addPhoneBooking, demo, expect, login, test } from './fixtures'
 
 /**
  * Responsive checks for every role, from the smallest phone to a tablet (finding: at 320 px the
@@ -37,6 +37,7 @@ const roles: Record<string, { email?: string; paths: string[] }> = {
     paths: [
       '/admin',
       '/admin?vista=settimana',
+      '/admin/clienti',
       '/admin/servizi',
       '/admin/staff',
       '/admin/orari',
@@ -148,6 +149,41 @@ test('booking steps fit small screens', async ({ page }) => {
       await page.locator('[role="grid"] button:not([disabled])').first().click()
       await expect(page.getByRole('button', { name: /^\d{2}:\d{2}$/ }).first()).toBeVisible()
       await expectGoodLayout(page, `times @ ${width}px`)
+    })
+  }
+})
+
+test('the customer card fits small screens on both tabs', async ({ page }, testInfo) => {
+  const lastName = `Schermo${testInfo.project.name.replace(/\W/g, '')}${Date.now() % 100000}`
+  await login(page, demo.owner)
+  // A Thursday far away, one per project and retry, so 09:00 is free.
+  const day = new Date()
+  day.setDate(
+    day.getDate() + 150 + 7 * (testInfo.project.name === 'mobile' ? 0 : 1) + 14 * testInfo.retry,
+  )
+  while (day.getDay() !== 4) day.setDate(day.getDate() + 1)
+  await addPhoneBooking(page, lastName, day.toLocaleDateString('en-CA'))
+  for (const width of widths) {
+    await test.step(`${width}px`, async () => {
+      await page.setViewportSize({ width, height: 800 })
+      await page.goto('/admin/clienti')
+      // Cards on phones, the table from 768 px: only one of them is visible.
+      await page
+        .getByRole('button', { name: new RegExp(`E2e ${lastName}`) })
+        .filter({ visible: true })
+        .first()
+        .click()
+      const dialog = page.getByRole('dialog')
+      await expect(dialog.getByRole('tab', { name: 'Dati' })).toBeVisible()
+      await expectGoodLayout(page, `customer data @ ${width}px`)
+      await dialog.getByRole('tab', { name: /^Appuntamenti/ }).click()
+      await expect(dialog.getByText(/^Mostrati \d+ di \d+$/)).toBeVisible()
+      await expectGoodLayout(page, `customer appointments @ ${width}px`)
+      // The dialog keeps its height whatever the tab.
+      const box = (await dialog.boundingBox())!
+      expect(box.y + box.height).toBeLessThanOrEqual(800 + 0.5)
+      await page.keyboard.press('Escape')
+      await expect(dialog).toBeHidden()
     })
   }
 })

@@ -14,7 +14,8 @@ import { isApiError } from '@/services/apiClient'
 import type { CreateBusinessAppointmentRequest } from '@/types/api'
 import { useAdminServices, useAdminStaff } from '../adminApi'
 import { adminErrorMessage } from '../adminErrors'
-import { requiredText, validationMessage } from '../formHelpers'
+import { customerSchema } from '../customers/customerSchema'
+import { validationMessage } from '../formHelpers'
 import { useActiveMembership } from '../useAdminRole'
 import { useCalendar, useCreateAppointment } from './calendarApi'
 import { minutesOf, nowMinutesIn } from './calendarModel'
@@ -38,14 +39,6 @@ interface NewAppointmentDialogProps {
   timeZone: string
   onClose: () => void
 }
-
-// Mirrors NewCustomerRequest in the API (which stays the source of truth).
-const newCustomerSchema = z.object({
-  firstName: requiredText(100),
-  lastName: requiredText(100),
-  phone: requiredText(30).regex(/^(?=(?:\D*\d){6})\+?[0-9\s./()-]+$/, { error: 'phone' }),
-  email: z.union([z.literal(''), z.email({ error: 'email' }).max(256, { error: 'tooLong' })]),
-})
 
 const hasValidEmail = (email: string) => z.email().safeParse(email.trim()).success
 
@@ -108,8 +101,7 @@ export function NewAppointmentDialog({ start, timeZone, onClose }: NewAppointmen
   const check = slot(time)
   const needsConfirmation = check.outsideHours || serverSaysOutside
 
-  const customerCheck =
-    customer?.kind === 'new' ? newCustomerSchema.safeParse(customer.input) : null
+  const customerCheck = customer?.kind === 'new' ? customerSchema.safeParse(customer.input) : null
   const customerErrors: NewCustomerErrors = {}
   if (attempted && customerCheck && !customerCheck.success) {
     for (const issue of customerCheck.error.issues) {

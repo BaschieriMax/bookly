@@ -43,6 +43,13 @@ export const ownerNavigation: NavigationItem[] = [
     parentKey: null,
   },
   {
+    key: 'admin.customers',
+    labelKey: 'nav.customers',
+    icon: 'contact-round',
+    route: '/admin/clienti',
+    parentKey: null,
+  },
+  {
     key: 'admin.services',
     labelKey: 'nav.services',
     icon: 'scissors',

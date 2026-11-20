@@ -307,6 +307,17 @@ namespace Bookly.Api.Data.Migrations
                         },
                         new
                         {
+                            Id = 7,
+                            Area = "Admin",
+                            Icon = "contact-round",
+                            IsEnabled = true,
+                            Key = "admin.customers",
+                            LabelKey = "nav.customers",
+                            Route = "/admin/clienti",
+                            SortOrder = 15
+                        },
+                        new
+                        {
                             Id = 2,
                             Area = "Admin",
                             Icon = "scissors",
@@ -439,6 +450,11 @@ namespace Bookly.Api.Data.Migrations
                         new
                         {
                             NavigationItemId = 6,
+                            Role = "Owner"
+                        },
+                        new
+                        {
+                            NavigationItemId = 7,
                             Role = "Owner"
                         },
                         new

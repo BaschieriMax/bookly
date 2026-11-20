@@ -304,5 +304,86 @@
       "done": "Appuntamento inserito.",
       "noServices": "Prima aggiungi un servizio attivo con almeno un operatore."
     }
+  },
+  "customers": {
+    "title": "Clienti",
+    "lead": "Chi ha prenotato da te: quelli inseriti da te (rubrica) e quelli che hanno prenotato online con un account.",
+    "searchLabel": "Cerca per nome, telefono o email",
+    "searchPlaceholder": "Nome, telefono o email",
+    "filterLabel": "Mostra",
+    "filters": {
+      "all": "Tutti",
+      "AddressBook": "Rubrica",
+      "Account": "Con account"
+    },
+    "kinds": {
+      "AddressBook": "Rubrica",
+      "Account": "Account"
+    },
+    "count_one": "{{count}} cliente",
+    "count_other": "{{count}} clienti",
+    "columns": {
+      "name": "Cliente",
+      "phone": "Telefono",
+      "email": "Email",
+      "appointments": "Appuntamenti",
+      "lastVisit": "Ultima visita",
+      "next": "Prossimo"
+    },
+    "appointmentsCount_one": "{{count}} appuntamento",
+    "appointmentsCount_other": "{{count}} appuntamenti",
+    "nextShort": "Prossimo: {{when}}",
+    "empty": "Nessun cliente ancora: compaiono qui quando inserisci un appuntamento o qualcuno prenota online.",
+    "noResults": "Nessun cliente trovato.",
+    "showMore": "Mostra altri",
+    "shownOf": "Mostrati {{shown}} di {{total}}",
+    "footnote": "I clienti con account gestiscono da soli i propri dati dal loro profilo. Quelli della rubrica senza appuntamenti da 24 mesi vengono resi anonimi in automatico.",
+    "detail": {
+      "tabsLabel": "Scheda cliente",
+      "data": "Dati",
+      "appointments": "Appuntamenti ({{count}})",
+      "appointmentsLoading": "Appuntamenti",
+      "since": "Nella rubrica dal {{date}}. I dati sono della tua attività: puoi correggerli quando vuoi.",
+      "accountNote": "Ha un account Bookly: nome, telefono ed email li gestisce lui dal suo profilo, dove può anche scaricare o cancellare i propri dati.",
+      "noValue": "—",
+      "saved": "Dati del cliente aggiornati.",
+      "download": "Scarica dati",
+      "downloaded": "File con i dati del cliente scaricato.",
+      "erase": "Cancella dati"
+    },
+    "stats": {
+      "total": "Totali",
+      "completed": "Completati",
+      "noShow": "Non presentati",
+      "cancelled": "Annullati",
+      "lastVisit": "Ultima visita",
+      "next": "Prossimo",
+      "none": "nessuno"
+    },
+    "when": {
+      "label": "Quali appuntamenti",
+      "upcoming": "Prossimi {{count}}",
+      "past": "Passati {{count}}"
+    },
+    "table": {
+      "date": "Data",
+      "service": "Servizio",
+      "staff": "Operatore",
+      "status": "Stato"
+    },
+    "noUpcoming": "Nessun appuntamento in programma.",
+    "noPast": "Nessun appuntamento passato.",
+    "showMoreAppointments": "Mostra altri 10",
+    "eraseConfirm": {
+      "title": "Cancellare i dati di {{name}}?",
+      "text": "Nome, telefono, email e note degli appuntamenti vengono cancellati. Lo storico resta nel calendario come «Cliente anonimo».",
+      "warning": "Non si può tornare indietro. Se il cliente ti ha chiesto una copia dei dati, scaricala prima.",
+      "confirm": "Cancella dati",
+      "keep": "Mantieni",
+      "future": "Verranno annullati anche gli appuntamenti in programma: il prossimo è {{when}}. Il cliente non riceve email."
+    },
+    "erased": "Dati del cliente cancellati.",
+    "erasedWithCancellations_one": "Dati del cliente cancellati e annullato {{count}} appuntamento futuro.",
+    "erasedWithCancellations_other": "Dati del cliente cancellati e annullati {{count}} appuntamenti futuri."
   }
 }

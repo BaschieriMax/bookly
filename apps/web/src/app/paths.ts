@@ -15,6 +15,7 @@ export const paths = {
   myProfile: '/account/profilo',
   admin: {
     calendar: '/admin',
+    customers: '/admin/clienti',
     services: '/admin/servizi',
     staff: '/admin/staff',
     schedule: '/admin/orari',
