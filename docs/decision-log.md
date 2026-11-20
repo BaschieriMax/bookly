@@ -1076,3 +1076,43 @@ Status:
 Approved (Massimo, 20/11/2026)
 ```
 
+---
+
+```text
+DEC-038 — Pagina "Clienti" (rubrica e clienti con account)
+
+Date:
+2026-11-20
+
+Context:
+La rubrica dell'attività (DEC-037) si alimentava solo dal dialog "Nuovo appuntamento": nessun
+modo di correggere una voce né di rispondere alle richieste GDPR di chi non ha un account (TD-008).
+
+Decision:
+- Pagina "Clienti" solo per i titolari: elenco unico con la rubrica e gli account che hanno già
+  prenotato presso l'attività (in sola lettura: i loro dati li gestiscono loro dal profilo),
+  ricerca e filtro, numero di appuntamenti, ultima visita e prossimo appuntamento.
+- Scheda cliente con lo storico degli appuntamenti presso l'attività.
+- Voci della rubrica: correzione (stesse regole del nuovo cliente), "Scarica dati" (JSON con
+  anagrafica, appuntamenti e note: diritto di accesso) e "Cancella dati" (diritto all'oblio).
+- La cancellazione anonimizza la voce, cancella le note dei suoi appuntamenti e annulla quelli
+  futuri senza email (motivo interno "Dati del cliente cancellati"); lo storico passato resta
+  come "Cliente anonimo".
+- API: GET /api/admin/customers/list, GET .../address-book/{id} e .../account/{id},
+  PUT e DELETE .../address-book/{id}, GET .../address-book/{id}/export (tutti TenantOwner).
+  Un account che non ha mai prenotato presso l'attività risponde 404.
+- L'elenco unisce le due fonti in memoria e poi pagina: dimensioni da attività locale.
+
+Alternatives:
+Solo la rubrica (il titolare non vedrebbe in un posto solo tutti i suoi clienti); cancellazione
+fisica (perderebbe lo storico e i conti dell'attività); bloccare la cancellazione finché esistono
+appuntamenti futuri (un passaggio in più per il titolare).
+
+Motivation:
+Chiude lo step 1 e dà al titolare, che è il titolare del trattamento, gli strumenti per gestire
+accesso, rettifica e cancellazione dei clienti senza account.
+
+Status:
+Approved (Massimo, 20/11/2026)
+```
+

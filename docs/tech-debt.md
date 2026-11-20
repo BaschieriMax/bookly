@@ -172,6 +172,10 @@ richiesta e storico appuntamenti del cliente.
 
 Priorità:
 Media
+
+Stato:
+Chiuso il 2026-11-20 (DEC-038): pagina "Clienti" con elenco, correzione, export JSON e
+cancellazione (anonimizzazione) delle voci della rubrica.
 ```
 
 ## Revisione
