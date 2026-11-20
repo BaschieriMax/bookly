@@ -9,6 +9,7 @@ import { TextField } from '@/components/ui/TextField'
 import { isApiError } from '@/services/apiClient'
 import { useAcceptInvitation, useInvitation } from './accountApi'
 import { AuthCard, Notice } from './AuthCard'
+import { TextLink } from '@/components/ui/TextLink'
 
 /** Landing page of an owner invitation: /invito?userId&token (DEC-028). */
 export default function AcceptInvitationPage() {
@@ -32,9 +33,7 @@ export default function AcceptInvitationPage() {
     return (
       <AuthCard title={t('invalidLinkTitle')}>
         <Notice tone="danger">{t('invitationInvalidText')}</Notice>
-        <Link to={paths.login} className="font-semibold text-primary-text">
-          {t('continueToLogin')}
-        </Link>
+        <TextLink to={paths.login}>{t('continueToLogin')}</TextLink>
       </AuthCard>
     )
   }

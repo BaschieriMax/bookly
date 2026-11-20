@@ -61,7 +61,7 @@ export default function MyAppointmentsPage() {
             role="tab"
             aria-selected={scope === value}
             onClick={() => setScope(value)}
-            className={`min-h-10 rounded-control text-[15px] ${
+            className={`min-h-11 rounded-control text-[15px] ${
               scope === value
                 ? 'bg-surface font-semibold text-ink shadow-sm'
                 : 'font-medium text-muted'
@@ -163,7 +163,7 @@ function AppointmentCard({
       {confirmed && !appointment.canCancel && new Date(appointment.start) > new Date() && (
         <p className="flex gap-2 rounded-control bg-warning-soft p-3 text-sm text-warning">
           <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-          <span>
+          <span className="flex flex-col">
             {t('tooLate', {
               hours: Math.round(
                 (new Date(appointment.start).getTime() -
@@ -172,16 +172,14 @@ function AppointmentCard({
               ),
             })}
             {appointment.tenant.phone && (
-              <>
-                {' '}
-                <a
-                  href={`tel:${appointment.tenant.phone.replaceAll(' ', '')}`}
-                  className="inline-flex items-center gap-1 font-semibold underline"
-                >
-                  <Phone aria-hidden="true" className="size-3.5" />
-                  {appointment.tenant.phone}
-                </a>
-              </>
+              // Own line and 44 px tall: calling is the only way to cancel at this point.
+              <a
+                href={`tel:${appointment.tenant.phone.replaceAll(' ', '')}`}
+                className="flex min-h-11 w-fit items-center gap-1.5 font-semibold underline"
+              >
+                <Phone aria-hidden="true" className="size-4" />
+                {appointment.tenant.phone}
+              </a>
             )}
           </span>
         </p>

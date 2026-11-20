@@ -5,6 +5,7 @@ import { PageSpinner } from '@/components/ui/PageSpinner'
 import { afterConfirm, useConfirmEmail } from './accountApi'
 import { AuthCard, Notice } from './AuthCard'
 import { safeRedirect } from './safeRedirect'
+import { TextLink } from '@/components/ui/TextLink'
 
 /** Landing page of the confirmation link: /conferma-email?userId&token. */
 export default function ConfirmEmailPage() {
@@ -26,9 +27,7 @@ export default function ConfirmEmailPage() {
     return (
       <AuthCard title={t('invalidLinkTitle')}>
         <Notice tone="danger">{t('invalidLinkText')}</Notice>
-        <Link to="/login" className="font-semibold text-primary-text">
-          {t('continueToLogin')}
-        </Link>
+        <TextLink to="/login">{t('continueToLogin')}</TextLink>
       </AuthCard>
     )
   }

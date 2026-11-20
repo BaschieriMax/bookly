@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { customerMe, ownerMe, server } from '@/test/server'
 import { renderApp } from '@/test/renderApp'
 import type { MeResponse } from '@/types/api'
@@ -94,6 +94,52 @@ describe('navigation between areas', () => {
     renderApp('/account/appuntamenti')
     expect(await screen.findByRole('heading', { name: 'I tuoi appuntamenti' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Gestione attività' })).not.toBeInTheDocument()
+  })
+
+  it('folds the other areas and logout into a menu for small screens', async () => {
+    let loggedOut = false
+    server.use(
+      http.get('/api/me/appointments', () => HttpResponse.json([])),
+      http.get('/api/auth/me', () =>
+        loggedOut ? new HttpResponse(null, { status: 204 }) : HttpResponse.json(ownerMe),
+      ),
+      http.post('/api/auth/logout', () => {
+        loggedOut = true
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+    const { router } = renderApp('/account/appuntamenti')
+    const user = userEvent.setup()
+
+    const toggle = await screen.findByRole('button', { name: 'Menu' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('navigation', { name: 'Altre aree' })).not.toBeInTheDocument()
+
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    const panel = screen.getByRole('navigation', { name: 'Altre aree' })
+    expect(within(panel).getByRole('link', { name: 'Gestione attività' })).toHaveAttribute(
+      'href',
+      '/admin',
+    )
+    expect(within(panel).queryByRole('link', { name: 'Le mie prenotazioni' })).toBeNull()
+
+    // Escape closes and gives focus back to the button.
+    await user.keyboard('{Escape}')
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(toggle).toHaveFocus()
+
+    // A tap outside closes it too.
+    await user.click(toggle)
+    await user.click(screen.getByRole('heading', { name: 'I tuoi appuntamenti' }))
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(toggle)
+    const logoutButtons = screen.getAllByRole('button', { name: 'Esci' })
+    // The last one is in the panel (the inline one is only for wider screens).
+    await user.click(logoutButtons.at(-1)!)
+    await vi.waitFor(() => expect(router.state.location.pathname).toBe('/'))
+    expect(loggedOut).toBe(true)
   })
 
   it('keeps staff out of the owner pages with a way back to the calendar', async () => {

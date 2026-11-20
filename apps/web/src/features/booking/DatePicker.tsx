@@ -49,13 +49,15 @@ export function DatePicker({
           'flex size-11 items-center justify-center rounded-control hover:bg-subtle disabled:opacity-30 [&_svg]:fill-current',
         button_next:
           'flex size-11 items-center justify-center rounded-control hover:bg-subtle disabled:opacity-30 [&_svg]:fill-current',
-        month_grid: 'w-full border-collapse',
+        // Fixed layout: seven equal columns that shrink with the screen.
+        month_grid: 'w-full table-fixed border-collapse',
         weekdays: 'text-xs text-muted',
         weekday: 'pb-1 font-medium capitalize',
         week: '',
-        day: 'p-0.5 text-center',
+        day: 'p-0 text-center',
+        // 44 px where it fits; on a 320 px phone seven columns leave 40 px per day.
         day_button:
-          'mx-auto flex size-11 items-center justify-center rounded-control text-[15px] font-semibold hover:bg-subtle disabled:cursor-not-allowed disabled:font-normal disabled:text-muted disabled:line-through disabled:opacity-50 disabled:hover:bg-transparent',
+          'mx-auto flex aspect-square w-full max-w-11 items-center justify-center rounded-control text-[15px] font-semibold hover:bg-subtle disabled:cursor-not-allowed disabled:font-normal disabled:text-muted disabled:line-through disabled:opacity-50 disabled:hover:bg-transparent',
         selected:
           '[&>button]:bg-primary [&>button]:text-primary-fg [&>button]:hover:bg-primary-hover',
         today: '[&>button]:underline [&>button]:underline-offset-4',

@@ -48,7 +48,9 @@ export function TimeGrid({
   for (let m = range.start; m < range.end; m += 60) hourMarks.push(m)
 
   return (
-    <div className="overflow-x-auto rounded-card border border-border bg-surface">
+    // data-time-grid: the blocks are sized by duration (a time scale), so the responsive E2E
+    // spec exempts them from the touch-target check; on phones the agenda list is used instead.
+    <div data-time-grid className="overflow-x-auto rounded-card border border-border bg-surface">
       <div
         className="grid min-w-full"
         style={{ gridTemplateColumns: `4rem repeat(${columns.length}, minmax(9rem, 1fr))` }}

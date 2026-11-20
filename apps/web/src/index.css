@@ -63,6 +63,12 @@
     @apply bg-bg font-sans text-ink antialiased;
   }
 
+  /* A fieldset defaults to min-width: min-content and would not shrink below its content:
+     on a 320 px phone the booking calendar pushed the page wider than the screen. */
+  fieldset {
+    min-width: 0;
+  }
+
   :focus-visible {
     outline: 2px solid var(--bk-color-focus);
     outline-offset: 2px;

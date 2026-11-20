@@ -5,26 +5,39 @@ import { paths } from '@/app/paths'
 import { BooklyLogo } from '@/components/layout/BooklyLogo'
 import { LegalFooter } from '@/components/layout/LegalFooter'
 import { AreaLinks } from '@/features/auth/AreaLinks'
-import { useLogout } from '@/features/auth/useMe'
+import { AreaMenu } from '@/features/auth/AreaMenu'
+import { useLogout, useMe } from '@/features/auth/useMe'
+import { userAreas } from '@/features/auth/userAreas'
 
 /** Customer area: global account, Bookly neutral brand (DEC-016). */
 export default function AccountLayout() {
   const { t } = useTranslation(['common', 'account'])
   const logout = useLogout()
   const navigate = useNavigate()
+  const { data: me } = useMe()
+  // Owners, staff and the platform admin also reach other areas from here.
+  const hasOtherAreas = !!me && userAreas(me).some((link) => link.area !== 'account')
+  const logOut = () =>
+    logout.mutate(undefined, { onSettled: () => void navigate('/', { replace: true }) })
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
-      <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-2 sm:px-6">
+      <header className="flex items-center justify-between gap-2 border-b border-border bg-surface px-4 py-2 sm:px-6">
         <BooklyLogo />
-        <div className="flex flex-wrap items-center justify-end gap-1">
-          <AreaLinks current="account" variant="inline" />
+        <div className="flex items-center gap-1">
+          {hasOtherAreas && (
+            <>
+              {/* Small screens: one "Menu" button, so the header stays on one row. */}
+              <AreaMenu current="account" onLogout={logOut} className="sm:hidden" />
+              <div className="hidden items-center gap-1 sm:flex">
+                <AreaLinks current="account" variant="inline" />
+              </div>
+            </>
+          )}
           <button
             type="button"
-            onClick={() =>
-              logout.mutate(undefined, { onSettled: () => void navigate('/', { replace: true }) })
-            }
-            className="flex min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-muted hover:bg-subtle"
+            onClick={logOut}
+            className={`${hasOtherAreas ? 'hidden sm:flex' : 'flex'} min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-muted hover:bg-subtle`}
           >
             <LogOut aria-hidden="true" className="size-4" />
             {t('common:logout')}

@@ -152,7 +152,7 @@ export default function CalendarPage() {
                 role="radio"
                 aria-checked={view === value}
                 onClick={() => update({ [VIEW_PARAM]: value === 'week' ? 'settimana' : null })}
-                className="min-h-10 rounded-control px-4 text-sm font-semibold text-muted aria-checked:bg-surface aria-checked:text-ink aria-checked:shadow-sm"
+                className="min-h-11 rounded-control px-4 text-sm font-semibold text-muted aria-checked:bg-surface aria-checked:text-ink aria-checked:shadow-sm"
               >
                 {t(`calendar.views.${value}`)}
               </button>

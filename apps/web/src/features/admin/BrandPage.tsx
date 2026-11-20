@@ -151,7 +151,7 @@ function ColorPicker({
           )
         })}
       </div>
-      <div className="flex items-end gap-3">
+      <div className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1.5 text-sm font-semibold">
           {t('brand.customColor')}
           <input
@@ -169,7 +169,7 @@ function ColorPicker({
           maxLength={7}
           onChange={onHexChange}
           error={hexError ? t('brand.hexInvalid') : undefined}
-          className="max-w-44 flex-1"
+          className="max-w-44 min-w-32 flex-1"
         />
       </div>
     </fieldset>
