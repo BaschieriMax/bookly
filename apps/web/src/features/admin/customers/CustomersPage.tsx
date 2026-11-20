@@ -126,17 +126,15 @@ function CustomerTable({ items, onOpen }: CustomerListProps) {
       <table className="w-full border-collapse text-left text-[15px]">
         <thead>
           <tr className="border-b border-border bg-subtle text-sm text-muted">
-            {(['name', 'phone', 'email', 'appointments', 'lastVisit', 'next'] as const).map(
-              (column) => (
-                <th
-                  key={column}
-                  scope="col"
-                  className={`px-3 py-3 font-semibold xl:px-4 ${column === 'appointments' ? 'text-right' : ''} ${column === 'phone' || column === 'email' ? 'hidden xl:table-cell' : ''}`}
-                >
-                  {t(`customers.columns.${column}`)}
-                </th>
-              ),
-            )}
+            {(['name', 'contacts', 'appointments', 'lastVisit', 'next'] as const).map((column) => (
+              <th
+                key={column}
+                scope="col"
+                className={`px-3 py-3 font-semibold whitespace-nowrap xl:px-4 ${column === 'appointments' ? 'text-right' : ''} ${column === 'contacts' ? 'hidden xl:table-cell' : ''}`}
+              >
+                {t(`customers.columns.${column}`)}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -160,16 +158,14 @@ function CustomerTable({ items, onOpen }: CustomerListProps) {
                   </button>
                   <KindBadge kind={c.kind} />
                 </span>
-                {/* Below 1280 px the phone column is folded under the name. */}
+                {/* Below 1280 px the contacts column is folded: the phone goes under the name. */}
                 {c.phone && (
                   <span className="block pb-1 text-sm text-muted xl:hidden">{c.phone}</span>
                 )}
               </td>
-              <td className="hidden px-4 py-2 whitespace-nowrap xl:table-cell">
-                {c.phone || none}
-              </td>
-              <td className="hidden max-w-64 truncate px-4 py-2 xl:table-cell">
-                {c.email || none}
+              <td className="hidden px-4 py-2 xl:table-cell">
+                <span className="block whitespace-nowrap">{c.phone || none}</span>
+                {c.email && <span className="block text-sm break-all text-muted">{c.email}</span>}
               </td>
               <td className="px-3 py-2 text-right tabular-nums xl:px-4">{c.appointments}</td>
               <td className="px-3 py-2 whitespace-nowrap xl:px-4">
