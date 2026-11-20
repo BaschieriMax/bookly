@@ -324,6 +324,7 @@
     "count_other": "{{count}} clienti",
     "columns": {
       "name": "Cliente",
+      "contacts": "Contatti",
       "phone": "Telefono",
       "email": "Email",
       "appointments": "Appuntamenti",
