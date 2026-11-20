@@ -71,13 +71,15 @@ internal static class EmailTemplates
         string? address,
         string? cancelDeadline,
         string? tenantPhone,
-        string manageLink) => Build(
+        string manageLink,
+        bool hasAccount = true) => Build(
         to,
         subject: $"Promemoria: {serviceName} da {tenantName}",
         greeting: firstName,
         paragraph: $"Ti ricordiamo il tuo appuntamento da {tenantName}: {serviceName} con {staffName}, {when}"
             + (address is null ? "." : $", {address}."),
-        actionLabel: "Gestisci la prenotazione",
+        // Without an account (address book, DEC-037) the link is the business's page.
+        actionLabel: hasAccount ? "Gestisci la prenotazione" : "Vedi l'attività",
         link: manageLink,
         footer: cancelDeadline is not null
             ? $"Se non puoi venire, disdici online entro {cancelDeadline}: libererai il posto per un altro cliente."
@@ -102,14 +104,48 @@ internal static class EmailTemplates
         footer: "Se non ti aspettavi questa email, contatta il supporto di Bookly.");
 
     public static EmailMessage AppointmentMovedByBusiness(
-        string to, string firstName, string tenantName, string serviceName, string oldWhen, string newWhen, string manageLink) => Build(
+        string to,
+        string firstName,
+        string tenantName,
+        string serviceName,
+        string oldWhen,
+        string newWhen,
+        string manageLink,
+        bool hasAccount = true,
+        string? tenantPhone = null) => Build(
         to,
         subject: $"Appuntamento spostato: {tenantName}",
         greeting: firstName,
         paragraph: $"{tenantName} ha spostato il tuo appuntamento ({serviceName}) da {oldWhen} a {newWhen}.",
-        actionLabel: "Vedi le tue prenotazioni",
+        actionLabel: hasAccount ? "Vedi le tue prenotazioni" : "Vedi l'attività",
         link: manageLink,
-        footer: "Se il nuovo orario non ti va bene, disdici dal link o contatta l'attività.");
+        footer: hasAccount
+            ? "Se il nuovo orario non ti va bene, disdici dal link o contatta l'attività."
+            : "Se il nuovo orario non ti va bene, contatta l'attività" + (tenantPhone is null ? "." : $" al numero {tenantPhone}."));
+
+    /// <summary>The business entered the appointment from its calendar (phone, walk-in; DEC-037).</summary>
+    public static EmailMessage AppointmentBookedByBusiness(
+        string to,
+        string firstName,
+        string tenantName,
+        string serviceName,
+        string staffName,
+        string when,
+        string? address,
+        string? tenantPhone,
+        string link,
+        bool hasAccount) => Build(
+        to,
+        subject: $"Appuntamento confermato da {tenantName}",
+        greeting: firstName,
+        paragraph: $"{tenantName} ha registrato il tuo appuntamento: {serviceName} con {staffName}, {when}"
+            + (address is null ? "." : $", {address}."),
+        actionLabel: hasAccount ? "Vedi le tue prenotazioni" : "Vedi l'attività",
+        link: link,
+        footer: (hasAccount
+                ? "Se non puoi venire, disdici dal link o avvisa l'attività."
+                : "Se non puoi venire, avvisa l'attività" + (tenantPhone is null ? "." : $" al numero {tenantPhone}."))
+            + $" Ricevi questa email perché hai lasciato il tuo indirizzo a {tenantName}.");
 
     public static EmailMessage AppointmentCancelledByBusiness(
         string to, string firstName, string tenantName, string serviceName, string when, string? reason, string bookLink) => Build(

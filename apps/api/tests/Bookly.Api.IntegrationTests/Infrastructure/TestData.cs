@@ -83,6 +83,39 @@ public static class TestData
         return user;
     }
 
+    /// <summary>An address-book customer of a tenant (DEC-037).</summary>
+    public static async Task<TenantCustomer> AddTenantCustomerAsync(
+        AppDbContext db, Guid tenantId, string firstName, string lastName, string phone, string? email = null, DateTimeOffset? createdAt = null)
+    {
+        var customer = new TenantCustomer
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            FirstName = firstName,
+            LastName = lastName,
+            Phone = phone,
+            PhoneDigits = TenantCustomer.Digits(phone),
+            Email = email,
+            CreatedAt = createdAt ?? DateTimeOffset.UtcNow,
+            UpdatedAt = createdAt ?? DateTimeOffset.UtcNow,
+        };
+        db.TenantCustomers.Add(customer);
+        await db.SaveChangesAsync();
+        return customer;
+    }
+
+    /// <summary>An appointment of an address-book customer entered by the business.</summary>
+    public static Appointment NewBusinessAppointment(
+        Guid tenantId, Guid staffId, Service service, Guid tenantCustomerId, DateTimeOffset startUtc, bool notifyCustomer = true)
+    {
+        var appointment = NewAppointment(tenantId, staffId, service, Guid.Empty, startUtc);
+        appointment.CustomerId = null;
+        appointment.TenantCustomerId = tenantCustomerId;
+        appointment.Origin = AppointmentOrigin.Business;
+        appointment.NotifyCustomer = notifyCustomer;
+        return appointment;
+    }
+
     public static Appointment NewAppointment(
         Guid tenantId,
         Guid staffId,

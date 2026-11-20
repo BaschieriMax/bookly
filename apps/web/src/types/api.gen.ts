@@ -53,6 +53,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/appointments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateBusinessAppointmentRequest"];
+                    "text/json": components["schemas"]["CreateBusinessAppointmentRequest"];
+                    "application/*+json": components["schemas"]["CreateBusinessAppointmentRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminAppointmentDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/appointments/{id}/move": {
         parameters: {
             query?: never;
@@ -252,6 +338,43 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CustomerSearchResultDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2441,6 +2564,7 @@ export interface components {
             /** Format: date-time */
             blockedUntil: string;
             status: string;
+            origin: string;
             customerNote: null | string;
             cancellationReason: null | string;
             /** Format: int32 */
@@ -2492,6 +2616,7 @@ export interface components {
             lastName: string;
             email: null | string;
             phone: null | string;
+            hasAccount: boolean;
         };
         CalendarDto: {
             timeZone: string;
@@ -2549,6 +2674,24 @@ export interface components {
             start: string;
             note: null | string;
         };
+        CreateBusinessAppointmentRequest: {
+            /** Format: uuid */
+            serviceId: string;
+            /** Format: uuid */
+            staffId: string;
+            /** Format: date */
+            date: string;
+            /** Format: time */
+            time: string;
+            /** Format: uuid */
+            customerAccountId: null | string;
+            /** Format: uuid */
+            tenantCustomerId: null | string;
+            newCustomer: null | components["schemas"]["NewCustomerRequest"];
+            note: null | string;
+            notifyCustomer: boolean;
+            allowOutsideHours: boolean;
+        };
         CreatedTimeOffDto: {
             timeOff: components["schemas"]["TimeOffDto"];
             /** Format: int32 */
@@ -2572,6 +2715,15 @@ export interface components {
             /** Format: time */
             endTime: null | string;
             reason: null | string;
+        };
+        CustomerSearchResultDto: {
+            kind: string;
+            /** Format: uuid */
+            id: string;
+            firstName: string;
+            lastName: string;
+            phone: null | string;
+            email: null | string;
         };
         DataExportDto: {
             /** Format: date-time */
@@ -2701,6 +2853,12 @@ export interface components {
             route: string;
             parentKey: null | string;
         };
+        NewCustomerRequest: {
+            firstName: string;
+            lastName: string;
+            phone: string;
+            email: null | string;
+        };
         PlatformOwnerDto: {
             /** Format: uuid */
             userId: string;
@@ -2812,6 +2970,11 @@ export interface components {
             appointmentsCleaned: number;
             /** Format: int32 */
             unconfirmedAccountsDeleted: number;
+            /**
+             * Format: int32
+             * @default 0
+             */
+            addressBookEntriesAnonymized: number;
         };
         SaveServiceRequest: {
             name: string;

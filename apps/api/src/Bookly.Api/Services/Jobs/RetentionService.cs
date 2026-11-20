@@ -5,12 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Bookly.Api.Services.Jobs;
 
-public sealed record RetentionRunResult(int AppointmentsCleaned, int UnconfirmedAccountsDeleted);
+public sealed record RetentionRunResult(int AppointmentsCleaned, int UnconfirmedAccountsDeleted, int AddressBookEntriesAnonymized = 0);
 
 /// <summary>
 /// Storage limitation (GDPR art. 5.1.e, DEC-030): free-text notes of appointments are removed
 /// 24 months after the appointment; accounts never confirmed within 30 days (and never used) are
-/// deleted. Run daily by the scheduler; idempotent.
+/// deleted; address-book customers (DEC-037) with no appointment in the last 24 months are
+/// anonymised (the row stays for the businesses' history). Run daily by the scheduler; idempotent.
 /// </summary>
 public sealed class RetentionService(
     AppDbContext db,
@@ -33,6 +34,21 @@ public sealed class RetentionService(
             .ExecuteUpdateAsync(s => s
                 .SetProperty(a => a.CustomerNote, (string?)null)
                 .SetProperty(a => a.CancellationReason, (string?)null), cancellationToken);
+
+        var allAppointments = db.Appointments.IgnoreQueryFilters([AppDbContext.TenantFilter]);
+        var anonymized = await db.TenantCustomers
+            .IgnoreQueryFilters([AppDbContext.TenantFilter])
+            .Where(c => c.AnonymizedAt == null
+                && c.CreatedAt < appointmentCutoff
+                && !allAppointments.Any(a => a.TenantCustomerId == c.Id && a.EndUtc >= appointmentCutoff))
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(c => c.FirstName, "Cliente")
+                .SetProperty(c => c.LastName, "anonimo")
+                .SetProperty(c => c.Phone, (string?)null)
+                .SetProperty(c => c.PhoneDigits, (string?)null)
+                .SetProperty(c => c.Email, (string?)null)
+                .SetProperty(c => c.AnonymizedAt, now)
+                .SetProperty(c => c.UpdatedAt, now), cancellationToken);
 
         var accountCutoff = now - UnconfirmedAccountLifetime;
         var memberships = db.TenantMemberships.IgnoreQueryFilters([AppDbContext.TenantFilter]);
@@ -58,7 +74,9 @@ public sealed class RetentionService(
             }
         }
 
-        logger.LogInformation("Retention run: {Appointments} appointments cleaned, {Accounts} unconfirmed accounts deleted", cleaned, deleted);
-        return new RetentionRunResult(cleaned, deleted);
+        logger.LogInformation(
+            "Retention run: {Appointments} appointments cleaned, {Accounts} unconfirmed accounts deleted, {Entries} address-book entries anonymised",
+            cleaned, deleted, anonymized);
+        return new RetentionRunResult(cleaned, deleted, anonymized);
     }
 }

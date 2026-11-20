@@ -26,6 +26,17 @@ public sealed class AdminAppointmentsController(CalendarService calendar) : Cont
         CancellationToken cancellationToken) =>
         (await calendar.GetAsync(from, to, staffId, includeCancelled, cancellationToken)).ToResult();
 
+    /// <summary>Appointment entered by the business (phone, walk-in; DEC-037).</summary>
+    [HttpPost("appointments")]
+    [ProducesResponseType<AdminAppointmentDto>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IResult> Create(CreateBusinessAppointmentRequest request, CancellationToken cancellationToken) =>
+        (await calendar.CreateAsync(request, cancellationToken)).ToResult();
+
     [HttpPost("appointments/{id:guid}/move")]
     [ProducesResponseType<AdminAppointmentDto>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]

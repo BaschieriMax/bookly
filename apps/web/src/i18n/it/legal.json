@@ -22,6 +22,7 @@
         "paragraphs": [
           "Dati dell'account: nome, cognome, email, telefono (facoltativo) e password, conservata solo in forma cifrata.",
           "Dati delle prenotazioni: attività, servizio, operatore, data e ora, stato dell'appuntamento ed eventuali note che scrivi tu. Non inserire nelle note informazioni sulla salute.",
+          "Clienti registrati dall'attività: se prenoti per telefono o di persona, l'attività può inserire l'appuntamento senza che tu abbia un account. In quel caso salva nella propria rubrica nome, cognome, telefono ed eventualmente l'email, che usa solo per la conferma e il promemoria.",
           "Dati tecnici: indirizzo IP e registri delle richieste, usati per la sicurezza del servizio e per prevenire abusi."
         ]
       },
@@ -47,6 +48,7 @@
         "paragraphs": [
           "Account: finché non lo elimini. Gli account mai confermati vengono cancellati dopo 30 giorni.",
           "Note degli appuntamenti: cancellate 24 mesi dopo l'appuntamento.",
+          "Clienti registrati dall'attività senza account: nome e contatti vengono resi anonimi 24 mesi dopo l'ultimo appuntamento.",
           "Se elimini l'account, i tuoi dati personali vengono cancellati e gli appuntamenti futuri annullati; lo storico degli appuntamenti passati resta all'attività in forma anonima, perché le serve per la propria gestione e contabilità.",
           "Registri tecnici: [N] giorni."
         ]
@@ -55,6 +57,7 @@
         "title": "I tuoi diritti",
         "paragraphs": [
           "Puoi accedere ai tuoi dati e scaricarli in un file (portabilità), correggerli ed eliminare l'account in autonomia dalla pagina \"Profilo e privacy\" del tuo account.",
+          "Se l'attività ti ha registrato senza account, per accedere ai tuoi dati, correggerli o cancellarli rivolgiti direttamente all'attività, che ne è titolare.",
           "Puoi inoltre chiedere la limitazione del trattamento od opporti, scrivendo a [email privacy]. Per i dati di una prenotazione puoi rivolgerti anche direttamente all'attività.",
           "Hai il diritto di presentare reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it)."
         ]

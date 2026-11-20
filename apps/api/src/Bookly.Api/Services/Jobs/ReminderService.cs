@@ -44,6 +44,7 @@ public sealed class ReminderService(
                 && a.StartUtc > now
                 && a.StartUtc <= until
                 && a.CreatedAt <= a.StartUtc - MinBookedAhead
+                && a.NotifyCustomer
                 && db.Tenants.Any(t => t.Id == a.TenantId && t.Status == TenantStatus.Active))
             .OrderBy(a => a.StartUtc)
             .Take(BatchSize)
@@ -53,8 +54,10 @@ public sealed class ReminderService(
                 a.StartUtc,
                 ServiceName = a.Service.Name,
                 StaffName = a.StaffMember.DisplayName,
-                a.Customer.Email,
-                a.Customer.FirstName,
+                // An account or an address-book entry (DEC-037); the latter may have no email.
+                Email = a.Customer != null ? a.Customer.Email : a.TenantCustomer!.Email,
+                FirstName = a.Customer != null ? a.Customer.FirstName : a.TenantCustomer!.FirstName,
+                HasAccount = a.CustomerId != null,
                 Tenant = db.Tenants.Single(t => t.Id == a.TenantId),
             })
             .ToListAsync(cancellationToken);
@@ -75,6 +78,7 @@ public sealed class ReminderService(
             var tenant = item.Tenant;
             var timeZone = AvailabilityService.TimeZoneOf(tenant);
             var deadline = item.StartUtc.AddHours(-tenant.CancellationWindowHours);
+            var baseUrl = appOptions.Value.PublicBaseUrl.TrimEnd('/');
             var message = EmailTemplates.AppointmentReminder(
                 item.Email,
                 item.FirstName,
@@ -83,9 +87,11 @@ public sealed class ReminderService(
                 item.StaffName,
                 DateFormatting.LongItalian(item.StartUtc, timeZone),
                 tenant.Address,
-                deadline > now ? DateFormatting.LongItalian(deadline, timeZone) : null,
+                // Only account holders can cancel online; the others call the business.
+                item.HasAccount && deadline > now ? DateFormatting.LongItalian(deadline, timeZone) : null,
                 tenant.Phone,
-                $"{appOptions.Value.PublicBaseUrl.TrimEnd('/')}/account/appuntamenti");
+                item.HasAccount ? $"{baseUrl}/account/appuntamenti" : $"{baseUrl}/b/{tenant.Slug}",
+                item.HasAccount);
 
             try
             {

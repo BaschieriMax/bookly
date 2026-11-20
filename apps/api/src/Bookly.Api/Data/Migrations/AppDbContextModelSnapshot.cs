@@ -159,7 +159,10 @@ namespace Bookly.Api.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("CustomerId")
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CustomerId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("CustomerNote")
@@ -168,6 +171,14 @@ namespace Bookly.Api.Data.Migrations
 
                     b.Property<DateTimeOffset>("EndUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("NotifyCustomer")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<DateTimeOffset?>("ReminderSentAt")
                         .HasColumnType("timestamp with time zone");
@@ -186,6 +197,9 @@ namespace Bookly.Api.Data.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<Guid?>("TenantCustomerId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
@@ -200,6 +214,8 @@ namespace Bookly.Api.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedByUserId");
+
                     b.HasIndex("ServiceId");
 
                     b.HasIndex("StaffMemberId");
@@ -210,11 +226,15 @@ namespace Bookly.Api.Data.Migrations
                         .HasDatabaseName("IX_Appointments_PendingReminders")
                         .HasFilter("\"ReminderSentAt\" IS NULL");
 
+                    b.HasIndex("TenantCustomerId", "StartUtc");
+
                     b.HasIndex("TenantId", "StaffMemberId", "StartUtc");
 
                     b.ToTable("Appointments", t =>
                         {
                             t.HasCheckConstraint("CK_Appointments_Blocked", "\"BlockedUntilUtc\" >= \"EndUtc\"");
+
+                            t.HasCheckConstraint("CK_Appointments_OneCustomer", "num_nonnulls(\"CustomerId\", \"TenantCustomerId\") = 1");
 
                             t.HasCheckConstraint("CK_Appointments_Range", "\"EndUtc\" > \"StartUtc\"");
                         });
@@ -622,6 +642,55 @@ namespace Bookly.Api.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Bookly.Api.Entities.TenantCustomer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("AnonymizedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("PhoneDigits")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "PhoneDigits");
+
+                    b.HasIndex("TenantId", "LastName", "FirstName");
+
+                    b.ToTable("TenantCustomers");
+                });
+
             modelBuilder.Entity("Bookly.Api.Entities.TenantLogo", b =>
                 {
                     b.Property<Guid>("TenantId")
@@ -865,11 +934,15 @@ namespace Bookly.Api.Data.Migrations
 
             modelBuilder.Entity("Bookly.Api.Entities.Appointment", b =>
                 {
+                    b.HasOne("Bookly.Api.Entities.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Bookly.Api.Entities.AppUser", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Bookly.Api.Entities.Service", "Service")
                         .WithMany()
@@ -883,6 +956,11 @@ namespace Bookly.Api.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Bookly.Api.Entities.TenantCustomer", "TenantCustomer")
+                        .WithMany()
+                        .HasForeignKey("TenantCustomerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Bookly.Api.Entities.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
@@ -894,6 +972,8 @@ namespace Bookly.Api.Data.Migrations
                     b.Navigation("Service");
 
                     b.Navigation("StaffMember");
+
+                    b.Navigation("TenantCustomer");
                 });
 
             modelBuilder.Entity("Bookly.Api.Entities.NavigationItem", b =>
@@ -963,6 +1043,15 @@ namespace Bookly.Api.Data.Migrations
                     b.Navigation("Service");
 
                     b.Navigation("StaffMember");
+                });
+
+            modelBuilder.Entity("Bookly.Api.Entities.TenantCustomer", b =>
+                {
+                    b.HasOne("Bookly.Api.Entities.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Bookly.Api.Entities.TenantLogo", b =>

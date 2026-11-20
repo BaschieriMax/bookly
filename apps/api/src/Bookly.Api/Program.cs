@@ -51,6 +51,7 @@ builder.Services.AddScoped<CatalogService>();
 builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddScoped<TenantSettingsService>();
 builder.Services.AddScoped<CalendarService>();
+builder.Services.AddScoped<CustomerDirectoryService>();
 builder.Services.AddScoped<TenantProvisioningService>();
 builder.Services.AddScoped<ReminderService>();
 builder.Services.AddScoped<RetentionService>();
