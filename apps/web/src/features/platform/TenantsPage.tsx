@@ -272,7 +272,7 @@ function OwnerRow({ tenant, owner }: { tenant: PlatformTenant; owner: PlatformOw
           <Badge tone="warning">{t('tenants.pending')}</Badge>
           <Button
             variant="ghost"
-            className="min-h-9 px-2 text-sm"
+            className="min-w-11 px-2 text-sm"
             loading={invite.isPending}
             onClick={() => void resend()}
             aria-label={t('tenants.resend', { name })}

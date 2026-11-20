@@ -1,12 +1,13 @@
 import '@/styles/fonts-tenant.css'
 import { useTranslation } from 'react-i18next'
-import { Link, Outlet, useParams } from 'react-router'
+import { Outlet, useParams } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { PageSpinner } from '@/components/ui/PageSpinner'
 import { isApiError } from '@/services/apiClient'
 import { useTenant } from './tenantApi'
 import { TenantContext } from './tenantContext'
 import { tenantThemeStyle } from './tenantTheme'
+import { TextLink } from '@/components/ui/TextLink'
 
 /** Public pages of a tenant, re-skinned with its brand (DEC-016). */
 export default function TenantLayout() {
@@ -36,9 +37,7 @@ export default function TenantLayout() {
             {t('common:retry')}
           </Button>
         )}
-        <Link to="/" className="font-semibold text-primary-text">
-          Bookly
-        </Link>
+        <TextLink to="/">Bookly</TextLink>
       </main>
     )
   }

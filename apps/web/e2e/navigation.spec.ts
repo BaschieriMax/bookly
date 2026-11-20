@@ -28,6 +28,13 @@ async function openMenuIfCollapsed(page: Page) {
   }
 }
 
+/** Below the sm breakpoint (640 px) the account header folds the other areas into "Menu". */
+async function openAccountMenuIfCollapsed(page: Page) {
+  if ((page.viewportSize()?.width ?? 1280) < 640) {
+    await page.getByRole('button', { name: 'Menu', exact: true }).click()
+  }
+}
+
 test('an owner moves between their areas with clicks only', async ({ page }) => {
   await loginFromHome(page, demo.owner)
   await expect(page).toHaveURL(/\/admin$/)
@@ -37,6 +44,7 @@ test('an owner moves between their areas with clicks only', async ({ page }) => 
   await page.getByRole('link', { name: 'Le mie prenotazioni' }).click()
   await expect(page).toHaveURL(/\/account\/appuntamenti$/)
 
+  await openAccountMenuIfCollapsed(page)
   await page.getByRole('link', { name: 'Gestione attività' }).click()
   await expect(page).toHaveURL(/\/admin$/)
   await expect(page.getByRole('heading', { name: 'Calendario' })).toBeVisible()

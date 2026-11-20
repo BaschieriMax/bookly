@@ -6,6 +6,7 @@ import { TextField } from '@/components/ui/TextField'
 import { isApiError } from '@/services/apiClient'
 import { useResetPassword } from './accountApi'
 import { AuthCard, Notice } from './AuthCard'
+import { TextLink } from '@/components/ui/TextLink'
 
 /** Landing page of the reset link: /reimposta-password?email&token. */
 export default function ResetPasswordPage() {
@@ -29,9 +30,7 @@ export default function ResetPasswordPage() {
     return (
       <AuthCard title={t('resetTitle')}>
         <Notice tone="success">{t('resetDone')}</Notice>
-        <Link to="/login" className="font-semibold text-primary-text">
-          {t('continueToLogin')}
-        </Link>
+        <TextLink to="/login">{t('continueToLogin')}</TextLink>
       </AuthCard>
     )
   }

@@ -9,6 +9,7 @@ import { isApiError } from '@/services/apiClient'
 import { afterConfirm, useRegister } from './accountApi'
 import { AuthCard, Notice } from './AuthCard'
 import { safeRedirect } from './safeRedirect'
+import { TextLink } from '@/components/ui/TextLink'
 
 const schema = z.object({
   firstName: z.string().trim().min(1, 'firstNameRequired').max(100),
@@ -85,9 +86,7 @@ export default function RegisterPage() {
     return (
       <AuthCard title={t('checkEmailTitle')}>
         <Notice tone="success">{t('checkEmailText')}</Notice>
-        <Link to="/login" className="font-semibold text-primary-text">
-          {t('continueToLogin')}
-        </Link>
+        <TextLink to="/login">{t('continueToLogin')}</TextLink>
       </AuthCard>
     )
   }

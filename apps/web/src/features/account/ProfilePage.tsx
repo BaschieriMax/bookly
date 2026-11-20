@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { z } from 'zod'
 import { paths } from '@/app/paths'
 import { Button } from '@/components/ui/Button'
@@ -14,6 +14,7 @@ import { TextField } from '@/components/ui/TextField'
 import { isApiError } from '@/services/apiClient'
 import type { Profile } from '@/types/api'
 import { useDeleteAccount, useDownloadExport, useProfile, useUpdateProfile } from './privacyApi'
+import { TextLink } from '@/components/ui/TextLink'
 
 const schema = z.object({
   firstName: z.string().trim().min(1, 'required').max(100),
@@ -200,9 +201,7 @@ export default function ProfilePage() {
           <Download aria-hidden="true" className="size-4" />
           {t('profile.download')}
         </Button>
-        <Link to={paths.privacy} className="self-start font-semibold text-primary-text">
-          {t('profile.privacyLink')}
-        </Link>
+        <TextLink to={paths.privacy}>{t('profile.privacyLink')}</TextLink>
       </Section>
 
       <Section title={t('profile.deleteTitle')}>

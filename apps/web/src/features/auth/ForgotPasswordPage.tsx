@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/TextField'
 import { isApiError } from '@/services/apiClient'
 import { useForgotPassword } from './accountApi'
 import { AuthCard, Notice } from './AuthCard'
+import { TextLink } from '@/components/ui/TextLink'
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation(['auth', 'common'])
@@ -43,9 +43,9 @@ export default function ForgotPasswordPage() {
           </Button>
         </form>
       )}
-      <Link to="/login" className="text-sm font-semibold text-primary-text">
+      <TextLink to="/login" className="text-sm">
         {t('continueToLogin')}
-      </Link>
+      </TextLink>
     </AuthCard>
   )
 }
