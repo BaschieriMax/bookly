@@ -180,6 +180,33 @@ Chiuso il 2026-11-20 (DEC-038): pagina "Clienti" con elenco, correzione, export 
 cancellazione (anonimizzazione) delle voci della rubrica.
 ```
 
+```text
+ID: TD-009
+Problema:
+Il limite giornaliero delle email di sospensione (DEC-039) è un contatore interno fisso: 80
+email al giorno UTC. Non conosce la quota reale di Resend né le altre email del giorno
+(conferme, inviti, annullamenti).
+
+Motivo:
+Resend free consegna 100 email al giorno in tutto e l'SMTP non espone la quota residua: un
+numero fisso con margine è la soluzione più semplice e prevedibile.
+
+Impatto:
+In un giorno con molte altre email la quota di Resend può finire prima: le email rimaste
+falliscono e ripartono con i tentativi successivi (fino a 8, in circa un giorno e mezzo). Con
+attività grandi la sospensione può richiedere più giorni per avvisare tutti. Con il mittente
+onboarding@resend.dev, finché il dominio non è verificato (deploy §8), le email arrivano solo
+all'indirizzo dell'account Resend.
+
+Soluzione futura:
+Al passaggio a un piano Resend a pagamento (o con il dominio verificato e volumi più alti)
+alzare SuspensionNotices__DailyLimit su Render; in alternativa leggere la quota dall'API di
+Resend e riconoscere l'errore di quota esaurita.
+
+Priorità:
+Bassa
+```
+
 ## Revisione
 
 Il log si rivede a ogni release e nella manutenzione mensile. Un debito con priorità `Alta` non può restare aperto alla release senza una decisione esplicita di Massimo registrata nel Decision Log.

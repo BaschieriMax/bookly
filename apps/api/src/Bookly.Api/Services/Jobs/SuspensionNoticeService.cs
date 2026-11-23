@@ -276,7 +276,7 @@ public sealed class SuspensionNoticeOptions
 
     /// <summary>
     /// Notices sent per UTC day at most. Resend free sends 100 emails a day in total: the rest is
-    /// left to confirmations and invitations (TD-008).
+    /// left to confirmations and invitations (TD-009).
     /// </summary>
     [Range(1, 10000)]
     public int DailyLimit { get; set; } = 80;
