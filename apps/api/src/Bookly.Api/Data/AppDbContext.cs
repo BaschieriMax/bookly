@@ -35,6 +35,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantContext
 
     public DbSet<TenantCustomer> TenantCustomers => Set<TenantCustomer>();
 
+    public DbSet<TenantSuspension> TenantSuspensions => Set<TenantSuspension>();
+
+    public DbSet<SuspensionNotice> SuspensionNotices => Set<SuspensionNotice>();
+
     public DbSet<NavigationItem> NavigationItems => Set<NavigationItem>();
 
     public DbSet<NavigationItemRole> NavigationItemRoles => Set<NavigationItemRole>();

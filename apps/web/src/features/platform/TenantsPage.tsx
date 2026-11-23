@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { z } from 'zod'
 import { Button } from '@/components/ui/Button'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Dialog } from '@/components/ui/Dialog'
 import { SelectField } from '@/components/ui/SelectField'
 import { TextField } from '@/components/ui/TextField'
@@ -21,6 +20,8 @@ import {
   useSetTenantStatus,
 } from './platformApi'
 import { platformErrorMessage } from './platformErrors'
+import { SuspendTenantDialog } from './SuspendTenantDialog'
+import { SuspensionNoticesLine } from './SuspensionNoticesLine'
 
 const owner = {
   ownerEmail: z.string().trim().email(),
@@ -293,14 +294,12 @@ export default function TenantsPage() {
   const [inviting, setInviting] = useState<PlatformTenant | null>(null)
   const [suspending, setSuspending] = useState<PlatformTenant | null>(null)
 
-  const changeStatus = async (tenant: PlatformTenant, status: 'Active' | 'Suspended') => {
+  const reactivate = async (tenant: PlatformTenant) => {
     try {
-      await setStatus.mutateAsync({ id: tenant.id, status })
-      toast.success(status === 'Active' ? t('tenants.reactivated') : t('tenants.suspended'))
+      await setStatus.mutateAsync({ id: tenant.id, status: 'Active' })
+      toast.success(t('tenants.reactivated'))
     } catch (err) {
       toast.error(platformErrorMessage(t, err))
-    } finally {
-      setSuspending(null)
     }
   }
 
@@ -357,6 +356,9 @@ export default function TenantsPage() {
                         date: dateFormat.format(new Date(tenant.createdAt)),
                       })}
                     </p>
+                    {!active && tenant.suspensionNotices && (
+                      <SuspensionNoticesLine notices={tenant.suspensionNotices} />
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button variant="secondary" onClick={() => setInviting(tenant)}>
@@ -372,7 +374,7 @@ export default function TenantsPage() {
                       <Button
                         variant="secondary"
                         loading={setStatus.isPending && setStatus.variables?.id === tenant.id}
-                        onClick={() => void changeStatus(tenant, 'Active')}
+                        onClick={() => void reactivate(tenant)}
                       >
                         <Play aria-hidden="true" className="size-4" />
                         {t('tenants.reactivate')}
@@ -400,18 +402,9 @@ export default function TenantsPage() {
 
       {creating && <CreateTenantDialog onClose={() => setCreating(false)} />}
       {inviting && <InviteOwnerDialog tenant={inviting} onClose={() => setInviting(null)} />}
-      <ConfirmDialog
-        open={suspending !== null}
-        title={t('tenants.suspendTitle', { name: suspending?.name ?? '' })}
-        confirmLabel={t('tenants.suspend')}
-        cancelLabel={t('admin:actions.cancel')}
-        danger
-        loading={setStatus.isPending}
-        onConfirm={() => suspending && void changeStatus(suspending, 'Suspended')}
-        onClose={() => setSuspending(null)}
-      >
-        <p>{t('tenants.suspendText')}</p>
-      </ConfirmDialog>
+      {suspending && (
+        <SuspendTenantDialog tenant={suspending} onClose={() => setSuspending(null)} />
+      )}
     </section>
   )
 }

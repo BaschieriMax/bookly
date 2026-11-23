@@ -120,6 +120,11 @@ viene inviato per prenotazioni fatte a meno di 12 ore dall'appuntamento. Per att
 Senza segreto configurato l'endpoint risponde 404. Per provarlo in locale:
 `curl -X POST localhost:5080/api/jobs/send-reminders -H "X-Job-Secret: <segreto>"`.
 
+Lo stesso segreto protegge `POST /api/jobs/send-suspension-notices` (DEC-039): riprende le email
+inviate quando il super-admin sospende un'attività annullando gli appuntamenti futuri. Di norma le
+invia subito l'app; il workflow `.github/workflows/suspension-notices.yml` le riprende dopo un
+errore o il limite giornaliero (`SuspensionNotices__DailyLimit`, 80 di default).
+
 ## Personalizzare stili e font
 
 Colori, font e raggi stanno **solo** in `apps/web/src/styles/tokens.css` (variabili `--bk-*`).

@@ -2059,6 +2059,35 @@
         }
       }
     },
+    "/api/jobs/send-suspension-notices": {
+      "post": {
+        "tags": [
+          "Jobs"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuspensionNoticeRunResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me/profile": {
       "get": {
         "tags": [
@@ -2496,6 +2525,46 @@
         }
       }
     },
+    "/api/platform/tenants/{id}/future-appointments": {
+      "get": {
+        "tags": [
+          "PlatformTenants"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FutureAppointmentsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/platform/tenants/{id}/status": {
       "put": {
         "tags": [
@@ -2543,8 +2612,28 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -4008,6 +4097,18 @@
           }
         }
       },
+      "FutureAppointmentsDto": {
+        "required": [
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "IFormFile": {
         "type": "string",
         "format": "binary"
@@ -4370,6 +4471,47 @@
           }
         }
       },
+      "PlatformSuspensionNoticesDto": {
+        "required": [
+          "cancelledAppointments",
+          "customers",
+          "sent",
+          "notSent",
+          "ownerSummaries",
+          "ownerSummariesSent",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "cancelledAppointments": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "customers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sent": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "notSent": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ownerSummaries": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ownerSummariesSent": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "state": {
+            "type": "string"
+          }
+        }
+      },
       "PlatformTenantDto": {
         "required": [
           "id",
@@ -4417,6 +4559,16 @@
           "serviceCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "suspensionNotices": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PlatformSuspensionNoticesDto"
+              }
+            ]
           }
         }
       },
@@ -4932,6 +5084,36 @@
         "properties": {
           "status": {
             "type": "string"
+          },
+          "cancelFutureAppointments": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "SuspensionNoticeRunResult": {
+        "required": [
+          "sent",
+          "failed",
+          "skipped",
+          "dailyLimitReached"
+        ],
+        "type": "object",
+        "properties": {
+          "sent": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "failed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "skipped": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dailyLimitReached": {
+            "type": "boolean"
           }
         }
       },

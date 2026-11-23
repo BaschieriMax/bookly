@@ -4,20 +4,43 @@ import { tenantKeys } from '@/features/tenant/tenantApi'
 import { apiClient } from '@/services/apiClient'
 import type {
   CreateTenantRequest,
+  FutureAppointments,
   InviteOwnerRequest,
   NavigationAdminItem,
   PlatformTenant,
+  SetTenantStatusRequest,
 } from '@/types/api'
 
 export const platformKeys = {
   tenants: ['platform', 'tenants'] as const,
+  futureAppointments: (id: string) => ['platform', 'tenants', id, 'future-appointments'] as const,
   navigation: ['platform', 'navigation'] as const,
 }
+
+/** Emails of a suspension still going out (DEC-039): the list refreshes to show the progress. */
+const NOTICES_POLL_MS = 5_000
+
+const isSendingNotices = (tenant: PlatformTenant) =>
+  tenant.suspensionNotices?.state === 'Sending' || tenant.suspensionNotices?.state === 'Retrying'
 
 export function usePlatformTenants() {
   return useQuery({
     queryKey: platformKeys.tenants,
     queryFn: async () => (await apiClient.get<PlatformTenant[]>('/platform/tenants')).data,
+    refetchInterval: (query) =>
+      query.state.data?.some(isSendingNotices) ? NOTICES_POLL_MS : false,
+  })
+}
+
+/** How many future confirmed appointments the tenant has (the number only). Fresh at every opening. */
+export function useFutureAppointments(id: string) {
+  return useQuery({
+    queryKey: platformKeys.futureAppointments(id),
+    queryFn: async () =>
+      (await apiClient.get<FutureAppointments>(`/platform/tenants/${id}/future-appointments`)).data
+        .count,
+    staleTime: 0,
+    gcTime: 0,
   })
 }
 
@@ -46,10 +69,22 @@ export const useCreateTenant = () =>
       (await apiClient.post<PlatformTenant>('/platform/tenants', body)).data,
   )
 
+interface SetTenantStatusInput {
+  id: string
+  status: 'Active' | 'Suspended'
+  /** Only when suspending: also cancel the future appointments and notify (DEC-039). */
+  cancelFutureAppointments?: boolean
+}
+
 export const useSetTenantStatus = () =>
   useTenantMutation(
-    async ({ id, status }: { id: string; status: 'Active' | 'Suspended' }) =>
-      (await apiClient.put<PlatformTenant>(`/platform/tenants/${id}/status`, { status })).data,
+    async ({ id, status, cancelFutureAppointments = false }: SetTenantStatusInput) =>
+      (
+        await apiClient.put<PlatformTenant>(`/platform/tenants/${id}/status`, {
+          status,
+          cancelFutureAppointments,
+        } satisfies SetTenantStatusRequest)
+      ).data,
   )
 
 export const useInviteOwner = () =>

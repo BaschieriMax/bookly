@@ -53,7 +53,15 @@ builder.Services.AddScoped<TenantSettingsService>();
 builder.Services.AddScoped<CalendarService>();
 builder.Services.AddScoped<CustomerDirectoryService>();
 builder.Services.AddScoped<TenantProvisioningService>();
+builder.Services.AddScoped<TenantSuspensionService>();
 builder.Services.AddScoped<ReminderService>();
+builder.Services.AddScoped<SuspensionNoticeService>();
+builder.Services.AddSingleton<SuspensionNoticeSignal>();
+builder.Services.AddHostedService<SuspensionNoticeWorker>();
+builder.Services.AddOptions<SuspensionNoticeOptions>()
+    .Bind(builder.Configuration.GetSection(SuspensionNoticeOptions.Section))
+    .ValidateDataAnnotations()
+    .ValidateOnStartUnlessBuildTime();
 builder.Services.AddScoped<RetentionService>();
 builder.Services.AddScoped<PrivacyService>();
 builder.Services.AddSingleton<IIndexHtmlProvider, WebRootIndexHtmlProvider>();

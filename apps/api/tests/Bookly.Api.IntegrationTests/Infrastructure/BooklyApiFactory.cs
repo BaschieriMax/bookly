@@ -9,7 +9,11 @@ using Microsoft.Extensions.Time.Testing;
 namespace Bookly.Api.IntegrationTests.Infrastructure;
 
 /// <summary>Runs the real API against the fixture database, with production cookie settings and a fake mailbox.</summary>
-public sealed class BooklyApiFactory(PostgresFixture database, int loginPermitPerMinute = 1000) : WebApplicationFactory<Program>
+/// <param name="settings">Extra configuration, applied last (e.g. "SuspensionNotices:DailyLimit").</param>
+public sealed class BooklyApiFactory(
+    PostgresFixture database,
+    int loginPermitPerMinute = 1000,
+    IReadOnlyDictionary<string, string>? settings = null) : WebApplicationFactory<Program>
 {
     public const string JobSecret = "test-job-secret-0123456789abcdef0123";
 
@@ -31,6 +35,13 @@ public sealed class BooklyApiFactory(PostgresFixture database, int loginPermitPe
         builder.UseSetting("Auth:PublicPermitPerMinute", "100000");
         builder.UseSetting("Auth:BookingPermitPerMinute", "100000");
         builder.UseSetting("Jobs:Secret", JobSecret);
+        // Suspension notices are sent only when a test calls the job: no background worker, no pauses.
+        builder.UseSetting("SuspensionNotices:RunInBackground", "false");
+        builder.UseSetting("SuspensionNotices:SendIntervalMilliseconds", "0");
+        foreach (var (key, value) in settings ?? new Dictionary<string, string>())
+        {
+            builder.UseSetting(key, value);
+        }
 
         builder.ConfigureTestServices(services =>
         {

@@ -175,6 +175,15 @@ Alla prima chiamata del mattino l'app può essere in pausa (TD-001) e superare i
 di cron-job.org: la richiesta la sveglia comunque e quella dopo riesce. Fallimenti isolati alle 7:00
 sono normali, più di tre di fila no (vedi problemi frequenti).
 
+**Avvisi di sospensione (DEC-039, facoltativo).** Quando il super-admin sospende un'attività e
+annulla gli appuntamenti futuri, le email partono subito dall'app. Questo endpoint serve solo a
+riprenderle dopo il limite giornaliero (80 al giorno) o un errore del server di posta, se nel
+frattempo Render è andato in pausa. Il workflow GitHub `Suspension notices` lo chiama già tre volte al
+giorno. Per avere più puntualità aggiungi un cronjob: Title `Bookly avvisi sospensione`, URL
+`…/api/jobs/send-suspension-notices`, POST, stesso header, schedule **Every day** alle **07:25**. Ogni
+chiamata invia per al massimo 20 secondi e lascia il resto all'app, quindi resta sotto il timeout.
+Risposta attesa: `{"sent":0,"failed":0,"skipped":0,"dailyLimitReached":false}`.
+
 ## 7. Primo super-admin e collaudo in produzione
 
 1. Apri `https://<servizio>.onrender.com/registrati` e registrati con l'email di

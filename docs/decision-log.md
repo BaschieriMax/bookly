@@ -1122,3 +1122,72 @@ Status:
 Approved (Massimo, 20/11/2026)
 ```
 
+
+---
+
+```text
+Decision:
+DEC-039 — Sospensione con annullamento degli appuntamenti futuri e avviso ai clienti
+
+Date:
+2026-11-23
+
+Context:
+La sospensione di un'attività (DEC-028) blocca pagina pubblica, prenotazioni e area dell'attività,
+ma lascia confermati gli appuntamenti futuri: i clienti si presentano a un'attività chiusa senza
+saperlo. Massimo ha scelto il miglioramento n. 11 e ha deciso le regole il 23/11/2026; il dialog
+è stato prototipato in Claude Design («Bookly – Sospensione attività») e approvato.
+
+Decision:
+- Dialog di sospensione: il super-admin vede solo il numero di appuntamenti futuri confermati
+  (GET /api/platform/tenants/{id}/future-appointments → { count }), mai chi né quando. Con
+  appuntamenti sceglie tra «Sospendi e annulla N appuntamenti futuri» e «Sospendi soltanto»;
+  nessuna scelta è preselezionata e confermare senza scegliere mostra un errore. Senza
+  appuntamenti resta solo «Sospendi». Se il conteggio fallisce, «Riprova» e niente sospensione.
+- PUT /api/platform/tenants/{id}/status con cancelFutureAppointments=true (solo con Suspended,
+  altrimenti 400 platform.cancel_requires_suspension): in una transazione l'attività diventa
+  Suspended, gli appuntamenti Confirmed con inizio futuro diventano CancelledByBusiness (senza
+  motivo) e le email vanno in coda. Un appuntamento cambiato nel frattempo dà 409
+  booking.concurrent_update e non cambia nulla.
+- Email ai clienti: una per cliente, con l'elenco dei suoi appuntamenti annullati, solo per gli
+  appuntamenti con NotifyCustomer e un'email. Template nuovo e neutro: niente «sospesa», niente
+  motivo, niente link alla pagina pubblica (è 404), pulsante «Chiama» col telefono dell'attività se
+  c'è. Nessuna email a chi ha solo appuntamenti passati.
+- Email a ogni titolare: riepilogo (appuntamenti annullati, clienti avvisati) e tabella dei clienti
+  da chiamare (nome, telefono, data e ora) per gli appuntamenti senza email o con avvisi disattivati.
+- Coda: tabelle TenantSuspensions e SuspensionNotices. Le righe contengono solo id e contatori:
+  nomi, indirizzi e date si leggono al momento dell'invio, così un dato cancellato nel frattempo
+  non parte (la riga diventa Skipped). Ordine: riepiloghi ai titolari, poi clienti dal primo
+  appuntamento più vicino.
+- Invio in background, a blocchi e idempotente: ogni email si prenota con un UPDATE condizionale
+  (come i promemoria, DEC-012) prima di partire. Un errore ferma il giro e la riprova dopo 5 min,
+  30 min, 2 h, poi ogni 6 h; dopo 8 tentativi l'email risulta non inviata. Limite di 80 email di
+  sospensione al giorno UTC (Resend free: 100 al giorno in tutto, TD-009): oltre, l'invio riprende
+  il giorno dopo.
+- Chi invia: un BackgroundService nell'app, svegliato subito dalla sospensione, all'avvio e ogni
+  10 minuti mentre l'app è sveglia; più POST /api/jobs/send-suspension-notices (20 secondi al
+  massimo per chiamata) dal workflow GitHub «Suspension notices» tre volte al giorno e,
+  facoltativo, da cron-job.org (docs/deploy.md §6).
+- Piattaforma: la scheda di un'attività sospesa mostra lo stato degli avvisi dell'ultima
+  sospensione (in invio, in pausa per il limite giornaliero, in pausa dopo un errore, completati;
+  solo conteggi) e si aggiorna ogni 5 secondi durante l'invio. La riattivazione non ripristina
+  gli appuntamenti annullati.
+
+Alternatives:
+Annullare sempre (il super-admin può voler sospendere per poche ore senza toccare nulla); mostrare
+l'elenco degli appuntamenti nel dialog (contro la minimizzazione: il super-admin non consulta gli
+appuntamenti); inviare tutte le email nella richiesta (lenta e soggetta al limite di Resend); solo
+il job pianificato (con Render free in pausa le email partirebbero tardi); un'email per
+appuntamento (più email, più quota).
+
+Motivation:
+I clienti non trovano un'attività chiusa senza preavviso e il titolare sa chi chiamare. La coda con
+soli id evita copie di dati personali; prenotazione condizionale, riprova e limite giornaliero
+rendono l'invio sicuro con il piano gratuito di Resend.
+Rischio accettato: una prenotazione online partita pochi millisecondi prima della sospensione può
+essere salvata dopo il conteggio della transazione e restare confermata; è molto improbabile e il
+titolare la vede nel calendario alla riattivazione.
+
+Status:
+Approved (Massimo, 23/11/2026)
+```

@@ -1,0 +1,38 @@
+# Emails of a suspension that cancelled appointments (DEC-039). The app sends them in the
+# background as soon as the suspension is saved; this call only resumes them after the daily
+# limit or an email error while the Render free instance sleeps. Same configuration as
+# retention.yml; a cron-job.org job on the same endpoint is optional (docs/deploy.md §6).
+# The endpoint is idempotent: nothing is sent twice.
+name: Suspension notices
+
+on:
+  schedule:
+    - cron: '50 6,12,18 * * *' # 3 times a day, off the hour
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: suspension-notices
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send pending suspension notices
+        env:
+          BASE_URL: ${{ vars.BOOKLY_BASE_URL }}
+          JOB_SECRET: ${{ secrets.BOOKLY_JOB_SECRET }}
+        run: |
+          if [ -z "$BASE_URL" ] || [ -z "$JOB_SECRET" ]; then
+            echo "::notice::BOOKLY_BASE_URL or BOOKLY_JOB_SECRET not configured: skipping."
+            exit 0
+          fi
+          # Render free instances sleep: the first request can take up to a minute (TD-001).
+          curl --fail-with-body --silent --show-error \
+            --max-time 120 --retry 3 --retry-delay 20 --retry-all-errors \
+            -X POST "$BASE_URL/api/jobs/send-suspension-notices" \
+            -H "X-Job-Secret: $JOB_SECRET"
+          echo

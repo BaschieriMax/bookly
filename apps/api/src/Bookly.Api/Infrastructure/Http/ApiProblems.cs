@@ -42,6 +42,7 @@ internal static class ErrorCodes
     public const string SlugTaken = "platform.slug_taken";
     public const string InvalidSlug = "platform.invalid_slug";
     public const string AlreadyOwner = "platform.already_owner";
+    public const string CancelRequiresSuspension = "platform.cancel_requires_suspension";
     public const string OwnerOfTenant = "account.owner_of_tenant";
     public const string InvalidPassword = "account.invalid_password";
 }

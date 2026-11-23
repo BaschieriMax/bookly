@@ -25,11 +25,21 @@ public sealed class PlatformTenantsController(TenantProvisioningService provisio
     public async Task<IResult> Create(CreateTenantRequest request, CancellationToken cancellationToken) =>
         (await provisioning.CreateAsync(request, cancellationToken)).ToResult();
 
+    /// <summary>How many future confirmed appointments the tenant has: the number only, for the suspension dialog.</summary>
+    [HttpGet("{id:guid}/future-appointments")]
+    [ProducesResponseType<FutureAppointmentsDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<IResult> FutureAppointments(Guid id, CancellationToken cancellationToken) =>
+        (await provisioning.CountFutureAppointmentsAsync(id, cancellationToken)).ToResult();
+
     [HttpPut("{id:guid}/status")]
     [ProducesResponseType<PlatformTenantDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
     public async Task<IResult> SetStatus(Guid id, SetTenantStatusRequest request, CancellationToken cancellationToken) =>
-        (await provisioning.SetStatusAsync(id, Enum.Parse<TenantStatus>(request.Status), cancellationToken)).ToResult();
+        (await provisioning.SetStatusAsync(
+            id, Enum.Parse<TenantStatus>(request.Status), request.CancelFutureAppointments, cancellationToken)).ToResult();
 
     /// <summary>Adds an owner (or re-sends a pending invitation).</summary>
     [HttpPost("{id:guid}/owners")]

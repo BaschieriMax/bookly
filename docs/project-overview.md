@@ -63,7 +63,7 @@ Competenze tecniche basse per clienti e titolari: la UX deve essere semplice e g
 - Stati dell'appuntamento: confermato, disdetto dal cliente, annullato dall'attività, completato, no-show.
 - Email transazionali: conferma account, reset password, conferma prenotazione, modifica, disdetta, promemoria 24h.
 - Area cliente: storico appuntamenti, profilo, export dei dati, cancellazione account.
-- Dashboard super-admin: elenco tenant, creazione, sospensione, invito del titolare.
+- Dashboard super-admin: elenco tenant, creazione, sospensione (con la scelta di annullare gli appuntamenti futuri e avvisare clienti e titolare, DEC-039), invito del titolare.
 - Brand per tenant: logo e colore primario, con verifica automatica del contrasto (DEC-016).
 - Pagine legali: privacy policy e termini.
 
@@ -96,7 +96,7 @@ Competenze tecniche basse per clienti e titolari: la UX deve essere semplice e g
 | `/admin/staff` | CRUD operatori e servizi offerti | Owner |
 | `/admin/orari` | Orari settimanali e assenze | Owner (lo Staff vede i propri) |
 | `/admin/impostazioni` | Dati dell'attività, finestra di disdetta, intervallo degli slot | Owner |
-| `/platform/tenant` | Elenco, creazione e sospensione tenant, inviti | SuperAdmin |
+| `/platform/tenant` | Elenco, creazione e sospensione tenant (annullamento degli appuntamenti futuri e stato degli avvisi), inviti | SuperAdmin |
 | `/privacy`, `/termini` | Documenti legali | Pubblica |
 
 Nota: le URL visibili sono in italiano. Codice, route name e chiavi i18n sono in inglese.
@@ -275,7 +275,10 @@ Prefisso `/api`. JSON. Errori in formato `ProblemDetails` con `code`. Le richies
 | GET/PUT | `/admin/settings` | Owner | |
 | GET/POST | `/platform/tenants` | SuperAdmin | |
 | POST | `/platform/tenants/{id}/suspend` · `/activate` · `/invite-owner` | SuperAdmin | |
+| GET | `/platform/tenants/{id}/future-appointments` | SuperAdmin | Solo il numero di appuntamenti futuri confermati (DEC-039) |
+| PUT | `/platform/tenants/{id}/status` | SuperAdmin | `cancelFutureAppointments` con `Suspended`: annulla i futuri e mette in coda gli avvisi (DEC-039) |
 | POST | `/jobs/send-reminders` | Header `X-Job-Secret` | Idempotente, escluso dall'antiforgery |
+| POST | `/jobs/send-suspension-notices` | Header `X-Job-Secret` | Riprende gli avvisi di sospensione (DEC-039), idempotente |
 | GET | `/navigation/admin` | Owner/Staff | Voci della sidebar per il ruolo nel tenant corrente (DEC-019) |
 | GET | `/navigation/platform` | SuperAdmin | Voci della sidebar della piattaforma |
 | GET | `/platform/navigation` | SuperAdmin | Tutte le voci, con ruoli e stato |
@@ -413,6 +416,7 @@ Copertura mirata alle parti critiche (disponibilità, prenotazione, autorizzazio
 - `codeql.yml`: analisi C# e TypeScript.
 - `deploy.yml` dopo CI verde su `main` (DEC-032): **migration bundle** EF Core applicato a Neon col ruolo owner, poi deploy hook Render col commit esatto (`autoDeployTrigger: off`), attesa di `/api/version` e smoke test. Le migrazioni non girano all'avvio dell'app, che usa un ruolo senza permessi DDL.
 - `reminders.yml`: cron ogni 15 minuti → `POST /api/jobs/send-reminders`; `retention.yml`: ogni notte → `POST /api/jobs/apply-retention`.
+- `suspension-notices.yml`: tre volte al giorno → `POST /api/jobs/send-suspension-notices`, riserva del worker nell'app (DEC-039).
 
 Runbook completo (account, variabili, dominio, rollback): [`docs/deploy.md`](./deploy.md).
 
