@@ -51,6 +51,10 @@ updates:
       timezone: Europe/Rome
     commit-message:
       prefix: chore
+    groups:
+      # init and analyze must run the same CodeQL version, or the analysis fails.
+      codeql-action:
+        patterns: ['github/codeql-action*']
 
   - package-ecosystem: docker
     directory: /
