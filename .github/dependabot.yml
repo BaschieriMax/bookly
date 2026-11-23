@@ -11,6 +11,9 @@ updates:
       # Node types follow the Node major used by the build image.
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
+      # typescript-eslint supports TypeScript < 6.1 only (TD-004): lift this when it supports 7.
+      - dependency-name: 'typescript'
+        versions: ['>=6.1.0']
     commit-message:
       prefix: chore
     groups:

@@ -84,6 +84,8 @@ Type-check più lento rispetto al compilatore nativo; nessun impatto funzionale.
 
 Soluzione futura:
 Passare a TypeScript 7 quando typescript-eslint lo supporta, oppure se Massimo sceglie oxlint.
+In quel momento togliere anche il blocco `typescript >= 6.1.0` in `.github/dependabot.yml`
+(aggiunto dopo che la PR #39 di Dependabot aveva portato TypeScript 7 e rotto `npm ci`).
 
 Priorità:
 Bassa
