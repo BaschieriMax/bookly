@@ -123,6 +123,38 @@ describe('TenantsPage', () => {
     expect(status).toEqual({ status: 'Suspended' })
   })
 
+  it('drops the admin area at once when a super-admin suspends their own tenant', async () => {
+    let suspended = false
+    server.use(
+      http.get('/api/auth/me', () =>
+        HttpResponse.json({
+          ...ownerMe,
+          platformRoles: ['SuperAdmin'],
+          memberships: suspended ? [] : ownerMe.memberships,
+        }),
+      ),
+      http.get('/api/platform/tenants', () =>
+        HttpResponse.json([tenant({ status: suspended ? 'Suspended' : 'Active' })]),
+      ),
+      http.put('/api/platform/tenants/:id/status', () => {
+        suspended = true
+        return HttpResponse.json(tenant({ status: 'Suspended' }))
+      }),
+    )
+    renderApp('/platform/tenant')
+
+    expect(
+      (await screen.findAllByRole('link', { name: 'Gestione attività' }, { timeout: 5000 }))[0],
+    ).toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: 'Sospendi' }))
+    const confirm = await screen.findByRole('alertdialog', { name: 'Sospendere «Barberia Demo»?' })
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Sospendi' }))
+
+    await waitFor(() =>
+      expect(screen.queryAllByRole('link', { name: 'Gestione attività' })).toHaveLength(0),
+    )
+  })
+
   it('re-sends a pending invitation', async () => {
     asSuperAdmin()
     let body: unknown = null
