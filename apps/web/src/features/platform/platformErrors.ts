@@ -5,6 +5,8 @@ const known = [
   'platform.slug_taken',
   'platform.invalid_slug',
   'platform.already_owner',
+  'platform.cancel_requires_suspension',
+  'booking.concurrent_update',
   'admin.invalid_time_zone',
   'tenant.not_found',
 ] as const

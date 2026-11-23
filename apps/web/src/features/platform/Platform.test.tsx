@@ -96,6 +96,9 @@ describe('TenantsPage', () => {
           { status: 409 },
         ),
       ),
+      http.get('/api/platform/tenants/:id/future-appointments', () =>
+        HttpResponse.json({ count: 0 }),
+      ),
       http.put('/api/platform/tenants/:id/status', async ({ request }) => {
         status = await request.json()
         return HttpResponse.json(tenant({ status: 'Suspended' }))
@@ -116,11 +119,15 @@ describe('TenantsPage', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }))
 
     await userEvent.click(screen.getByRole('button', { name: 'Sospendi' }))
-    const confirm = await screen.findByRole('alertdialog', { name: 'Sospendere «Barberia Demo»?' })
+    const confirm = await screen.findByRole('dialog', { name: 'Sospendere «Barberia Demo»?' })
+    expect(
+      await within(confirm).findByText('Nessun appuntamento futuro', { exact: false }),
+    ).toBeInTheDocument()
+    expect(within(confirm).queryByRole('radio')).not.toBeInTheDocument()
     await userEvent.click(within(confirm).getByRole('button', { name: 'Sospendi' }))
 
     expect((await screen.findAllByText('Attività sospesa.'))[0]).toBeInTheDocument()
-    expect(status).toEqual({ status: 'Suspended' })
+    expect(status).toEqual({ status: 'Suspended', cancelFutureAppointments: false })
   })
 
   it('drops the admin area at once when a super-admin suspends their own tenant', async () => {
@@ -136,6 +143,9 @@ describe('TenantsPage', () => {
       http.get('/api/platform/tenants', () =>
         HttpResponse.json([tenant({ status: suspended ? 'Suspended' : 'Active' })]),
       ),
+      http.get('/api/platform/tenants/:id/future-appointments', () =>
+        HttpResponse.json({ count: 0 }),
+      ),
       http.put('/api/platform/tenants/:id/status', () => {
         suspended = true
         return HttpResponse.json(tenant({ status: 'Suspended' }))
@@ -147,12 +157,204 @@ describe('TenantsPage', () => {
       (await screen.findAllByRole('link', { name: 'Gestione attività' }, { timeout: 5000 }))[0],
     ).toBeInTheDocument()
     await userEvent.click(await screen.findByRole('button', { name: 'Sospendi' }))
-    const confirm = await screen.findByRole('alertdialog', { name: 'Sospendere «Barberia Demo»?' })
-    await userEvent.click(within(confirm).getByRole('button', { name: 'Sospendi' }))
+    const confirm = await screen.findByRole('dialog', { name: 'Sospendere «Barberia Demo»?' })
+    const suspend = within(confirm).getByRole('button', { name: 'Sospendi' })
+    await waitFor(() => expect(suspend).toBeEnabled())
+    await userEvent.click(suspend)
 
     await waitFor(() =>
       expect(screen.queryAllByRole('link', { name: 'Gestione attività' })).toHaveLength(0),
     )
+  })
+
+  it('with future appointments makes the super-admin choose, then cancels and shows the progress', async () => {
+    asSuperAdmin()
+    let body: unknown = null
+    let suspended = false
+    const notices = {
+      cancelledAppointments: 12,
+      customers: 9,
+      sent: 0,
+      notSent: 0,
+      ownerSummaries: 1,
+      ownerSummariesSent: 0,
+      state: 'Sending',
+    }
+    server.use(
+      http.get('/api/platform/tenants', () =>
+        HttpResponse.json([
+          suspended ? tenant({ status: 'Suspended', suspensionNotices: notices }) : tenant(),
+        ]),
+      ),
+      http.get('/api/platform/tenants/:id/future-appointments', () =>
+        HttpResponse.json({ count: 12 }),
+      ),
+      http.put('/api/platform/tenants/:id/status', async ({ request }) => {
+        body = await request.json()
+        suspended = true
+        return HttpResponse.json(tenant({ status: 'Suspended', suspensionNotices: notices }))
+      }),
+    )
+    renderApp('/platform/tenant')
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Sospendi' }, { timeout: 5000 }),
+    )
+    const dialog = await screen.findByRole('dialog', { name: 'Sospendere «Barberia Demo»?' })
+    expect(await within(dialog).findByText('12 appuntamenti futuri')).toBeInTheDocument()
+    const cancel = within(dialog).getByRole('radio', {
+      name: 'Sospendi e annulla 12 appuntamenti futuri',
+    })
+    const keep = within(dialog).getByRole('radio', { name: 'Sospendi soltanto' })
+    expect(cancel).not.toBeChecked()
+    expect(keep).not.toBeChecked()
+
+    // Nothing is preselected: confirming without a choice asks for one and sends nothing.
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Sospendi' }))
+    expect(within(dialog).getByRole('alert')).toHaveTextContent(
+      'Scegli cosa fare con gli appuntamenti.',
+    )
+    expect(body).toBeNull()
+
+    await userEvent.click(cancel)
+    expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument()
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Sospendi e annulla 12 appuntamenti' }),
+    )
+
+    expect(
+      (
+        await screen.findAllByText('Attività sospesa: 12 appuntamenti annullati, avvisi in invio.')
+      )[0],
+    ).toBeInTheDocument()
+    expect(body).toEqual({ status: 'Suspended', cancelFutureAppointments: true })
+    expect(await screen.findByText('Avvisi in invio: 0 su 9 clienti')).toBeInTheDocument()
+  })
+
+  it('suspends only, keeping the appointments', async () => {
+    asSuperAdmin()
+    let body: unknown = null
+    server.use(
+      http.get('/api/platform/tenants', () => HttpResponse.json([tenant()])),
+      http.get('/api/platform/tenants/:id/future-appointments', () =>
+        HttpResponse.json({ count: 1 }),
+      ),
+      http.put('/api/platform/tenants/:id/status', async ({ request }) => {
+        body = await request.json()
+        return HttpResponse.json(tenant({ status: 'Suspended' }))
+      }),
+    )
+    renderApp('/platform/tenant')
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Sospendi' }, { timeout: 5000 }),
+    )
+    const dialog = await screen.findByRole('dialog', { name: 'Sospendere «Barberia Demo»?' })
+    expect(await within(dialog).findByText('1 appuntamento futuro')).toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Sospendi soltanto' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Sospendi soltanto' }))
+
+    expect(
+      (await screen.findAllByText('Attività sospesa. Appuntamenti invariati, nessuna email.'))[0],
+    ).toBeInTheDocument()
+    expect(body).toEqual({ status: 'Suspended', cancelFutureAppointments: false })
+  })
+
+  it('does not suspend until the appointments can be counted', async () => {
+    asSuperAdmin()
+    let fail = true
+    server.use(
+      http.get('/api/platform/tenants', () => HttpResponse.json([tenant()])),
+      http.get('/api/platform/tenants/:id/future-appointments', () =>
+        fail
+          ? HttpResponse.json({ title: 'Error', status: 500 }, { status: 500 })
+          : HttpResponse.json({ count: 3 }),
+      ),
+    )
+    renderApp('/platform/tenant')
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Sospendi' }, { timeout: 5000 }),
+    )
+    const dialog = await screen.findByRole('dialog', { name: 'Sospendere «Barberia Demo»?' })
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      'Impossibile contare gli appuntamenti futuri.',
+    )
+    expect(within(dialog).getByRole('button', { name: 'Sospendi' })).toBeDisabled()
+
+    fail = false
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Riprova' }))
+    expect(await within(dialog).findByText('3 appuntamenti futuri')).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Sospendi' })).toBeEnabled()
+  })
+
+  it('shows paused and finished notices on suspended tenants', async () => {
+    asSuperAdmin()
+    server.use(
+      http.get('/api/platform/tenants', () =>
+        HttpResponse.json([
+          tenant({
+            status: 'Suspended',
+            suspensionNotices: {
+              cancelledAppointments: 140,
+              customers: 128,
+              sent: 79,
+              notSent: 0,
+              ownerSummaries: 1,
+              ownerSummariesSent: 1,
+              state: 'PausedDailyLimit',
+            },
+          }),
+          tenant({
+            id: 't-2',
+            slug: 'estetica-aurora',
+            name: 'Estetica Aurora',
+            status: 'Suspended',
+            suspensionNotices: {
+              cancelledAppointments: 10,
+              customers: 9,
+              sent: 8,
+              notSent: 1,
+              ownerSummaries: 1,
+              ownerSummariesSent: 1,
+              state: 'Done',
+            },
+          }),
+          tenant({
+            id: 't-3',
+            slug: 'studio-sole',
+            name: 'Studio Sole',
+            status: 'Suspended',
+            suspensionNotices: {
+              cancelledAppointments: 2,
+              customers: 0,
+              sent: 0,
+              notSent: 0,
+              ownerSummaries: 1,
+              ownerSummariesSent: 0,
+              state: 'Retrying',
+            },
+          }),
+        ]),
+      ),
+    )
+    renderApp('/platform/tenant')
+
+    expect(
+      await screen.findByText(
+        "Avvisi in pausa: 79 su 128 clienti · l'invio riprende domani (limite giornaliero di email) · riepilogo inviato al titolare",
+        {},
+        { timeout: 5000 },
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Clienti avvisati: 8 su 9 · 1 non inviato · riepilogo inviato al titolare'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Nessun cliente da avvisare via email · riepilogo al titolare in pausa dopo un errore · nuovo tentativo a breve',
+      ),
+    ).toBeInTheDocument()
   })
 
   it('re-sends a pending invitation', async () => {

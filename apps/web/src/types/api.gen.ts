@@ -2043,6 +2043,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/jobs/send-suspension-notices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuspensionNoticeRunResult"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/profile": {
         parameters: {
             query?: never;
@@ -2542,6 +2586,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/platform/tenants/{id}/future-appointments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FutureAppointmentsDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/platform/tenants/{id}/status": {
         parameters: {
             query?: never;
@@ -2576,8 +2666,26 @@ export interface paths {
                         "application/json": components["schemas"]["PlatformTenantDto"];
                     };
                 };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -3217,6 +3325,10 @@ export interface components {
             tenant: string;
             role: string;
         };
+        FutureAppointmentsDto: {
+            /** Format: int32 */
+            count: number;
+        };
         /** Format: binary */
         IFormFile: string;
         InvitationDto: {
@@ -3315,6 +3427,21 @@ export interface components {
             lastName: string;
             pending: boolean;
         };
+        PlatformSuspensionNoticesDto: {
+            /** Format: int32 */
+            cancelledAppointments: number;
+            /** Format: int32 */
+            customers: number;
+            /** Format: int32 */
+            sent: number;
+            /** Format: int32 */
+            notSent: number;
+            /** Format: int32 */
+            ownerSummaries: number;
+            /** Format: int32 */
+            ownerSummariesSent: number;
+            state: string;
+        };
         PlatformTenantDto: {
             /** Format: uuid */
             id: string;
@@ -3329,6 +3456,7 @@ export interface components {
             staffCount: number;
             /** Format: int32 */
             serviceCount: number;
+            suspensionNotices?: null | components["schemas"]["PlatformSuspensionNoticesDto"];
         };
         ProblemDetails: {
             type?: null | string;
@@ -3470,6 +3598,17 @@ export interface components {
         };
         SetTenantStatusRequest: {
             status: string;
+            /** @default false */
+            cancelFutureAppointments: boolean;
+        };
+        SuspensionNoticeRunResult: {
+            /** Format: int32 */
+            sent: number;
+            /** Format: int32 */
+            failed: number;
+            /** Format: int32 */
+            skipped: number;
+            dailyLimitReached: boolean;
         };
         TenantBrandDto: {
             primaryColor: null | string;
