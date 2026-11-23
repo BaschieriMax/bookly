@@ -5019,7 +5019,8 @@
           "slotIntervalMinutes",
           "minNoticeMinutes",
           "bookingHorizonDays",
-          "notifyOnCustomerCancellation"
+          "notifyOnCustomerCancellation",
+          "notifyOnOnlineBooking"
         ],
         "type": "object",
         "properties": {
@@ -5058,6 +5059,9 @@
             "format": "int32"
           },
           "notifyOnCustomerCancellation": {
+            "type": "boolean"
+          },
+          "notifyOnOnlineBooking": {
             "type": "boolean"
           }
         }
@@ -5180,7 +5184,8 @@
           "slotIntervalMinutes",
           "minNoticeMinutes",
           "bookingHorizonDays",
-          "notifyOnCustomerCancellation"
+          "notifyOnCustomerCancellation",
+          "notifyOnOnlineBooking"
         ],
         "type": "object",
         "properties": {
@@ -5222,6 +5227,9 @@
             "format": "int32"
           },
           "notifyOnCustomerCancellation": {
+            "type": "boolean"
+          },
+          "notifyOnOnlineBooking": {
             "type": "boolean"
           }
         }

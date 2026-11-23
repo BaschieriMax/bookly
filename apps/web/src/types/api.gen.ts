@@ -3592,6 +3592,7 @@ export interface components {
             /** Format: int32 */
             bookingHorizonDays: number;
             notifyOnCustomerCancellation: boolean;
+            notifyOnOnlineBooking: boolean;
         };
         SaveWorkingHoursRequest: {
             intervals: components["schemas"]["WorkingIntervalDto"][];
@@ -3637,6 +3638,7 @@ export interface components {
             /** Format: int32 */
             bookingHorizonDays: number;
             notifyOnCustomerCancellation: boolean;
+            notifyOnOnlineBooking: boolean;
         };
         TimeOffDto: {
             /** Format: uuid */
