@@ -19,6 +19,7 @@ public sealed partial class TenantProvisioningService(
     AppDbContext db,
     UserManager<AppUser> userManager,
     AccountService accounts,
+    TenantSuspensionService suspensions,
     IEmailSender emailSender,
     IOptions<AppOptions> appOptions,
     TimeProvider timeProvider,
@@ -63,9 +64,27 @@ public sealed partial class TenantProvisioningService(
             .ToListAsync(cancellationToken);
         var ownersByTenant = owners.ToLookup(o => o.TenantId, o => o.Owner);
 
+        // Email progress of the latest suspension, only while the tenant stays suspended (DEC-039).
+        var notices = await suspensions.ProgressAsync(
+            [.. tenants.Where(t => t.Status == TenantStatus.Suspended).Select(t => t.Id)], cancellationToken);
+
         return [.. tenants.Select(t => new PlatformTenantDto(
-            t.Id, t.Slug, t.Name, t.Status.ToString(), t.TimeZone, t.CreatedAt, [.. ownersByTenant[t.Id]], t.StaffCount, t.ServiceCount))];
+            t.Id,
+            t.Slug,
+            t.Name,
+            t.Status.ToString(),
+            t.TimeZone,
+            t.CreatedAt,
+            [.. ownersByTenant[t.Id]],
+            t.StaffCount,
+            t.ServiceCount,
+            notices.GetValueOrDefault(t.Id)))];
     }
+
+    public async Task<ServiceResult<FutureAppointmentsDto>> CountFutureAppointmentsAsync(Guid tenantId, CancellationToken cancellationToken) =>
+        await suspensions.CountFutureAsync(tenantId, cancellationToken) is { } count
+            ? ServiceResult<FutureAppointmentsDto>.Ok(count)
+            : ServiceResult<FutureAppointmentsDto>.Fail(StatusCodes.Status404NotFound, ErrorCodes.TenantNotFound, "Tenant not found.");
 
     public async Task<ServiceResult<PlatformTenantDto>> CreateAsync(CreateTenantRequest request, CancellationToken cancellationToken)
     {
@@ -116,10 +135,30 @@ public sealed partial class TenantProvisioningService(
 
     /// <summary>
     /// Suspended tenants disappear from the public pages and the admin area (both resolve only
-    /// Active tenants); their data is kept (booking-domain: multi-tenancy).
+    /// Active tenants); their data is kept (booking-domain: multi-tenancy). With
+    /// <paramref name="cancelFutureAppointments"/> the future appointments are cancelled too and
+    /// the customers and owners are emailed in the background (DEC-039).
     /// </summary>
-    public async Task<ServiceResult<PlatformTenantDto>> SetStatusAsync(Guid tenantId, TenantStatus status, CancellationToken cancellationToken)
+    public async Task<ServiceResult<PlatformTenantDto>> SetStatusAsync(
+        Guid tenantId, TenantStatus status, bool cancelFutureAppointments, CancellationToken cancellationToken)
     {
+        if (cancelFutureAppointments)
+        {
+            if (status != TenantStatus.Suspended)
+            {
+                return ServiceResult<PlatformTenantDto>.Fail(
+                    StatusCodes.Status400BadRequest, ErrorCodes.CancelRequiresSuspension, "Appointments are cancelled only when suspending.");
+            }
+
+            return await suspensions.SuspendAndCancelAsync(tenantId, cancellationToken) switch
+            {
+                SuspendOutcome.NotFound => NotFound(),
+                SuspendOutcome.Conflict => ServiceResult<PlatformTenantDto>.Fail(
+                    StatusCodes.Status409Conflict, ErrorCodes.ConcurrentUpdate, "An appointment changed meanwhile: try again."),
+                _ => ServiceResult<PlatformTenantDto>.Ok(await GetAsync(tenantId, cancellationToken)),
+            };
+        }
+
         var tenant = await db.Tenants.SingleOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
         if (tenant is null)
         {

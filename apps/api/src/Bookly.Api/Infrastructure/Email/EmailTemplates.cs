@@ -168,6 +168,166 @@ internal static class EmailTemplates
         link: calendarLink,
         footer: "Puoi disattivare questi avvisi nelle impostazioni dell'attività.");
 
+    /// <summary>
+    /// The business was suspended and its future appointments cancelled (DEC-039). Neutral on
+    /// purpose: no "suspended", no reason, and no link to the public page (it is gone).
+    /// </summary>
+    public static EmailMessage AppointmentsCancelledNotice(
+        string to, string firstName, string tenantName, IReadOnlyList<string> appointments, string? tenantPhone)
+    {
+        var single = appointments.Count == 1;
+        return BuildDetailed(
+            to,
+            subject: single ? $"Appuntamento annullato: {tenantName}" : $"Appuntamenti annullati: {tenantName}",
+            greeting: firstName,
+            intro: single
+                ? $"Il tuo appuntamento da {tenantName} è stato annullato:"
+                : $"I tuoi appuntamenti da {tenantName} sono stati annullati:",
+            items: appointments,
+            outro: ["Per un nuovo appuntamento contatta direttamente l'attività."],
+            table: null,
+            action: string.IsNullOrWhiteSpace(tenantPhone) ? null : ($"Chiama {tenantPhone}", TelLink(tenantPhone)),
+            footer: $"Ci scusiamo per il disagio. Ricevi questa email perché avevi un appuntamento con {tenantName}.");
+    }
+
+    /// <summary>A customer the owner should call: no email address, or no emails wanted.</summary>
+    public sealed record CustomerToCall(string Name, string? Phone, string When);
+
+    /// <summary>To each owner when the business is suspended with its future appointments cancelled (DEC-039).</summary>
+    public static EmailMessage TenantSuspendedSummary(
+        string to,
+        string firstName,
+        string tenantName,
+        int cancelledAppointments,
+        int notifiedCustomers,
+        int customersToCall,
+        IReadOnlyList<CustomerToCall> toCall)
+    {
+        var cancelled = Count(cancelledAppointments, "appuntamento futuro", "appuntamenti futuri");
+        List<string> outro = [];
+        if (toCall.Count > 0)
+        {
+            outro.Add(customersToCall == 1
+                ? "1 cliente non può essere avvisato via email (non ha lasciato un indirizzo o non vuole ricevere email). Ti consigliamo di chiamarlo:"
+                : $"{customersToCall} clienti non possono essere avvisati via email (non hanno lasciato un indirizzo o non vogliono ricevere email). Ti consigliamo di chiamarli:");
+        }
+
+        return BuildDetailed(
+            to,
+            subject: $"Attività sospesa: {tenantName}, {Count(cancelledAppointments, "appuntamento annullato", "appuntamenti annullati")}",
+            greeting: firstName,
+            intro: $"L'attività {tenantName} è stata sospesa su Bookly: la pagina pubblica non è più raggiungibile e non si può prenotare. I dati restano conservati.",
+            items: [],
+            outro:
+            [
+                notifiedCustomers > 0
+                    ? $"Abbiamo annullato {cancelled} e stiamo avvisando via email {Count(notifiedCustomers, "cliente", "clienti")}, senza indicare il motivo."
+                    : $"Abbiamo annullato {cancelled}.",
+                .. outro,
+            ],
+            table: toCall.Count == 0
+                ? null
+                : (["Cliente", "Telefono", "Appuntamento"], [.. toCall.Select(c => (IReadOnlyList<string>)[c.Name, c.Phone ?? "—", c.When])]),
+            action: null,
+            footer: "Per riattivare l'attività o per qualsiasi domanda, contatta il supporto di Bookly.");
+    }
+
+    /// <summary>"1 cliente" / "3 clienti": counts without an article, which in Italian depends on the number.</summary>
+    private static string Count(int count, string one, string many) => count == 1 ? $"1 {one}" : $"{count} {many}";
+
+    private static string TelLink(string phone) => "tel:" + new string([.. phone.Where(c => char.IsAsciiDigit(c) || c == '+')]);
+
+    /// <summary>
+    /// Like <see cref="Build"/>, with a bulleted list, more paragraphs, an optional table and an
+    /// optional button. Kept separate so the existing emails stay byte-for-byte the same.
+    /// </summary>
+    private static EmailMessage BuildDetailed(
+        string to,
+        string subject,
+        string greeting,
+        string intro,
+        IReadOnlyList<string> items,
+        IReadOnlyList<string> outro,
+        (IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<string>> Rows)? table,
+        (string Label, string Link)? action,
+        string footer,
+        [System.Runtime.CompilerServices.CallerMemberName] string kind = "")
+    {
+        var html = HtmlEncoder.Default;
+        var body = new System.Text.StringBuilder();
+        var text = new System.Text.StringBuilder();
+
+        body.Append($"""<p style="margin:0 0 16px;font-size:18px;font-weight:bold">Ciao {html.Encode(greeting)},</p>""");
+        body.Append($"""<p style="margin:0 0 {(items.Count > 0 ? 12 : 16)}px;font-size:15px;line-height:1.5">{html.Encode(intro)}</p>""");
+        text.Append($"Ciao {greeting},\n\n{intro}\n");
+
+        if (items.Count > 0)
+        {
+            body.Append("""<ul style="margin:0 0 16px;padding-left:20px;font-size:15px;line-height:1.6">""");
+            foreach (var item in items)
+            {
+                body.Append($"<li>{html.Encode(item)}</li>");
+                text.Append($"- {item}\n");
+            }
+
+            body.Append("</ul>");
+        }
+
+        foreach (var paragraph in outro)
+        {
+            body.Append($"""<p style="margin:0 0 16px;font-size:15px;line-height:1.5">{html.Encode(paragraph)}</p>""");
+            text.Append($"\n{paragraph}\n");
+        }
+
+        if (table is { } t)
+        {
+            const string cell = "padding:10px 8px 10px 0;border-bottom:1px solid #e4e4e7;text-align:left";
+            body.Append("""<table style="width:100%;margin:0 0 24px;border-collapse:collapse;font-size:14px;line-height:1.4"><thead><tr>""");
+            foreach (var header in t.Headers)
+            {
+                body.Append($"""<th scope="col" style="{cell};color:#52525b">{html.Encode(header)}</th>""");
+            }
+
+            body.Append("</tr></thead><tbody>");
+            text.Append('\n');
+            foreach (var row in t.Rows)
+            {
+                body.Append("<tr>");
+                foreach (var value in row)
+                {
+                    body.Append($"""<td style="{cell}">{html.Encode(value)}</td>""");
+                }
+
+                body.Append("</tr>");
+                text.Append($"- {string.Join(", ", row)}\n");
+            }
+
+            body.Append("</tbody></table>");
+        }
+
+        if (action is { } a)
+        {
+            body.Append($"""<p style="margin:8px 0 24px"><a href="{html.Encode(a.Link)}" style="display:inline-block;padding:12px 20px;background:#0f766e;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:bold">{html.Encode(a.Label)}</a></p>""");
+            text.Append($"\n{a.Label}: {a.Link}\n");
+        }
+
+        body.Append($"""<p style="margin:0;font-size:13px;line-height:1.5;color:#52525b">{html.Encode(footer)}</p>""");
+        text.Append($"\n{footer}\n");
+
+        var htmlBody = $"""
+            <!doctype html>
+            <html lang="it">
+            <body style="margin:0;padding:24px;background:#fafafa;font-family:Arial,Helvetica,sans-serif;color:#18181b">
+              <table role="presentation" width="100%" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px">
+                <tr><td style="padding:28px">{body}</td></tr>
+              </table>
+            </body>
+            </html>
+            """;
+
+        return new EmailMessage(to, subject, htmlBody, text.ToString(), kind);
+    }
+
     private static EmailMessage Build(
         string to,
         string subject,

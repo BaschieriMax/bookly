@@ -21,9 +21,17 @@ namespace Bookly.Api.Controllers;
 [RequireAntiforgeryToken(false)]
 [EnableRateLimiting(RateLimitPolicies.Auth)]
 [Produces("application/json")]
-public sealed class JobsController(ReminderService reminders, RetentionService retention, IOptions<JobsOptions> options) : ControllerBase
+public sealed class JobsController(
+    ReminderService reminders,
+    RetentionService retention,
+    SuspensionNoticeService suspensionNotices,
+    SuspensionNoticeSignal suspensionNoticeSignal,
+    IOptions<JobsOptions> options) : ControllerBase
 {
     public const string SecretHeader = "X-Job-Secret";
+
+    /// <summary>Well under the schedulers' timeouts (cron-job.org 30 s after a warm start, curl 120 s); the rest goes next run.</summary>
+    private static readonly TimeSpan SchedulerTimeBudget = TimeSpan.FromSeconds(20);
 
     [HttpPost("send-reminders")]
     [ProducesResponseType<ReminderRunResult>(StatusCodes.Status200OK)]
@@ -37,6 +45,26 @@ public sealed class JobsController(ReminderService reminders, RetentionService r
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     public async Task<IResult> ApplyRetention(CancellationToken cancellationToken) =>
         Authorize() ?? Results.Ok(await retention.ApplyAsync(cancellationToken));
+
+    /// <summary>
+    /// Resumes the emails of a suspension after errors or the daily limit (DEC-039): sends for up
+    /// to 20 seconds, then leaves the rest to the in-app worker. Both claim each email, so no duplicates.
+    /// </summary>
+    [HttpPost("send-suspension-notices")]
+    [ProducesResponseType<SuspensionNoticeRunResult>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    public async Task<IResult> SendSuspensionNotices(CancellationToken cancellationToken)
+    {
+        if (Authorize() is { } denied)
+        {
+            return denied;
+        }
+
+        var result = await suspensionNotices.SendDueAsync(cancellationToken, SchedulerTimeBudget);
+        suspensionNoticeSignal.Notify(); // the app is awake now: the worker carries on with what is left
+        return Results.Ok(result);
+    }
+
 
     /// <summary>Null when the secret matches; 404 when jobs are disabled, 401 otherwise.</summary>
     private IResult? Authorize()
