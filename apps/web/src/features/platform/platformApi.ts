@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { authKeys } from '@/features/auth/authApi'
+import { tenantKeys } from '@/features/tenant/tenantApi'
 import { apiClient } from '@/services/apiClient'
 import type {
   CreateTenantRequest,
@@ -19,11 +21,22 @@ export function usePlatformTenants() {
   })
 }
 
+/**
+ * Every tenant change refreshes, besides the list:
+ * - /auth/me, because a super-admin can also be a member of the tenant (or invite their own
+ *   email): the shell's areas and the admin area are built from those memberships;
+ * - the tenant's public page, so a suspended tenant is not served from the cache.
+ */
 function useTenantMutation<TInput>(request: (input: TInput) => Promise<PlatformTenant>) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: request,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: platformKeys.tenants }),
+    onSettled: (tenant) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: platformKeys.tenants }),
+        queryClient.invalidateQueries({ queryKey: authKeys.me }),
+        tenant && queryClient.invalidateQueries({ queryKey: tenantKeys.tenant(tenant.slug) }),
+      ]),
   })
 }
 
