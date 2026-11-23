@@ -1191,3 +1191,55 @@ titolare la vede nel calendario alla riattivazione.
 Status:
 Approved (Massimo, 23/11/2026)
 ```
+
+---
+
+```text
+Decision:
+DEC-040 — Email al titolare per ogni nuova prenotazione online
+
+Date:
+2026-11-23
+
+Context:
+Il titolare scopre le prenotazioni online solo aprendo il calendario. Massimo ha scelto il
+miglioramento n. 2 e ha deciso le regole il 23/11/2026, chiedendo di riusare il meccanismo delle
+disdette (DEC-027). Interruttore ed email sono stati prototipati in Claude Design
+(«Bookly – Avviso nuova prenotazione») e approvati.
+
+Decision:
+- Quando: solo per le prenotazioni del cliente dalla pagina pubblica (BookingService.BookAsync).
+  Gli appuntamenti inseriti dall'attività dal calendario (DEC-037) non mandano avvisi.
+- Destinatari: come le disdette, i titolari e il login dell'operatore dell'appuntamento. Un'email
+  per persona (il titolare che è anche l'operatore ne riceve una). Si scrive solo a chi è ancora
+  membro dell'attività e non ha eliminato l'account: la regola, in un metodo condiviso, vale ora
+  anche per le disdette.
+- Interruttore: nuovo, Tenant.NotifyOnOnlineBooking, separato da NotifyOnCustomerCancellation e
+  attivo di default, anche per le attività esistenti (la migrazione mette true). Nelle
+  Impostazioni i due interruttori stanno nel nuovo pannello «Avvisi via email».
+- Email OnlineBookingNotice: oggetto «Nuova prenotazione: <cliente>, <data e ora>»; tabella con
+  servizio, data e ora, operatore, telefono (se c'è, link tel:), email (link mailto:) e nota (se
+  c'è). Pulsante «Apri il calendario» su /admin?data=AAAA-MM-GG, il giorno dell'appuntamento nel
+  fuso dell'attività.
+- Frequenza: un'email per ogni prenotazione, subito, inviata nella richiesta dopo la conferma al
+  cliente. Un errore d'invio viene solo registrato nel log: la prenotazione resta salvata e gli
+  altri destinatari ricevono comunque l'email (booking-domain: notifications).
+
+Alternatives:
+Solo i titolari (l'operatore saprebbe della prenotazione solo dal calendario); un interruttore
+unico per prenotazioni e disdette (non si potrebbe tenere solo uno dei due avvisi); spento di
+default (la funzione resterebbe sconosciuta); email essenziale senza contatti (il titolare
+dovrebbe aprire il calendario per richiamare il cliente); riepilogo giornaliero (quota prevedibile,
+ma avviso in ritardo e un job pianificato in più); invio in coda come le email di sospensione
+(DEC-039: più robusto, ma più complesso; rimandato, TD-011).
+
+Motivation:
+Il titolare e l'operatore sanno subito chi arriva e possono richiamare il cliente dall'email.
+Riusare il flusso delle disdette mantiene un solo modo di avvisare l'attività.
+Costi accettati: ogni prenotazione online consuma fino a 2 email in più della quota di Resend
+(100 al giorno col piano free, TD-009) e la risposta alla prenotazione aspetta anche questi invii
+(TD-011). Il link al calendario apre l'attività selezionata in quel momento (TD-010).
+
+Status:
+Approved (Massimo, 23/11/2026)
+```
