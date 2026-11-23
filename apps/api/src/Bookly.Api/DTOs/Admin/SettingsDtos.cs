@@ -12,7 +12,8 @@ public sealed record TenantSettingsDto(
     int SlotIntervalMinutes,
     int MinNoticeMinutes,
     int BookingHorizonDays,
-    bool NotifyOnCustomerCancellation);
+    bool NotifyOnCustomerCancellation,
+    bool NotifyOnOnlineBooking);
 
 public sealed record SaveTenantSettingsRequest(
     [Required, MaxLength(120)] string Name,
@@ -23,7 +24,8 @@ public sealed record SaveTenantSettingsRequest(
     [Range(5, 120)] int SlotIntervalMinutes,
     [Range(0, 10_080)] int MinNoticeMinutes,
     [Range(1, 365)] int BookingHorizonDays,
-    bool NotifyOnCustomerCancellation);
+    bool NotifyOnCustomerCancellation,
+    bool NotifyOnOnlineBooking);
 
 public sealed record TenantBrandSettingsDto(string? PrimaryColor, string Ground, string HeadingFont, bool HasLogo);
 

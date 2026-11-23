@@ -1,3 +1,4 @@
+using System.Globalization;
 using Bookly.Api.Data;
 using Bookly.Api.Data.Configurations;
 using Bookly.Api.DTOs.Booking;
@@ -85,18 +86,27 @@ public sealed class BookingService(
             return SlotUnavailable();
         }
 
-        var staffName = await db.StaffMembers.Where(s => s.Id == staffId).Select(s => s.DisplayName).SingleAsync(cancellationToken);
+        var staff = await db.StaffMembers.Where(s => s.Id == staffId).Select(s => new { s.DisplayName, s.UserId }).SingleAsync(cancellationToken);
+        var when = DateFormatting.LongItalian(startUtc, timeZone);
         await TrySendAsync(EmailTemplates.BookingConfirmed(
             customer.Email!,
             customer.FirstName,
             tenant.Name,
             service.Name,
-            DateFormatting.LongItalian(startUtc, timeZone),
+            when,
             tenant.Address,
             $"{BaseUrl}/account/appuntamenti"), cancellationToken);
 
+        // Only here, in the customer's own booking: appointments entered from the calendar
+        // (CalendarService) never notify the business (DEC-040).
+        if (tenant.NotifyOnOnlineBooking)
+        {
+            await NotifyBusinessOfBookingAsync(
+                tenant, customer, service.Name, staff.DisplayName, staff.UserId, when, localDate, appointment.CustomerNote, cancellationToken);
+        }
+
         return ServiceResult<MyAppointmentDto>.Ok(
-            ToDto(appointment, tenant, service, staffName, timeZone, now),
+            ToDto(appointment, tenant, service, staff.DisplayName, timeZone, now),
             StatusCodes.Status201Created);
     }
 
@@ -189,22 +199,12 @@ public sealed class BookingService(
     private async Task NotifyBusinessOfCancellationAsync(
         Appointment appointment, Tenant tenant, AppUser customer, TimeZoneInfo timeZone, CancellationToken cancellationToken)
     {
-        var staffUserId = appointment.StaffMember.UserId;
-        var ownerIds = db.TenantMemberships
-            .IgnoreQueryFilters([AppDbContext.TenantFilter])
-            .Where(m => m.TenantId == tenant.Id && m.Role == TenantRole.Owner)
-            .Select(m => m.UserId);
-        var recipients = await db.Users
-            .AsNoTracking()
-            .Where(u => u.Email != null && (u.Id == staffUserId || ownerIds.Contains(u.Id)))
-            .Select(u => new { u.Email, u.FirstName })
-            .ToListAsync(cancellationToken);
-
+        var recipients = await BusinessRecipientsAsync(tenant.Id, appointment.StaffMember.UserId, cancellationToken);
         var when = DateFormatting.LongItalian(appointment.StartUtc, timeZone);
         foreach (var recipient in recipients)
         {
             await TrySendAsync(EmailTemplates.CustomerCancelledNotice(
-                recipient.Email!,
+                recipient.Email,
                 recipient.FirstName,
                 $"{customer.FirstName} {customer.LastName}",
                 appointment.Service.Name,
@@ -213,6 +213,61 @@ public sealed class BookingService(
                 $"{BaseUrl}/admin"), cancellationToken);
         }
     }
+
+    /// <summary>
+    /// A customer booked online: the same recipients as a cancellation, with the customer's
+    /// contacts and a link to the calendar on the appointment's day (DEC-040).
+    /// </summary>
+    private async Task NotifyBusinessOfBookingAsync(
+        Tenant tenant,
+        AppUser customer,
+        string serviceName,
+        string staffName,
+        Guid? staffUserId,
+        string when,
+        DateOnly localDate,
+        string? note,
+        CancellationToken cancellationToken)
+    {
+        var recipients = await BusinessRecipientsAsync(tenant.Id, staffUserId, cancellationToken);
+        var calendarLink = $"{BaseUrl}/admin?data={localDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
+        var calendarDay = DateFormatting.DayItalian(localDate);
+        foreach (var recipient in recipients)
+        {
+            await TrySendAsync(EmailTemplates.OnlineBookingNotice(
+                recipient.Email,
+                recipient.FirstName,
+                tenant.Name,
+                $"{customer.FirstName} {customer.LastName}",
+                serviceName,
+                when,
+                staffName,
+                customer.PhoneNumber,
+                customer.Email,
+                note,
+                calendarDay,
+                calendarLink), cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// The business side of a notification: every owner, plus the appointment's staff member when
+    /// their login is still a member of the business. Deleted accounts never; one email per user.
+    /// </summary>
+    private async Task<List<BusinessRecipient>> BusinessRecipientsAsync(Guid tenantId, Guid? staffUserId, CancellationToken cancellationToken)
+    {
+        var memberIds = db.TenantMemberships
+            .IgnoreQueryFilters([AppDbContext.TenantFilter])
+            .Where(m => m.TenantId == tenantId && (m.Role == TenantRole.Owner || m.UserId == staffUserId))
+            .Select(m => m.UserId);
+        return await db.Users
+            .AsNoTracking()
+            .Where(u => u.Email != null && u.DeletedAt == null && memberIds.Contains(u.Id))
+            .Select(u => new BusinessRecipient(u.Email!, u.FirstName))
+            .ToListAsync(cancellationToken);
+    }
+
+    private sealed record BusinessRecipient(string Email, string FirstName);
 
     private async Task<Guid> LeastBusyAsync(IReadOnlyList<Guid> candidates, DateOnly localDate, TimeZoneInfo timeZone, CancellationToken cancellationToken)
     {

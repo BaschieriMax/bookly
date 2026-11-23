@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ExternalLink } from 'lucide-react'
+import { useId } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
@@ -32,6 +33,7 @@ const schema = z.object({
   slotIntervalMinutes: intField(5, 120),
   minNoticeMinutes: intField(0, 10_080),
   bookingHorizonDays: intField(1, 365),
+  notifyOnOnlineBooking: z.boolean(),
   notifyOnCustomerCancellation: z.boolean(),
 })
 
@@ -50,6 +52,7 @@ function SettingsForm({ settings }: { settings: TenantSettings }) {
     defaultValues: { ...settings, phone: settings.phone ?? '', address: settings.address ?? '' },
   })
   const message = (key: string | undefined) => validationMessage(t, key)
+  const notificationsHintId = useId()
 
   const onSubmit = handleSubmit(async (values) => {
     try {
@@ -129,11 +132,25 @@ function SettingsForm({ settings }: { settings: TenantSettings }) {
             {...register('bookingHorizonDays', { valueAsNumber: true })}
           />
         </div>
-        <CheckboxField
-          label={t('settings.fields.notifyOnCustomerCancellation')}
-          description={t('settings.fields.notifyHint')}
-          {...register('notifyOnCustomerCancellation')}
-        />
+      </Panel>
+
+      <Panel title={t('settings.notifications')}>
+        <p id={notificationsHintId} className="-mt-2 text-sm text-muted">
+          {t('settings.notificationsHint')}
+        </p>
+        <fieldset aria-describedby={notificationsHintId} className="flex min-w-0 flex-col gap-1">
+          <legend className="sr-only">{t('settings.notificationsLegend')}</legend>
+          <CheckboxField
+            label={t('settings.fields.notifyOnOnlineBooking')}
+            description={t('settings.fields.notifyOnOnlineBookingHint')}
+            {...register('notifyOnOnlineBooking')}
+          />
+          <CheckboxField
+            label={t('settings.fields.notifyOnCustomerCancellation')}
+            description={t('settings.fields.notifyOnCustomerCancellationHint')}
+            {...register('notifyOnCustomerCancellation')}
+          />
+        </fieldset>
       </Panel>
 
       <div className="flex justify-end">

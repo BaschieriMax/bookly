@@ -267,6 +267,8 @@ public sealed class AdminCatalogTests(PostgresFixture database) : IDisposable
             slotIntervalMinutes = 30,
             minNoticeMinutes = 120,
             bookingHorizonDays = 30,
+            notifyOnCustomerCancellation = true,
+            notifyOnOnlineBooking = false,
         };
 
         using var invalid = await session.SendAsync(HttpMethod.Put, "/api/admin/settings", Settings("Mars/Olympus"));
@@ -275,6 +277,9 @@ public sealed class AdminCatalogTests(PostgresFixture database) : IDisposable
 
         using var saved = await session.SendAsync(HttpMethod.Put, "/api/admin/settings", Settings("Europe/Rome"));
         Assert.Equal(HttpStatusCode.OK, saved.StatusCode);
+        var savedBody = await JsonAsync(saved);
+        Assert.True(savedBody.GetProperty("notifyOnCustomerCancellation").GetBoolean());
+        Assert.False(savedBody.GetProperty("notifyOnOnlineBooking").GetBoolean());
 
         var publicInfo = await session.Client.GetFromJsonAsync<JsonElement>($"/api/public/tenants/{shop.Tenant.Slug}");
         Assert.Equal("Sfumo Barber", publicInfo.GetProperty("name").GetString());

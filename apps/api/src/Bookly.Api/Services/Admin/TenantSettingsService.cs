@@ -34,6 +34,7 @@ public sealed class TenantSettingsService(AppDbContext db, AdminContext admin, T
         tenant.MinNoticeMinutes = request.MinNoticeMinutes;
         tenant.BookingHorizonDays = request.BookingHorizonDays;
         tenant.NotifyOnCustomerCancellation = request.NotifyOnCustomerCancellation;
+        tenant.NotifyOnOnlineBooking = request.NotifyOnOnlineBooking;
         await db.SaveChangesAsync(cancellationToken);
         return ServiceResult<TenantSettingsDto>.Ok(ToDto(tenant));
     }
@@ -112,5 +113,5 @@ public sealed class TenantSettingsService(AppDbContext db, AdminContext admin, T
         ServiceResult<TenantBrandSettingsDto>.Fail(StatusCodes.Status400BadRequest, ErrorCodes.InvalidLogo, "The logo must be a PNG or WebP image up to 200 KB.");
 
     private static TenantSettingsDto ToDto(Tenant t) => new(
-        t.Slug, t.Name, t.Phone, t.Address, t.TimeZone, t.CancellationWindowHours, t.SlotIntervalMinutes, t.MinNoticeMinutes, t.BookingHorizonDays, t.NotifyOnCustomerCancellation);
+        t.Slug, t.Name, t.Phone, t.Address, t.TimeZone, t.CancellationWindowHours, t.SlotIntervalMinutes, t.MinNoticeMinutes, t.BookingHorizonDays, t.NotifyOnCustomerCancellation, t.NotifyOnOnlineBooking);
 }

@@ -234,6 +234,41 @@ describe('SettingsPage', () => {
     })
   })
 
+  it('groups the email notices and saves each switch on its own (DEC-040)', async () => {
+    asOwner()
+    let body: Record<string, unknown> = {}
+    server.use(
+      http.put('/api/admin/settings', async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>
+        return HttpResponse.json({ slug: 'barberia-demo', ...body })
+      }),
+    )
+    renderApp('/admin/impostazioni')
+
+    const notices = await screen.findByRole('group', { name: 'Avvisami via email' })
+    expect(notices).toHaveAccessibleDescription(/ai titolari e all'operatore dell'appuntamento/)
+    const booking = within(notices).getByRole('checkbox', {
+      name: /^Quando un cliente prenota online/,
+    })
+    const cancellation = within(notices).getByRole('checkbox', {
+      name: /^Quando un cliente disdice online/,
+    })
+    expect(booking).toBeChecked()
+    expect(booking).toHaveAccessibleDescription(/inserisci tu dal calendario non mandano avvisi/)
+    expect(cancellation).toBeChecked()
+
+    await userEvent.click(booking)
+    const save = screen.getByRole('button', { name: 'Salva modifiche' })
+    expect(save).toBeEnabled()
+    await userEvent.click(save)
+
+    await expectToast('Modifiche salvate.')
+    expect(body).toMatchObject({ notifyOnOnlineBooking: false, notifyOnCustomerCancellation: true })
+    expect(booking).not.toBeChecked()
+    expect(cancellation).toBeChecked()
+    expect(save).toBeDisabled()
+  })
+
   it('is reserved to the owner', async () => {
     server.use(
       http.get('/api/auth/me', () => HttpResponse.json(staffMe)),

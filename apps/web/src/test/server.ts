@@ -207,6 +207,7 @@ export const adminSettings: TenantSettings = {
   minNoticeMinutes: 60,
   bookingHorizonDays: 60,
   notifyOnCustomerCancellation: true,
+  notifyOnOnlineBooking: true,
 }
 
 export const adminBrand: TenantBrandSettings = {

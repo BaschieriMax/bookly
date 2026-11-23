@@ -138,7 +138,7 @@
   },
   "settings": {
     "title": "Impostazioni",
-    "lead": "Dati dell'attività e regole di prenotazione.",
+    "lead": "Dati dell'attività, regole di prenotazione e avvisi via email.",
     "publicLink": "Pagina pubblica",
     "business": "Attività",
     "rules": "Regole di prenotazione",
@@ -153,9 +153,14 @@
       "minNoticeMinutes": "Preavviso minimo (minuti)",
       "minNoticeHint": "Ad esempio 60: non si prenota per la prossima ora.",
       "bookingHorizonDays": "Prenotabile fino a (giorni)",
-      "notifyOnCustomerCancellation": "Avvisami via email quando un cliente disdice",
-      "notifyHint": "L'email arriva al titolare e all'operatore con un accesso."
+      "notifyOnOnlineBooking": "Quando un cliente prenota online",
+      "notifyOnOnlineBookingHint": "Un'email con servizio, orario e contatti del cliente per ogni prenotazione dalla tua pagina. Gli appuntamenti che inserisci tu dal calendario non mandano avvisi.",
+      "notifyOnCustomerCancellation": "Quando un cliente disdice online",
+      "notifyOnCustomerCancellationHint": "L'orario torna subito prenotabile: l'email ti dice quale."
     },
+    "notifications": "Avvisi via email",
+    "notificationsHint": "Le email arrivano ai titolari e all'operatore dell'appuntamento, se ha un accesso a Bookly.",
+    "notificationsLegend": "Avvisami via email",
     "minutes": "{{count}} minuti"
   },
   "brand": {

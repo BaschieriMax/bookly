@@ -185,15 +185,18 @@ ID: TD-009
 Problema:
 Il limite giornaliero delle email di sospensione (DEC-039) è un contatore interno fisso: 80
 email al giorno UTC. Non conosce la quota reale di Resend né le altre email del giorno
-(conferme, inviti, annullamenti).
+(conferme, inviti, annullamenti e, dal 23/11/2026, fino a 2 avvisi all'attività per ogni
+prenotazione online, DEC-040).
 
 Motivo:
 Resend free consegna 100 email al giorno in tutto e l'SMTP non espone la quota residua: un
 numero fisso con margine è la soluzione più semplice e prevedibile.
 
 Impatto:
-In un giorno con molte altre email la quota di Resend può finire prima: le email rimaste
-falliscono e ripartono con i tentativi successivi (fino a 8, in circa un giorno e mezzo). Con
+In un giorno con molte altre email la quota di Resend può finire prima. Le email di sospensione
+rimaste falliscono e ripartono con i tentativi successivi (fino a 8, in circa un giorno e mezzo);
+quelle inviate nella richiesta (conferme, avvisi di nuova prenotazione) non si ripetono e si
+perdono, ma la prenotazione resta salvata. Con
 attività grandi la sospensione può richiedere più giorni per avvisare tutti. Con il mittente
 onboarding@resend.dev, finché il dominio non è verificato (deploy §8), le email arrivano solo
 all'indirizzo dell'account Resend.
@@ -202,6 +205,52 @@ Soluzione futura:
 Al passaggio a un piano Resend a pagamento (o con il dominio verificato e volumi più alti)
 alzare SuspensionNotices__DailyLimit su Render; in alternativa leggere la quota dall'API di
 Resend e riconoscere l'errore di quota esaurita.
+
+Priorità:
+Bassa
+```
+
+```text
+ID: TD-010
+Problema:
+I link delle email all'attività (disdetta del cliente, DEC-027; nuova prenotazione, DEC-040)
+puntano a /admin, che apre l'attività selezionata in quel momento nel browser. Il link non dice
+di quale attività si tratta.
+
+Motivo:
+L'attività attiva vive nello stato del frontend (store Zustand); quasi tutti i titolari hanno una
+sola attività.
+
+Impatto:
+Un titolare o un operatore con più attività può aprire il calendario di un'altra attività e non
+trovare l'appuntamento finché non cambia attività dal selettore.
+
+Soluzione futura:
+Aggiungere al link l'attività (es. /admin?attivita=<slug>&data=…) e far scegliere al frontend
+quella attività, se l'utente ne è membro.
+
+Priorità:
+Bassa
+```
+
+```text
+ID: TD-011
+Problema:
+Gli avvisi di nuova prenotazione (DEC-040), come la conferma al cliente e gli avvisi di disdetta,
+partono dentro la richiesta di prenotazione, una connessione SMTP per email.
+
+Motivo:
+Riusa il meccanismo delle disdette (DEC-027) senza una coda: è semplice e un errore non tocca la
+prenotazione.
+
+Impatto:
+La risposta alla prenotazione aspetta fino a 3 invii (cliente, titolare, operatore): qualche
+secondo in più con Resend, al massimo il timeout SMTP per email se il server non risponde. Un
+invio fallito non si ripete.
+
+Soluzione futura:
+Mettere le email transazionali in una coda con invio in background e riprova, come le email di
+sospensione (DEC-039), oppure usare l'API HTTP di Resend con un'unica chiamata batch.
 
 Priorità:
 Bassa

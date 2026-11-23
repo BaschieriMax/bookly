@@ -31,6 +31,9 @@ public class Tenant
     /// <summary>Email owners (and the staff member) when a customer cancels online.</summary>
     public bool NotifyOnCustomerCancellation { get; set; } = true;
 
+    /// <summary>Email owners (and the staff member) when a customer books online (DEC-040).</summary>
+    public bool NotifyOnOnlineBooking { get; set; } = true;
+
     /// <summary>Primary brand color as #RRGGBB; null means the Bookly default.</summary>
     public string? BrandPrimaryColor { get; set; }
 

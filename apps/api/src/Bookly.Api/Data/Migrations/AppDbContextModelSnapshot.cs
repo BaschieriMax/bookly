@@ -679,6 +679,9 @@ namespace Bookly.Api.Data.Migrations
                     b.Property<bool>("NotifyOnCustomerCancellation")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("NotifyOnOnlineBooking")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");

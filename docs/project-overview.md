@@ -61,7 +61,7 @@ Competenze tecniche basse per clienti e titolari: la UX deve essere semplice e g
 - Prenotazione, disdetta e spostamento.
 - Calendario admin giorno/settimana.
 - Stati dell'appuntamento: confermato, disdetto dal cliente, annullato dall'attività, completato, no-show.
-- Email transazionali: conferma account, reset password, conferma prenotazione, modifica, disdetta, promemoria 24h.
+- Email transazionali: conferma account, reset password, conferma prenotazione, modifica, disdetta, promemoria 24h; all'attività un avviso per ogni prenotazione online e per ogni disdetta del cliente (DEC-027, DEC-040).
 - Area cliente: storico appuntamenti, profilo, export dei dati, cancellazione account.
 - Dashboard super-admin: elenco tenant, creazione, sospensione (con la scelta di annullare gli appuntamenti futuri e avvisare clienti e titolare, DEC-039), invito del titolare.
 - Brand per tenant: logo e colore primario, con verifica automatica del contrasto (DEC-016).
@@ -95,7 +95,7 @@ Competenze tecniche basse per clienti e titolari: la UX deve essere semplice e g
 | `/admin/servizi` | CRUD servizi | Owner |
 | `/admin/staff` | CRUD operatori e servizi offerti | Owner |
 | `/admin/orari` | Orari settimanali e assenze | Owner (lo Staff vede i propri) |
-| `/admin/impostazioni` | Dati dell'attività, finestra di disdetta, intervallo degli slot | Owner |
+| `/admin/impostazioni` | Dati dell'attività, finestra di disdetta, intervallo degli slot, avvisi via email | Owner |
 | `/platform/tenant` | Elenco, creazione e sospensione tenant (annullamento degli appuntamenti futuri e stato degli avvisi), inviti | SuperAdmin |
 | `/privacy`, `/termini` | Documenti legali | Pubblica |
 

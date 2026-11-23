@@ -168,6 +168,61 @@ internal static class EmailTemplates
         link: calendarLink,
         footer: "Puoi disattivare questi avvisi nelle impostazioni dell'attività.");
 
+    /// <summary>A row of a details table: the value is HTML-encoded, the optional link (tel:, mailto:) wraps it.</summary>
+    public sealed record EmailDetail(string Label, string Value, string? Link = null, bool Strong = false);
+
+    /// <summary>
+    /// To the owners and the staff member's own login when a customer books online (DEC-040).
+    /// Phone and note rows appear only when the customer gave them.
+    /// </summary>
+    public static EmailMessage OnlineBookingNotice(
+        string to,
+        string firstName,
+        string tenantName,
+        string customerName,
+        string serviceName,
+        string when,
+        string staffName,
+        string? customerPhone,
+        string? customerEmail,
+        string? note,
+        string calendarDay,
+        string calendarLink)
+    {
+        List<EmailDetail> details =
+        [
+            new("Servizio", serviceName, Strong: true),
+            new("Quando", when, Strong: true),
+            new("Operatore", staffName),
+        ];
+        if (!string.IsNullOrWhiteSpace(customerPhone))
+        {
+            details.Add(new("Telefono", customerPhone, TelLink(customerPhone)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(customerEmail))
+        {
+            details.Add(new("Email", customerEmail, $"mailto:{customerEmail}"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(note))
+        {
+            details.Add(new("Nota", $"«{note}»"));
+        }
+
+        return BuildDetailed(
+            to,
+            subject: $"Nuova prenotazione: {customerName}, {when}",
+            greeting: firstName,
+            intro: $"{customerName} ha prenotato online da {tenantName}:",
+            items: [],
+            outro: [],
+            table: null,
+            action: ("Apri il calendario", calendarLink),
+            footer: $"Il pulsante apre il calendario su {calendarDay}. Puoi disattivare questi avvisi nelle impostazioni dell'attività.",
+            details: details);
+    }
+
     /// <summary>
     /// The business was suspended and its future appointments cancelled (DEC-039). Neutral on
     /// purpose: no "suspended", no reason, and no link to the public page (it is gone).
@@ -251,15 +306,38 @@ internal static class EmailTemplates
         (IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<string>> Rows)? table,
         (string Label, string Link)? action,
         string footer,
+        IReadOnlyList<EmailDetail>? details = null,
         [System.Runtime.CompilerServices.CallerMemberName] string kind = "")
     {
         var html = HtmlEncoder.Default;
         var body = new System.Text.StringBuilder();
         var text = new System.Text.StringBuilder();
+        var hasDetails = details is { Count: > 0 };
 
         body.Append($"""<p style="margin:0 0 16px;font-size:18px;font-weight:bold">Ciao {html.Encode(greeting)},</p>""");
-        body.Append($"""<p style="margin:0 0 {(items.Count > 0 ? 12 : 16)}px;font-size:15px;line-height:1.5">{html.Encode(intro)}</p>""");
+        body.Append($"""<p style="margin:0 0 {(items.Count > 0 || hasDetails ? 12 : 16)}px;font-size:15px;line-height:1.5">{html.Encode(intro)}</p>""");
         text.Append($"Ciao {greeting},\n\n{intro}\n");
+
+        if (hasDetails)
+        {
+            const string label = "width:96px;padding:8px 12px 8px 0;border-bottom:1px solid #e4e4e7;text-align:left;vertical-align:top;font-size:14px;font-weight:normal;color:#52525b";
+            body.Append("""<table role="presentation" style="width:100%;margin:0 0 16px;border-collapse:collapse;font-size:15px;line-height:1.45"><tbody>""");
+            text.Append('\n');
+            foreach (var detail in details!)
+            {
+                var value = html.Encode(detail.Value);
+                if (detail.Link is not null)
+                {
+                    value = $"""<a href="{html.Encode(detail.Link)}" style="color:#0f766e">{value}</a>""";
+                }
+
+                var weight = detail.Strong ? "font-weight:bold;" : string.Empty;
+                body.Append($"""<tr><th scope="row" style="{label}">{html.Encode(detail.Label)}</th><td style="padding:8px 0;border-bottom:1px solid #e4e4e7;{weight}white-space:pre-line;overflow-wrap:anywhere">{value}</td></tr>""");
+                text.Append($"{detail.Label}: {detail.Value}\n");
+            }
+
+            body.Append("</tbody></table>");
+        }
 
         if (items.Count > 0)
         {
