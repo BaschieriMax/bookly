@@ -22,7 +22,10 @@ export function NoAccess({ homePath = '/', embedded = false, message }: NoAccess
     >
       <ShieldAlert aria-hidden="true" className="size-10 text-muted" />
       <h1 className="font-heading text-2xl font-semibold">{message ?? t('errors.forbidden')}</h1>
-      <Link to={homePath} className="inline-flex min-h-11 items-center font-semibold text-primary">
+      <Link
+        to={homePath}
+        className="inline-flex min-h-11 items-center font-semibold text-primary-text underline-offset-4 hover:underline"
+      >
         {homePath === '/' ? t('nav:backHome') : t('nav:goToYourArea')}
       </Link>
     </Root>

@@ -10,7 +10,13 @@ import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { SelectField } from '@/components/ui/SelectField'
 import { TextField } from '@/components/ui/TextField'
-import { AdminPageHeader, Badge, EmptyState, QueryState } from '@/features/admin/AdminUi'
+import {
+  AdminPageHeader,
+  PageAction,
+  Badge,
+  EmptyState,
+  QueryState,
+} from '@/features/admin/AdminUi'
 import { SLUG_PATTERN, slugify } from '@/lib/slug'
 import type { PlatformOwner, PlatformTenant } from '@/types/api'
 import {
@@ -22,6 +28,7 @@ import {
 import { platformErrorMessage } from './platformErrors'
 import { SuspendTenantDialog } from './SuspendTenantDialog'
 import { SuspensionNoticesLine } from './SuspensionNoticesLine'
+import { tenantPath } from '@/app/paths'
 
 const owner = {
   ownerEmail: z.string().trim().email(),
@@ -309,10 +316,7 @@ export default function TenantsPage() {
         title={t('tenants.title')}
         lead={t('tenants.lead')}
         action={
-          <Button onClick={() => setCreating(true)}>
-            <Plus aria-hidden="true" className="size-4" />
-            {t('tenants.new')}
-          </Button>
+          <PageAction icon={Plus} label={t('tenants.new')} onClick={() => setCreating(true)} />
         }
       />
 
@@ -335,9 +339,10 @@ export default function TenantsPage() {
                       </Badge>
                     </div>
                     <Link
-                      to={`/b/${tenant.slug}`}
+                      to={tenantPath(tenant.slug)}
                       target="_blank"
-                      className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-semibold text-primary-text"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-semibold text-primary-text underline-offset-4 hover:underline"
                     >
                       /b/{tenant.slug}
                       <span className="sr-only">

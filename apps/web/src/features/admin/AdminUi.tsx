@@ -1,4 +1,4 @@
-import { ShieldAlert, TriangleAlert } from 'lucide-react'
+import { ShieldAlert, TriangleAlert, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -21,6 +21,31 @@ export function AdminPageHeader({ title, lead, action }: AdminPageHeaderProps) {
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </header>
+  )
+}
+
+interface PageActionProps {
+  icon: LucideIcon
+  label: string
+  onClick: () => void
+}
+
+/**
+ * Main action of a page ("Nuovo appuntamento", "Nuovo servizio"), DEC-041: a button beside the
+ * title from 640 px; on phones a round floating button at the bottom right, within reach of the
+ * thumb, so the title row stays short. One element in both layouts: announced once, full name.
+ * The shell leaves room for it at the bottom of the page.
+ */
+export function PageAction({ icon: Icon, label, onClick }: PageActionProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="fixed right-4 bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-30 inline-flex size-14 items-center justify-center gap-2 rounded-pill bg-primary font-semibold text-primary-fg shadow-lg transition-[background-color,transform] duration-150 hover:bg-primary-hover active:scale-[0.97] sm:static sm:z-auto sm:size-auto sm:min-h-11 sm:rounded-control sm:px-4 sm:shadow-none"
+    >
+      <Icon aria-hidden="true" className="size-6 sm:size-5" />
+      <span className="sr-only sm:not-sr-only">{label}</span>
+    </button>
   )
 }
 

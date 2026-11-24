@@ -2,10 +2,12 @@ import { Menu, X } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useNavigate } from 'react-router'
+import { BooklyLogo } from '@/components/layout/BooklyLogo'
 import { Sidebar } from '@/components/navigation/Sidebar'
 import type { NavigationArea } from '@/components/navigation/navigationApi'
 import { AreaLinks } from '@/features/auth/AreaLinks'
 import { useLogout } from '@/features/auth/useMe'
+import { paths } from '@/app/paths'
 
 interface ShellLayoutProps {
   area: NavigationArea
@@ -22,7 +24,7 @@ export function ShellLayout({ area, sidebarHeader, sidebarFooter }: ShellLayoutP
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    logout.mutate(undefined, { onSettled: () => void navigate('/login', { replace: true }) })
+    logout.mutate(undefined, { onSettled: () => void navigate(paths.login, { replace: true }) })
   }
 
   const sidebar = (
@@ -84,9 +86,10 @@ export function ShellLayout({ area, sidebarHeader, sidebarFooter }: ShellLayoutP
           >
             <Menu aria-hidden="true" className="size-5" />
           </button>
-          <span className="font-heading text-lg font-bold tracking-tight">bookly</span>
+          <BooklyLogo to={area === 'admin' ? paths.admin.calendar : paths.platform.tenants} />
         </header>
-        <main className="flex-1 p-4 md:p-6">
+        {/* Bottom room on phones for the floating page action and the save bar (DEC-041). */}
+        <main className="flex-1 p-4 pb-28 sm:pb-4 md:p-6">
           <Outlet />
         </main>
       </div>

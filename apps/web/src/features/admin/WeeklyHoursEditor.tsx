@@ -3,26 +3,36 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
+import { SaveBar } from '@/components/ui/SaveBar'
 import type { WorkingInterval } from '@/types/api'
 import { useSaveWorkingHours } from './adminApi'
 import { adminErrorMessage } from './adminErrors'
 import { Panel } from './AdminUi'
 import { invalidDays, newKey, toEditable, WEEK_DAYS, type EditableInterval } from './scheduleModel'
+import { fieldClass } from '@/components/ui/fieldStyles'
 
 interface WeeklyHoursEditorProps {
   staffId: string
   initial: WorkingInterval[]
 }
 
-const timeInput =
-  'min-h-11 w-full min-w-0 rounded-control border border-border-strong bg-surface px-2 text-ink'
+/** Order-independent fingerprint of a week, to compare it with the saved one. */
+function weekSignature(intervals: readonly EditableInterval[]): string {
+  return intervals
+    .map((i) => `${i.dayOfWeek} ${i.start}-${i.end}`)
+    .sort()
+    .join('|')
+}
 
 /** Weekly working intervals of one staff member, saved as a whole week (PUT). */
 export function WeeklyHoursEditor({ staffId, initial }: WeeklyHoursEditorProps) {
   const { t } = useTranslation(['admin', 'common'])
   const save = useSaveWorkingHours(staffId)
   const [intervals, setIntervals] = useState<EditableInterval[]>(() => toEditable(initial))
+  // Last saved week: the save bar appears only when the edited week differs from it.
+  const [saved, setSaved] = useState<EditableInterval[]>(() => toEditable(initial))
   const invalid = invalidDays(intervals)
+  const dirty = weekSignature(intervals) !== weekSignature(saved)
 
   const update = (key: string, patch: Partial<EditableInterval>) =>
     setIntervals((current) => current.map((i) => (i.key === key ? { ...i, ...patch } : i)))
@@ -42,6 +52,7 @@ export function WeeklyHoursEditor({ staffId, initial }: WeeklyHoursEditorProps) 
       await save.mutateAsync(
         intervals.map(({ dayOfWeek, start, end }) => ({ dayOfWeek, start, end })),
       )
+      setSaved(intervals)
       toast.success(t('schedule.hoursSaved'))
     } catch (error) {
       toast.error(adminErrorMessage(t, error))
@@ -70,7 +81,7 @@ export function WeeklyHoursEditor({ staffId, initial }: WeeklyHoursEditorProps) 
                       aria-invalid={dayInvalid || undefined}
                       value={interval.start}
                       onChange={(e) => update(interval.key, { start: e.target.value })}
-                      className={timeInput}
+                      className={`min-h-11 w-full min-w-0 px-2 ${fieldClass(dayInvalid)}`}
                     />
                     <span aria-hidden="true" className="text-muted">
                       –
@@ -81,10 +92,10 @@ export function WeeklyHoursEditor({ staffId, initial }: WeeklyHoursEditorProps) 
                       aria-invalid={dayInvalid || undefined}
                       value={interval.end}
                       onChange={(e) => update(interval.key, { end: e.target.value })}
-                      className={timeInput}
+                      className={`min-h-11 w-full min-w-0 px-2 ${fieldClass(dayInvalid)}`}
                     />
                     <Button
-                      variant="ghost"
+                      variant="ghostDanger"
                       className="shrink-0 px-3"
                       onClick={() => remove(interval.key)}
                       aria-label={t('schedule.removeInterval', {
@@ -116,11 +127,14 @@ export function WeeklyHoursEditor({ staffId, initial }: WeeklyHoursEditorProps) 
           )
         })}
       </ul>
-      <div className="flex justify-end">
-        <Button onClick={() => void onSave()} loading={save.isPending} disabled={invalid.size > 0}>
-          {t('schedule.saveHours')}
-        </Button>
-      </div>
+      <SaveBar
+        visible={dirty || save.isPending}
+        saveLabel={t('schedule.saveHours')}
+        saving={save.isPending}
+        saveDisabled={invalid.size > 0}
+        onSave={() => void onSave()}
+        onDiscard={() => setIntervals(saved)}
+      />
     </Panel>
   )
 }

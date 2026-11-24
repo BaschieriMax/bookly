@@ -49,10 +49,15 @@ test('an owner moves between their areas with clicks only', async ({ page }) => 
   await expect(page).toHaveURL(/\/admin$/)
   await expect(page.getByRole('heading', { name: 'Calendario' })).toBeVisible()
 
+  // The public page opens in a new tab: the admin area stays open (DEC-041).
   await openMenuIfCollapsed(page)
-  await page.getByRole('link', { name: 'Vedi pagina pubblica' }).click()
-  await expect(page).toHaveURL(new RegExp(`/b/${demo.slug}$`))
-  await expect(page.getByRole('link', { name: /prenota ora/i })).toBeVisible()
+  const [publicPage] = await Promise.all([
+    page.waitForEvent('popup'),
+    page.getByRole('link', { name: /^Vedi pagina pubblica/ }).click(),
+  ])
+  await expect(publicPage).toHaveURL(new RegExp(`/b/${demo.slug}$`))
+  await expect(publicPage.getByRole('link', { name: /prenota ora/i })).toBeVisible()
+  await expect(page).toHaveURL(/\/admin$/)
 })
 
 test('a super-admin lands on the platform area', async ({ page }) => {

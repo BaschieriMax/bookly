@@ -15,5 +15,20 @@
   },
   "retry": "Riprova",
   "login": "Accedi",
-  "register": "Registrati"
+  "register": "Registrati",
+  "newTab": "(si apre in una nuova scheda)",
+  "roles": {
+    "Owner": "Titolare",
+    "Staff": "Operatore"
+  },
+  "notFound": {
+    "title": "Pagina non trovata",
+    "text": "Il link potrebbe essere errato o la pagina non esiste più."
+  },
+  "routeError": {
+    "title": "Qualcosa è andato storto",
+    "text": "Riprova tra poco. Se il problema continua, contatta il supporto."
+  },
+  "unsavedChanges": "Modifiche non salvate",
+  "discardChanges": "Annulla"
 }

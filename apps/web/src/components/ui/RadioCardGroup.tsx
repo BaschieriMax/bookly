@@ -43,8 +43,10 @@ export function RadioCardGroup<TValue extends string>({
         return (
           <label
             key={option.value}
-            className={`flex cursor-pointer items-start gap-3 rounded-control border p-3.5 ${
-              selected ? 'border-primary bg-primary-soft' : 'border-border bg-surface'
+            className={`flex cursor-pointer items-start gap-3 rounded-control border p-3.5 transition-colors ${
+              selected
+                ? 'border-primary bg-primary-soft'
+                : 'border-border bg-surface hover:border-border-strong'
             }`}
           >
             <input

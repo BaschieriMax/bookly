@@ -13,7 +13,7 @@ import { TextField } from '@/components/ui/TextField'
 import type { AdminService, AdminStaff } from '@/types/api'
 import { useAdminServices, useAdminStaff, useDeleteStaff, useSaveStaff } from './adminApi'
 import { adminErrorMessage } from './adminErrors'
-import { AdminPageHeader, Badge, EmptyState, QueryState } from './AdminUi'
+import { AdminPageHeader, PageAction, Badge, EmptyState, QueryState } from './AdminUi'
 import { intField, requiredText, validationMessage } from './formHelpers'
 
 const schema = z.object({
@@ -142,12 +142,7 @@ export default function StaffPage() {
       <AdminPageHeader
         title={t('staff.title')}
         lead={t('staff.lead')}
-        action={
-          <Button onClick={() => setEditing('new')}>
-            <Plus aria-hidden="true" className="size-4" />
-            {t('staff.new')}
-          </Button>
-        }
+        action={<PageAction icon={Plus} label={t('staff.new')} onClick={() => setEditing('new')} />}
       />
 
       <QueryState isPending={isPending} error={error}>
@@ -183,7 +178,7 @@ export default function StaffPage() {
                 <Pencil aria-hidden="true" className="size-4" />
               </Button>
               <Button
-                variant="ghost"
+                variant="ghostDanger"
                 onClick={() => setToDelete(member)}
                 aria-label={`${t('actions.delete')} ${member.displayName}`}
               >

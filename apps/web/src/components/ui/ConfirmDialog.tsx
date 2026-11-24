@@ -46,18 +46,22 @@ export function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
-      <div aria-hidden="true" className="absolute inset-0 bg-ink/50" onClick={onClose} />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 animate-fade-in bg-ink/50"
+        onClick={onClose}
+      />
       <div
         role="alertdialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative flex w-full max-w-md flex-col gap-4 rounded-t-card bg-surface p-6 sm:rounded-card"
+        className="relative flex w-full max-w-md animate-sheet-up flex-col gap-4 rounded-t-card bg-surface p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:animate-fade-in sm:rounded-card sm:pb-6"
       >
         <h2 id={titleId} className="font-heading text-xl font-semibold">
           {title}
         </h2>
         <div className="text-muted">{children}</div>
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2 sm:flex sm:justify-end">
           <Button ref={cancelRef} variant="secondary" onClick={onClose}>
             {cancelLabel}
           </Button>

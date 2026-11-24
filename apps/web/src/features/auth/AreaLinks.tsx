@@ -13,10 +13,10 @@ const icons: Record<UserArea, LucideIcon> = {
 const styles = {
   // Full-width rows in the admin/platform sidebar.
   sidebar:
-    'flex min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-ink hover:bg-subtle',
+    'flex min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-ink transition-colors hover:bg-subtle',
   // Header links.
   inline:
-    'flex min-h-11 items-center gap-2 rounded-control px-2 text-sm font-medium text-ink hover:bg-subtle sm:px-3',
+    'flex min-h-11 items-center gap-2 rounded-control px-2 text-sm font-medium text-ink transition-colors hover:bg-subtle sm:px-3',
 } as const
 
 interface AreaLinksProps {

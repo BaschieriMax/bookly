@@ -256,6 +256,30 @@ Priorità:
 Bassa
 ```
 
+```text
+ID: TD-012
+Problema:
+Le barre fisse in basso (barra di salvataggio, pulsante «+», footer dei dialog) hanno già il
+padding env(safe-area-inset-bottom), ma il meta viewport non ha viewport-fit=cover: su iPhone
+env() vale 0 e il padding non si attiva.
+
+Motivo:
+Con viewport-fit=cover la pagina passa anche sotto la tacca in orizzontale: servirebbe il
+padding laterale della safe area su tutti i layout (DEC-041).
+
+Impatto:
+Nel browser Safari nessuno: la barra degli strumenti tiene il contenuto sopra l'indicatore home.
+Se Bookly venisse aggiunta alla schermata Home (standalone), le barre in basso toccherebbero
+l'indicatore home.
+
+Soluzione futura:
+Aggiungere viewport-fit=cover insieme a px-[max(1rem,env(safe-area-inset-left))] (e right) nei
+layout, verificando i test responsive in orizzontale su WebKit.
+
+Priorità:
+Bassa
+```
+
 ## Revisione
 
 Il log si rivede a ogni release e nella manutenzione mensile. Un debito con priorità `Alta` non può restare aperto alla release senza una decisione esplicita di Massimo registrata nel Decision Log.

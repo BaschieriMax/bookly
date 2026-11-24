@@ -7,6 +7,7 @@ import { isApiError } from '@/services/apiClient'
 import { useResetPassword } from './accountApi'
 import { AuthCard, Notice } from './AuthCard'
 import { TextLink } from '@/components/ui/TextLink'
+import { paths } from '@/app/paths'
 
 /** Landing page of the reset link: /reimposta-password?email&token. */
 export default function ResetPasswordPage() {
@@ -30,7 +31,7 @@ export default function ResetPasswordPage() {
     return (
       <AuthCard title={t('resetTitle')}>
         <Notice tone="success">{t('resetDone')}</Notice>
-        <TextLink to="/login">{t('continueToLogin')}</TextLink>
+        <TextLink to={paths.login}>{t('continueToLogin')}</TextLink>
       </AuthCard>
     )
   }
@@ -41,7 +42,7 @@ export default function ResetPasswordPage() {
         {isApiError(error, 400) && error.code === 'auth.invalid_token' && (
           <Notice tone="danger">
             {t('errors.auth.invalid_token')}{' '}
-            <Link to="/password-dimenticata" className="font-semibold underline">
+            <Link to={paths.forgotPassword} className="font-semibold underline hover:no-underline">
               {t('sendLink')}
             </Link>
           </Notice>

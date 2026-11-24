@@ -6,6 +6,7 @@ import { afterConfirm, useConfirmEmail } from './accountApi'
 import { AuthCard, Notice } from './AuthCard'
 import { safeRedirect } from './safeRedirect'
 import { TextLink } from '@/components/ui/TextLink'
+import { loginPath, paths } from '@/app/paths'
 
 /** Landing page of the confirmation link: /conferma-email?userId&token. */
 export default function ConfirmEmailPage() {
@@ -27,7 +28,7 @@ export default function ConfirmEmailPage() {
     return (
       <AuthCard title={t('invalidLinkTitle')}>
         <Notice tone="danger">{t('invalidLinkText')}</Notice>
-        <TextLink to="/login">{t('continueToLogin')}</TextLink>
+        <TextLink to={paths.login}>{t('continueToLogin')}</TextLink>
       </AuthCard>
     )
   }
@@ -45,8 +46,8 @@ export default function ConfirmEmailPage() {
     <AuthCard title={t('confirmedTitle')}>
       <Notice tone="success">{t('confirmedText')}</Notice>
       <Link
-        to={`/login?redirect=${encodeURIComponent(safeRedirect(next))}`}
-        className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-4 font-semibold text-primary-fg"
+        to={loginPath(safeRedirect(next))}
+        className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-4 font-semibold text-primary-fg transition-colors hover:bg-primary-hover"
       >
         {t('continueToLogin')}
       </Link>

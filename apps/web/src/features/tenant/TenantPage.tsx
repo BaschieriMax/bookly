@@ -1,12 +1,13 @@
 import { CalendarCheck, ChevronRight, Clock, MapPin, Phone } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { paths } from '@/app/paths'
+import { bookingPath, paths } from '@/app/paths'
 import { PageSpinner } from '@/components/ui/PageSpinner'
 import { formatDuration, formatPrice } from '@/lib/format'
 import { useServices } from './tenantApi'
 import { useCurrentTenant } from './tenantContext'
 import { TenantHeader } from './TenantHeader'
+import { telHref } from '@/lib/tel'
 
 const eyebrow = 'text-[13px] font-semibold tracking-[0.14em] text-primary-text'
 
@@ -15,7 +16,7 @@ export default function TenantPage() {
   const tenant = useCurrentTenant()
   const { t } = useTranslation(['booking', 'legal'])
   const { data: services, isPending } = useServices(tenant.slug)
-  const bookingPath = `/b/${tenant.slug}/prenota`
+  const booking = bookingPath(tenant.slug)
 
   return (
     <div className="mx-auto flex min-h-screen max-w-3xl flex-col">
@@ -36,7 +37,7 @@ export default function TenantPage() {
             <li className="flex items-center gap-2.5">
               <Phone aria-hidden="true" className="size-[18px] text-primary-text" />
               <a
-                href={`tel:${tenant.phone.replaceAll(' ', '')}`}
+                href={telHref(tenant.phone)}
                 className="inline-flex min-h-11 items-center underline-offset-2 hover:underline"
               >
                 {tenant.phone}
@@ -63,7 +64,7 @@ export default function TenantPage() {
           {services?.map((service) => (
             <li key={service.id}>
               <Link
-                to={`${bookingPath}?servizio=${service.id}`}
+                to={`${booking}?servizio=${service.id}`}
                 className="flex min-h-11 items-center gap-3 border-b border-border py-4"
               >
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -99,7 +100,7 @@ export default function TenantPage() {
 
       <div className="fixed inset-x-0 bottom-0 border-t border-border bg-bg px-5 pt-3 pb-6">
         <Link
-          to={bookingPath}
+          to={booking}
           className="mx-auto flex min-h-13 max-w-3xl items-center justify-center gap-2 rounded-control bg-primary font-semibold text-primary-fg hover:bg-primary-hover"
         >
           <CalendarCheck aria-hidden="true" className="size-5" />

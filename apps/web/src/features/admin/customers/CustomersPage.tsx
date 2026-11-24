@@ -9,6 +9,7 @@ import type { CustomerListItem } from '@/types/api'
 import { AdminPageHeader, Badge, EmptyState, QueryState } from '../AdminUi'
 import { CustomerDialog } from './CustomerDialog'
 import { useCustomerList, type CustomerKind, type CustomerKindFilter } from './customersApi'
+import { fieldClass, fieldLabelClass } from '@/components/ui/fieldStyles'
 
 const FILTERS: readonly CustomerKindFilter[] = ['all', 'AddressBook', 'Account']
 
@@ -32,8 +33,8 @@ export default function CustomersPage() {
       <AdminPageHeader title={t('customers.title')} lead={t('customers.lead')} />
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-        <div className="flex flex-1 flex-col gap-1.5">
-          <label htmlFor="customer-search" className="text-sm font-semibold">
+        <div className="group flex flex-1 flex-col gap-1.5">
+          <label htmlFor="customer-search" className={fieldLabelClass}>
             {t('customers.searchLabel')}
           </label>
           <div className="relative">
@@ -48,7 +49,7 @@ export default function CustomersPage() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t('customers.searchPlaceholder')}
               autoComplete="off"
-              className="min-h-11 w-full rounded-control border border-border-strong bg-surface pr-3 pl-10 text-ink"
+              className={`min-h-11 w-full pr-3 pl-10 ${fieldClass()}`}
             />
           </div>
         </div>
@@ -142,7 +143,7 @@ function CustomerTable({ items, onOpen }: CustomerListProps) {
             <tr
               key={`${c.kind}-${c.id}`}
               onClick={() => onOpen(c)}
-              className="cursor-pointer border-b border-border last:border-b-0 hover:bg-subtle"
+              className="cursor-pointer border-b border-border transition-colors last:border-b-0 hover:bg-subtle"
             >
               <td className="px-3 py-2 xl:px-4">
                 <span className="flex flex-wrap items-center gap-x-2">
@@ -194,7 +195,7 @@ function CustomerCards({ items, onOpen }: CustomerListProps) {
           <button
             type="button"
             onClick={() => onOpen(c)}
-            className="flex w-full items-center gap-3 rounded-card border border-border bg-surface p-4 text-left hover:bg-subtle"
+            className="flex w-full items-center gap-3 rounded-card border border-border bg-surface p-4 text-left transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-sm"
           >
             <span className="flex min-w-0 flex-1 flex-col gap-1">
               <span className="flex flex-wrap items-center gap-2">

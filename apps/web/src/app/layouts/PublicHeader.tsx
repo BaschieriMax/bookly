@@ -8,9 +8,9 @@ import { useLogout, useMe } from '@/features/auth/useMe'
 import { homePathFor } from '@/features/auth/userAreas'
 
 const linkClass =
-  'flex min-h-11 items-center rounded-control px-3 text-sm font-semibold text-ink hover:bg-subtle'
+  'flex min-h-11 items-center rounded-control px-3 text-sm font-semibold text-ink transition-colors hover:bg-subtle'
 const primaryClass =
-  'flex min-h-11 items-center rounded-control bg-primary px-4 text-sm font-semibold text-primary-fg hover:bg-primary-hover'
+  'flex min-h-11 items-center rounded-control bg-primary px-4 text-sm font-semibold text-primary-fg transition-colors hover:bg-primary-hover'
 
 /** Header of the public pages: login and sign-up, or the user's areas once signed in. */
 export function PublicHeader() {
@@ -37,7 +37,7 @@ export function PublicHeader() {
                 <button
                   type="button"
                   onClick={() => logout.mutate()}
-                  className="flex min-h-11 items-center gap-2 rounded-control px-2 text-sm font-medium text-muted hover:bg-subtle sm:px-3"
+                  className="flex min-h-11 items-center gap-2 rounded-control px-2 text-sm font-medium text-muted transition-colors hover:bg-subtle hover:text-ink sm:px-3"
                 >
                   <LogOut aria-hidden="true" className="size-4" />
                   {t('logout')}

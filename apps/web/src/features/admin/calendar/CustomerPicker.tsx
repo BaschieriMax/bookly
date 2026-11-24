@@ -6,6 +6,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import type { CustomerSearchResult } from '@/types/api'
 import { CUSTOMER_QUERY_MIN, useCustomerSearch } from './calendarApi'
 import { splitSearch } from './newAppointmentModel'
+import { fieldClass } from '@/components/ui/fieldStyles'
 
 export interface NewCustomerInput {
   firstName: string
@@ -67,7 +68,7 @@ export function CustomerPicker({ value, onChange, errors }: CustomerPickerProps)
               aria-label={t('calendar.new.searchLabel')}
               placeholder={t('calendar.new.searchPlaceholder')}
               autoComplete="off"
-              className="min-h-11 w-full min-w-0 rounded-control border border-border-strong bg-surface pr-3 pl-9 text-ink"
+              className={`min-h-11 w-full min-w-0 pr-3 pl-9 ${fieldClass()}`}
             />
           </div>
 

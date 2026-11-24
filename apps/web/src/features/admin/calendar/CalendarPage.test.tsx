@@ -3,10 +3,11 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import type { AdminAppointment, Calendar } from '@/types/api'
-import { ownerMe, server } from '@/test/server'
+import { adminStaff, ownerMe, server } from '@/test/server'
 import { renderApp } from '@/test/renderApp'
 
 const ANNA = '22222222-2222-4222-8222-222222222222'
+const LUCA = '33333333-3333-4333-8333-333333333333'
 
 function appointment(overrides: Partial<AdminAppointment> = {}): AdminAppointment {
   return {
@@ -209,5 +210,72 @@ describe('CalendarPage', () => {
 
     await userEvent.click(screen.getByRole('radio', { name: 'Giorno' }))
     expect(router.state.location.search).not.toContain('vista')
+  })
+
+  it('applies the filters from the sheet and removes them from the chips (DEC-041)', async () => {
+    asOwner()
+    const requested: string[] = []
+    server.use(
+      http.get('/api/admin/staff', () =>
+        HttpResponse.json([
+          ...adminStaff,
+          { ...adminStaff[0]!, id: LUCA, displayName: 'Luca', sortOrder: 2 },
+        ]),
+      ),
+      http.get('/api/admin/calendar', ({ request }) => {
+        const url = new URL(request.url)
+        requested.push(url.search)
+        return HttpResponse.json(calendar('2099-03-02', '2099-03-02', []))
+      }),
+    )
+    const { router } = renderApp('/admin?data=2099-03-02')
+
+    // Nothing changes on the calendar until "Applica".
+    await userEvent.click(await screen.findByRole('button', { name: 'Filtri' }))
+    const sheet = await screen.findByRole('dialog', { name: 'Filtri' })
+    await userEvent.selectOptions(within(sheet).getByLabelText('Operatore'), 'Luca')
+    await userEvent.click(within(sheet).getByRole('checkbox', { name: 'Mostra annullati' }))
+    expect(router.state.location.search).not.toContain('operatore')
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Applica' }))
+
+    expect(screen.queryByRole('dialog', { name: 'Filtri' })).not.toBeInTheDocument()
+    expect(router.state.location.search).toContain(`operatore=${LUCA}`)
+    expect(router.state.location.search).toContain('annullati=1')
+    expect(screen.getByRole('button', { name: 'Filtri, 2 filtri attivi' })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Togli il filtro: Luca' }))
+    expect(router.state.location.search).not.toContain('operatore')
+    expect(screen.getByRole('button', { name: 'Filtri, 1 filtro attivo' })).toBeInTheDocument()
+    expect(requested.at(-1)).toContain('includeCancelled=true')
+  })
+
+  it('picks a day of the week from the phone strip', async () => {
+    asOwner()
+    server.use(
+      http.get('/api/admin/calendar', () =>
+        HttpResponse.json(
+          calendar('2099-03-02', '2099-03-08', [
+            appointment({
+              start: '2099-03-04T10:00:00+01:00',
+              end: '2099-03-04T10:30:00+01:00',
+              blockedUntil: '2099-03-04T10:40:00+01:00',
+            }),
+          ]),
+        ),
+      ),
+    )
+    const { router } = renderApp('/admin?data=2099-03-02&vista=settimana')
+
+    const strip = await screen.findByRole('group', { name: 'Giorni della settimana' })
+    expect(within(strip).getAllByRole('button')).toHaveLength(7)
+    expect(
+      within(strip).getByRole('button', { name: 'lun 2 marzo, nessun appuntamento' }),
+    ).toHaveAttribute('aria-pressed', 'true')
+
+    await userEvent.click(
+      within(strip).getByRole('button', { name: 'mer 4 marzo, 1 appuntamento' }),
+    )
+    expect(router.state.location.search).toContain('data=2099-03-04')
+    expect(router.state.location.search).toContain('vista=settimana')
   })
 })

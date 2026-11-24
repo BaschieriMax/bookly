@@ -1243,3 +1243,65 @@ Costi accettati: ogni prenotazione online consuma fino a 2 email in più della q
 Status:
 Approved (Massimo, 23/11/2026)
 ```
+
+---
+
+```text
+Decision:
+DEC-041 — Revisione grafica: calendario su telefono, barra di salvataggio, campi e hover
+
+Context:
+Massimo ha chiesto il 24/11/2026 un giro sull'aspetto grafico: layout, link, hover, campi di
+input con un ring animato, bottoni in fondo ai form e il calendario su telefono, dove «Nuovo
+appuntamento» andava su una riga a sé e i filtri occupavano circa 300 px prima del primo
+appuntamento. Ha scelto le soluzioni con domande a scelta e approvato il prototipo Claude Design
+«Bookly – Revisione grafica e mobile».
+
+Decision:
+- Calendario, telefono: «Nuovo appuntamento» è un pulsante «+» flottante in basso a destra
+  (PageAction, anche in Servizi, Staff e nella lista attività della piattaforma: da 640 px torna
+  un bottone accanto al titolo). La data tra le frecce è il campo «Vai alla data» (un input date
+  trasparente la copre). Giorno/Settimana a tutta larghezza. Operatore e «Mostra annullati» sono
+  in un pannello «Filtri» con bozza (Azzera / Applica), badge col numero di filtri attivi e chip
+  che li tolgono. Nella vista Settimana una striscia dei 7 giorni sceglie il giorno da elencare.
+- Calendario, desktop: toolbar su una riga da 1280 px; sotto, il pannello Filtri. Passando su uno
+  spazio libero della griglia compare l'anteprima «+ 10:30» dello slot (solo per slot non
+  passati). Nella vista Giorno le intestazioni degli operatori non sono più colorate come «oggi».
+- Form lunghi (Impostazioni, Orari, Brand, Profilo): una barra «Modifiche non salvate» con
+  Annulla e Salva compare solo quando c'è qualcosa da salvare; su telefono è fissa in basso, da
+  640 px è una card sticky in fondo al form. Annulla riporta i valori salvati.
+- Dialog e conferme su telefono: Annulla e l'azione affiancati (1/3 e 2/3) invece che impilati;
+  bottom sheet con altezza in dvh e animazione di apertura.
+- Campi: stile unico in components/ui/fieldStyles.ts per TextField, SelectField, TextAreaField e
+  gli input scritti a mano. Bordo più scuro in hover; al focus bordo primario e ring di 3 px che
+  si allarga in 150 ms (sostituisce l'outline); ring rosso negli errori; etichetta colorata al
+  focus. Solo token semantici: sulle pagine pubbliche segue il brand dell'attività.
+- Hover e stati: Button senza hover quando è disabilitato e con effetto pressione; variante
+  ghostDanger (rosso in hover) per cestini e rimozioni; hover su link, opzioni non selezionate,
+  card cliccabili e blocchi della griglia. Un padding passato a Button sostituisce quello di
+  default (prima vinceva px-4 per l'ordine del CSS generato).
+- Link: percorsi da paths.ts con gli helper tenantPath, bookingPath, loginPath, registerPath
+  (niente percorsi scritti a mano); telHref tiene solo cifre e «+» (il telefono accetta anche
+  «.», «/» e «-», non validi in un link tel:); «Vedi pagina pubblica» si apre in una nuova
+  scheda come in Impostazioni; i link in una nuova scheda lo dicono agli screen reader
+  (NewTabHint); il logo dell'area gestione porta al calendario, non alla landing pubblica.
+- Testi: ruolo tradotto nel riquadro dell'attività («Titolare» invece di «Owner»); NotFound e
+  RouteError in i18n; «Ricordami» del login con CheckboxField.
+
+Alternatives:
+Icona «+» nella riga del titolo o «+ Nuovo» compatto (scartate da Massimo per il FAB); chip dei
+filtri sempre visibili in una riga scorrevole o solo riordino dei controlli (scartate per il
+pannello); salvataggio solo allineato in fondo al form o barra sempre visibile (scartate per la
+barra che compare con le modifiche); due navigatori della data separati per telefono e desktop
+(doppioni nel DOM e nei test).
+
+Motivation:
+Su telefono il calendario mostra gli appuntamenti dal primo schermo e l'azione principale è a
+portata di pollice. Le modifiche non salvate si vedono subito anche in fondo a pagine lunghe.
+Campi, bottoni e link hanno stati coerenti in tutta l'app e nei brand delle attività.
+La safe area di iPhone è già nei padding (env(safe-area-inset-bottom)) ma resta inattiva senza
+viewport-fit=cover (TD-012).
+
+Status:
+Approved (Massimo, 24/11/2026)
+```

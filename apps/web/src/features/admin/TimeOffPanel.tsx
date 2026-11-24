@@ -209,7 +209,7 @@ export function TimeOffPanel({ staffId }: { staffId: string }) {
                 {item.reason && <span className="text-sm text-muted">{item.reason}</span>}
               </div>
               <Button
-                variant="ghost"
+                variant="ghostDanger"
                 className="px-3"
                 onClick={() => void onDelete(item.id)}
                 aria-label={t('schedule.deleteTimeOff', { period })}

@@ -10,6 +10,8 @@ import { afterConfirm, useRegister } from './accountApi'
 import { AuthCard, Notice } from './AuthCard'
 import { safeRedirect } from './safeRedirect'
 import { TextLink } from '@/components/ui/TextLink'
+import { loginPath, paths } from '@/app/paths'
+import { NewTabHint } from '@/components/ui/NewTabHint'
 
 const schema = z.object({
   firstName: z.string().trim().min(1, 'firstNameRequired').max(100),
@@ -86,7 +88,7 @@ export default function RegisterPage() {
     return (
       <AuthCard title={t('checkEmailTitle')}>
         <Notice tone="success">{t('checkEmailText')}</Notice>
-        <TextLink to="/login">{t('continueToLogin')}</TextLink>
+        <TextLink to={paths.login}>{t('continueToLogin')}</TextLink>
       </AuthCard>
     )
   }
@@ -149,11 +151,13 @@ export default function RegisterPage() {
             <span>
               {t('acceptPrivacy')} ·{' '}
               <Link
-                to="/privacy"
+                to={paths.privacy}
                 target="_blank"
-                className="font-semibold text-primary-text underline"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary-text underline hover:no-underline"
               >
                 {t('privacyLink')}
+                <NewTabHint />
               </Link>
             </span>
           </label>
@@ -168,8 +172,8 @@ export default function RegisterPage() {
       <p className="text-sm text-muted">
         {t('haveAccount')}{' '}
         <Link
-          to={`/login${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
-          className="font-semibold text-primary-text"
+          to={loginPath(redirect ?? undefined)}
+          className="font-semibold text-primary-text underline-offset-4 hover:underline"
         >
           {t('submit')}
         </Link>

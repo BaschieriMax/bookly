@@ -9,6 +9,9 @@ import { homePathFor } from '@/features/auth/userAreas'
 import { useActiveTenantStore } from '@/stores/activeTenantStore'
 import type { Membership } from '@/types/api'
 import { ShellLayout } from './ShellLayout'
+import { fieldClass } from '@/components/ui/fieldStyles'
+import { tenantPath } from '@/app/paths'
+import { NewTabHint } from '@/components/ui/NewTabHint'
 
 function TenantSwitcher({
   memberships,
@@ -18,6 +21,7 @@ function TenantSwitcher({
   activeId: string
 }) {
   const { t } = useTranslation()
+  const roleLabel = (role: string) => t(`roles.${role}`, { defaultValue: role })
   const setTenantId = useActiveTenantStore((s) => s.setTenantId)
   const active = memberships.find((m) => m.tenantId === activeId)
 
@@ -25,7 +29,7 @@ function TenantSwitcher({
     return (
       <div className="flex min-h-12 flex-col justify-center rounded-card border border-border bg-bg px-3 leading-tight">
         <span className="text-sm font-semibold">{active?.tenantName}</span>
-        <span className="text-xs text-muted">{active?.role}</span>
+        <span className="text-xs text-muted">{active && roleLabel(active.role)}</span>
       </div>
     )
   }
@@ -36,11 +40,11 @@ function TenantSwitcher({
       <select
         value={activeId}
         onChange={(event) => setTenantId(event.target.value)}
-        className="min-h-11 rounded-control border border-border-strong bg-surface px-2 text-sm font-semibold text-ink"
+        className={`min-h-11 px-2 text-sm font-semibold ${fieldClass()}`}
       >
         {memberships.map((m) => (
           <option key={m.tenantId} value={m.tenantId}>
-            {m.tenantName} · {m.role}
+            {m.tenantName} · {roleLabel(m.role)}
           </option>
         ))}
       </select>
@@ -50,14 +54,18 @@ function TenantSwitcher({
 
 /** Public page of the tenant being managed, as its customers see it. */
 function PublicPageLink({ slug }: { slug: string }) {
-  const { t } = useTranslation('nav')
+  const { t } = useTranslation(['nav', 'common'])
+  // A new tab, as in Settings: the owner keeps the admin area open (the icon says so too).
   return (
     <Link
-      to={`/b/${slug}`}
-      className="flex min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-primary hover:bg-subtle"
+      to={tenantPath(slug)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-primary-text transition-colors hover:bg-subtle"
     >
       <ExternalLink aria-hidden="true" className="size-4" />
       {t('publicPage')}
+      <NewTabHint />
     </Link>
   )
 }

@@ -10,6 +10,8 @@ import { formatDuration, formatPrice, longDate, timeOf } from '@/lib/format'
 import { isApiError } from '@/services/apiClient'
 import type { MyAppointment } from '@/types/api'
 import { useCancelAppointment, useMyAppointments, type AppointmentScope } from './appointmentsApi'
+import { tenantPath } from '@/app/paths'
+import { telHref } from '@/lib/tel'
 
 const statusStyle: Record<string, string> = {
   Confirmed: 'bg-primary-soft text-primary-text',
@@ -126,7 +128,7 @@ function AppointmentCard({
       <div className="flex items-center gap-3">
         <div className="flex min-w-0 flex-1 flex-col">
           <Link
-            to={`/b/${appointment.tenant.slug}`}
+            to={tenantPath(appointment.tenant.slug)}
             className="truncate font-semibold hover:underline"
           >
             {appointment.tenant.name}
@@ -174,7 +176,7 @@ function AppointmentCard({
             {appointment.tenant.phone && (
               // Own line and 44 px tall: calling is the only way to cancel at this point.
               <a
-                href={`tel:${appointment.tenant.phone.replaceAll(' ', '')}`}
+                href={telHref(appointment.tenant.phone)}
                 className="flex min-h-11 w-fit items-center gap-1.5 font-semibold underline"
               >
                 <Phone aria-hidden="true" className="size-4" />

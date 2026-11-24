@@ -77,7 +77,7 @@ export function TabList<T extends string>({
             aria-controls={panelId(idBase, tab.value)}
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(tab.value)}
-            className="-mb-px min-h-12 flex-1 border-b-[3px] border-transparent px-3 text-[15px] font-semibold text-muted hover:text-ink aria-selected:border-primary aria-selected:text-primary-text sm:flex-none"
+            className="-mb-px min-h-12 flex-1 border-b-[3px] border-transparent px-3 text-[15px] font-semibold text-muted transition-colors hover:text-ink aria-selected:border-primary aria-selected:text-primary-text sm:flex-none"
           >
             {tab.label}
           </button>

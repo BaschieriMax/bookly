@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router'
 import { z } from 'zod'
 import { paths } from '@/app/paths'
 import { Button } from '@/components/ui/Button'
+import { SaveBar } from '@/components/ui/SaveBar'
 import { Dialog } from '@/components/ui/Dialog'
 import { PageSpinner } from '@/components/ui/PageSpinner'
 import { TextField } from '@/components/ui/TextField'
@@ -99,9 +100,12 @@ function ProfileForm({ profile }: { profile: Profile }) {
         readOnly
         hint={t('profile.emailHint')}
       />
-      <Button type="submit" className="self-start" loading={update.isPending} disabled={!isDirty}>
-        {t('profile.save')}
-      </Button>
+      <SaveBar
+        visible={isDirty || update.isPending}
+        saveLabel={t('profile.save')}
+        saving={update.isPending}
+        onDiscard={() => reset()}
+      />
     </form>
   )
 }
@@ -117,7 +121,7 @@ function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
     remove.mutate(password, {
       onSuccess: () => {
         toast.success(t('profile.deleted'))
-        void navigate('/', { replace: true })
+        void navigate(paths.home, { replace: true })
       },
     })
 

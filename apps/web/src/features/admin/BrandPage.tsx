@@ -4,6 +4,7 @@ import { useId, useRef, useState, type ChangeEvent } from 'react'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/Button'
+import { SaveBar } from '@/components/ui/SaveBar'
 import { TextField } from '@/components/ui/TextField'
 import { isHexColor } from '@/lib/color'
 import {
@@ -27,8 +28,9 @@ import {
   useUploadLogo,
 } from './adminApi'
 import { adminErrorMessage } from './adminErrors'
-import { AdminPageHeader, Badge, Panel, QueryState } from './AdminUi'
+import { AdminPageHeader, Panel, QueryState } from './AdminUi'
 import { useActiveMembership } from './useAdminRole'
+import { fieldClass } from '@/components/ui/fieldStyles'
 
 const MAX_LOGO_BYTES = 200 * 1024
 const LOGO_TYPES = ['image/png', 'image/webp']
@@ -75,7 +77,7 @@ function OptionGroup<T extends string>({
         {options.map((option) => (
           <label
             key={option}
-            className="flex min-h-11 cursor-pointer items-center justify-center rounded-control border border-border-strong bg-surface px-3 py-2 text-center has-checked:border-primary has-checked:bg-primary-soft has-checked:text-primary-text has-focus-visible:outline-2 has-focus-visible:outline-focus"
+            className="flex min-h-11 cursor-pointer items-center justify-center rounded-control border border-border-strong bg-surface px-3 py-2 text-center transition-colors not-has-checked:hover:border-ink/60 not-has-checked:hover:bg-subtle has-checked:border-primary has-checked:bg-primary-soft has-checked:text-primary-text has-focus-visible:outline-2 has-focus-visible:outline-focus"
           >
             <input
               type="radio"
@@ -127,7 +129,7 @@ function ColorPicker({
           type="button"
           aria-pressed={value === null}
           onClick={() => pick(null)}
-          className="flex min-h-11 items-center gap-2 rounded-pill border border-border-strong bg-surface px-3 text-sm font-semibold aria-pressed:border-primary aria-pressed:bg-primary-soft"
+          className="flex min-h-11 items-center gap-2 rounded-pill border border-border-strong bg-surface px-3 text-sm font-semibold transition-colors not-aria-pressed:hover:bg-subtle aria-pressed:border-primary aria-pressed:bg-primary-soft"
         >
           {t('brand.defaultColor')}
         </button>
@@ -142,7 +144,7 @@ function ColorPicker({
               title={t(`brand.swatches.${swatch.id}`)}
               onClick={() => pick(swatch.value)}
               style={{ backgroundColor: swatch.value }}
-              className="flex size-11 items-center justify-center rounded-pill border border-border-strong ring-offset-2 ring-offset-surface aria-pressed:ring-2 aria-pressed:ring-ink"
+              className="flex size-11 items-center justify-center rounded-pill border border-border-strong ring-offset-2 ring-offset-surface transition-shadow not-aria-pressed:hover:ring-2 not-aria-pressed:hover:ring-border-strong aria-pressed:ring-2 aria-pressed:ring-ink"
             >
               {selected && (
                 <Check aria-hidden="true" className="size-5 text-white mix-blend-difference" />
@@ -158,7 +160,7 @@ function ColorPicker({
             type="color"
             value={effective}
             onChange={(event) => pick(event.target.value)}
-            className="h-11 w-16 cursor-pointer rounded-control border border-border-strong bg-surface p-1"
+            className={`h-11 w-16 cursor-pointer p-1 ${fieldClass()}`}
           />
         </label>
         <TextField
@@ -337,6 +339,8 @@ function BrandEditor({
   const { t } = useTranslation(['admin', 'common'])
   const save = useSaveTenantBrand()
   const [draft, setDraft] = useState<Draft>(() => toDraft(brand))
+  // Bumped by "Annulla": remounts the color picker so its hex field shows the saved color again.
+  const [pickerKey, setPickerKey] = useState(0)
   // Cache-buster for the logo <img>: bumped after every upload.
   const [logoVersion, setLogoVersion] = useState(() => Date.now())
   const saved = toDraft(brand)
@@ -360,6 +364,7 @@ function BrandEditor({
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start">
       <Panel title={t('brand.title')}>
         <ColorPicker
+          key={pickerKey}
           value={draft.primaryColor}
           onChange={(primaryColor) => setDraft((d) => ({ ...d, primaryColor }))}
         />
@@ -396,12 +401,16 @@ function BrandEditor({
           version={logoVersion}
           onChanged={() => setLogoVersion(Date.now())}
         />
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-4">
-          {dirty && <Badge tone="warning">{t('brand.unsaved')}</Badge>}
-          <Button onClick={() => void onSave()} loading={save.isPending} disabled={!dirty}>
-            {t('actions.saveChanges')}
-          </Button>
-        </div>
+        <SaveBar
+          visible={dirty || save.isPending}
+          saveLabel={t('actions.saveChanges')}
+          saving={save.isPending}
+          onSave={() => void onSave()}
+          onDiscard={() => {
+            setDraft(toDraft(brand))
+            setPickerKey((key) => key + 1)
+          }}
+        />
       </Panel>
       <div className="flex flex-col gap-2 lg:sticky lg:top-6">
         <h2 className="text-sm font-semibold text-muted">{t('brand.preview')}</h2>
