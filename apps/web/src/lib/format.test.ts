@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   addDays,
+  capitalize,
+  compactDateOfKey,
   compactDate,
   compactDateTime,
   dateKey,
@@ -11,6 +13,8 @@ import {
   longDate,
   timeOf,
   todayIn,
+  weekdayShortOfKey,
+  weekRangeLabel,
 } from './format'
 
 describe('format', () => {
@@ -48,5 +52,13 @@ describe('format', () => {
     expect(compactDate('2026-11-06T23:30:00+01:00', now)).toBe('ven 6 nov')
     expect(compactDateTime('2025-01-31T16:30:00+01:00', now)).toBe('ven 31 gen 2025, 16:30')
     expect(fullDate('2025-01-31T00:15:00+01:00')).toBe('31 gennaio 2025')
+  })
+
+  it('writes compact week labels for the phone calendar', () => {
+    expect(weekRangeLabel('2099-03-02', '2099-03-08')).toBe('2 – 8 mar')
+    expect(compactDateOfKey('2099-03-02')).toBe('lun 2 mar')
+    expect(weekRangeLabel('2099-03-30', '2099-04-05')).toBe('30 mar – 5 apr')
+    expect(weekdayShortOfKey('2099-03-30')).toBe('lun')
+    expect(capitalize('martedì 3 marzo')).toBe('Martedì 3 marzo')
   })
 })

@@ -70,10 +70,12 @@ describe('navigation between areas', () => {
     signedInAs(ownerMe)
     renderApp('/admin/servizi')
 
-    expect(await screen.findByRole('link', { name: 'Vedi pagina pubblica' })).toHaveAttribute(
-      'href',
-      '/b/barberia-demo',
-    )
+    // In a new tab, as the icon says (DEC-041); the name tells screen readers too.
+    const publicPage = await screen.findByRole('link', {
+      name: 'Vedi pagina pubblica (si apre in una nuova scheda)',
+    })
+    expect(publicPage).toHaveAttribute('href', '/b/barberia-demo')
+    expect(publicPage).toHaveAttribute('target', '_blank')
     expect(screen.getByRole('link', { name: 'Le mie prenotazioni' })).toHaveAttribute(
       'href',
       '/account/appuntamenti',

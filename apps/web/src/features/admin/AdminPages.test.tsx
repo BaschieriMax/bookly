@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
@@ -209,21 +209,21 @@ describe('SettingsPage', () => {
     )
     renderApp('/admin/impostazioni')
 
-    const save = await screen.findByRole('button', { name: 'Salva modifiche' })
-    expect(save).toBeDisabled()
-    expect(screen.getByRole('link', { name: 'Pagina pubblica' })).toHaveAttribute(
-      'href',
-      '/b/barberia-demo',
-    )
+    // The save bar appears only with unsaved changes (DEC-041).
+    const name = await screen.findByLabelText("Nome dell'attività")
+    expect(screen.queryByRole('button', { name: 'Salva modifiche' })).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Pagina pubblica (si apre in una nuova scheda)' }),
+    ).toHaveAttribute('href', '/b/barberia-demo')
 
-    const name = screen.getByLabelText("Nome dell'attività")
     await userEvent.clear(name)
     await userEvent.type(name, 'Sfumo Barber')
     await userEvent.selectOptions(
       screen.getByLabelText('Intervallo tra gli orari proposti'),
       '30 minuti',
     )
-    await userEvent.click(save)
+    expect(screen.getByText('Modifiche non salvate')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }))
 
     await expectToast('Modifiche salvate.')
     expect(calls).toBe(1)
@@ -232,6 +232,20 @@ describe('SettingsPage', () => {
       slotIntervalMinutes: 30,
       timeZone: 'Europe/Rome',
     })
+  })
+
+  it('discards unsaved changes from the save bar (DEC-041)', async () => {
+    asOwner()
+    renderApp('/admin/impostazioni')
+
+    const name = await screen.findByLabelText("Nome dell'attività")
+    const saved = (name as HTMLInputElement).value
+    await userEvent.type(name, ' e figli')
+    expect(screen.getByText('Modifiche non salvate')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Annulla' }))
+    expect(name).toHaveValue(saved)
+    expect(screen.queryByText('Modifiche non salvate')).not.toBeInTheDocument()
   })
 
   it('groups the email notices and saves each switch on its own (DEC-040)', async () => {
@@ -266,7 +280,10 @@ describe('SettingsPage', () => {
     expect(body).toMatchObject({ notifyOnOnlineBooking: false, notifyOnCustomerCancellation: true })
     expect(booking).not.toBeChecked()
     expect(cancellation).toBeChecked()
-    expect(save).toBeDisabled()
+    // Saved: the bar goes away.
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Salva modifiche' })).not.toBeInTheDocument(),
+    )
   })
 
   it('is reserved to the owner', async () => {
@@ -295,7 +312,7 @@ describe('BrandPage', () => {
     const preview = await screen.findByRole('figure', { name: 'Anteprima' })
     expect(preview.style.getPropertyValue('--bk-color-primary')).toBe('#e8b05a')
     expect(screen.getByText(/Contrasto del testo .*leggibile/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Salva modifiche' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: 'Salva modifiche' })).not.toBeInTheDocument()
 
     // Ochre on a light ground is too pale for text.
     await userEvent.click(screen.getByRole('radio', { name: 'Chiaro' }))
