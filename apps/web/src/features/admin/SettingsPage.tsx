@@ -6,8 +6,8 @@ import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { z } from 'zod'
-import { Button } from '@/components/ui/Button'
 import { CheckboxField } from '@/components/ui/CheckboxField'
+import { SaveBar } from '@/components/ui/SaveBar'
 import { SelectField } from '@/components/ui/SelectField'
 import { TextField } from '@/components/ui/TextField'
 import type { TenantSettings } from '@/types/api'
@@ -15,6 +15,8 @@ import { useSaveTenantSettings, useTenantSettings } from './adminApi'
 import { adminErrorMessage } from './adminErrors'
 import { AdminPageHeader, Panel, QueryState } from './AdminUi'
 import { intField, optionalText, requiredText, validationMessage } from './formHelpers'
+import { tenantPath } from '@/app/paths'
+import { NewTabHint } from '@/components/ui/NewTabHint'
 
 const SLOT_INTERVALS = [5, 10, 15, 20, 30, 45, 60, 90, 120] as const
 
@@ -153,17 +155,18 @@ function SettingsForm({ settings }: { settings: TenantSettings }) {
         </fieldset>
       </Panel>
 
-      <div className="flex justify-end">
-        <Button type="submit" loading={save.isPending} disabled={!isDirty}>
-          {t('actions.saveChanges')}
-        </Button>
-      </div>
+      <SaveBar
+        visible={isDirty || save.isPending}
+        saveLabel={t('actions.saveChanges')}
+        saving={save.isPending}
+        onDiscard={() => reset()}
+      />
     </form>
   )
 }
 
 export default function SettingsPage() {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const { data: settings, isPending, error } = useTenantSettings()
 
   return (
@@ -174,12 +177,14 @@ export default function SettingsPage() {
         action={
           settings && (
             <Link
-              to={`/b/${settings.slug}`}
+              to={tenantPath(settings.slug)}
               target="_blank"
-              className="inline-flex min-h-11 items-center gap-2 font-semibold text-primary-text"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center gap-2 font-semibold text-primary-text underline-offset-4 hover:underline"
             >
               {t('settings.publicLink')}
               <ExternalLink aria-hidden="true" className="size-4" />
+              <NewTabHint />
             </Link>
           )
         }

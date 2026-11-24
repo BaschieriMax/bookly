@@ -1,4 +1,5 @@
 import { useId, type Ref, type TextareaHTMLAttributes } from 'react'
+import { fieldClass, fieldLabelClass } from './fieldStyles'
 
 interface TextAreaFieldProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: string
@@ -18,8 +19,8 @@ export function TextAreaField({
   const inputId = id ?? generatedId
 
   return (
-    <div className={`flex flex-col gap-1.5 ${className}`}>
-      <label htmlFor={inputId} className="text-sm font-semibold">
+    <div className={`group flex flex-col gap-1.5 ${className}`}>
+      <label htmlFor={inputId} className={fieldLabelClass}>
         {label}
       </label>
       <textarea
@@ -28,7 +29,7 @@ export function TextAreaField({
         rows={3}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${inputId}-error` : undefined}
-        className={`rounded-control border bg-surface px-3 py-2 text-ink ${error ? 'border-danger' : 'border-border-strong'}`}
+        className={`px-3 py-2 ${fieldClass(!!error)}`}
         {...props}
       />
       {error && (

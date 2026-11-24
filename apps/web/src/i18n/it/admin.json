@@ -197,7 +197,6 @@
     "previewHero": "Prenota il tuo appuntamento",
     "previewService": "Taglio",
     "previewBook": "Prenota",
-    "unsaved": "Modifiche non salvate",
     "swatches": {
       "teal": "Ottanio",
       "forest": "Bosco",
@@ -308,7 +307,21 @@
       "submit": "Salva appuntamento",
       "done": "Appuntamento inserito.",
       "noServices": "Prima aggiungi un servizio attivo con almeno un operatore."
-    }
+    },
+    "filters": {
+      "open": "Filtri",
+      "title": "Filtri",
+      "reset": "Azzera",
+      "apply": "Applica",
+      "active_one": "{{count}} filtro attivo",
+      "active_other": "{{count}} filtri attivi",
+      "remove": "Togli il filtro: {{name}}",
+      "cancelled": "Annullati"
+    },
+    "weekDays": "Giorni della settimana",
+    "dayCount_one": "{{date}}, {{count}} appuntamento",
+    "dayCount_other": "{{date}}, {{count}} appuntamenti",
+    "dayEmpty": "{{date}}, nessun appuntamento"
   },
   "customers": {
     "title": "Clienti",

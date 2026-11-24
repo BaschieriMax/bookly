@@ -38,7 +38,7 @@ export function SegmentedControl<T extends string>({
           type="button"
           aria-pressed={option.value === value}
           onClick={() => onChange(option.value)}
-          className={`min-h-11 rounded-control px-3 text-sm font-semibold whitespace-nowrap text-muted aria-pressed:bg-surface aria-pressed:text-ink aria-pressed:shadow-sm sm:px-4 ${fullWidth ? 'flex-auto' : ''}`}
+          className={`min-h-11 rounded-control px-3 text-sm font-semibold whitespace-nowrap text-muted transition-colors not-aria-pressed:hover:bg-surface/60 not-aria-pressed:hover:text-ink aria-pressed:bg-surface aria-pressed:text-ink aria-pressed:shadow-sm sm:px-4 ${fullWidth ? 'flex-auto' : ''}`}
         >
           {option.label}
         </button>

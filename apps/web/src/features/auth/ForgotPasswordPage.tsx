@@ -6,6 +6,7 @@ import { isApiError } from '@/services/apiClient'
 import { useForgotPassword } from './accountApi'
 import { AuthCard, Notice } from './AuthCard'
 import { TextLink } from '@/components/ui/TextLink'
+import { paths } from '@/app/paths'
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation(['auth', 'common'])
@@ -43,7 +44,7 @@ export default function ForgotPasswordPage() {
           </Button>
         </form>
       )}
-      <TextLink to="/login" className="text-sm">
+      <TextLink to={paths.login} className="text-sm">
         {t('continueToLogin')}
       </TextLink>
     </AuthCard>

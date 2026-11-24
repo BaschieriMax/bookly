@@ -80,7 +80,7 @@ export function CustomerDialog({ customer, name, onClose }: CustomerDialogProps)
 
   const footer = !data ? null : isBook ? (
     <>
-      <div className="grid grid-cols-2 gap-2 sm:mr-auto sm:flex">
+      <div className="col-span-2 grid grid-cols-2 gap-2 sm:mr-auto sm:flex">
         <Button
           variant="secondary"
           loading={download.isPending}
@@ -100,7 +100,7 @@ export function CustomerDialog({ customer, name, onClose }: CustomerDialogProps)
         </Button>
       </div>
       {tab === 'data' && (
-        <Button type="submit" form={formId} loading={update.isPending}>
+        <Button type="submit" form={formId} className="col-span-2" loading={update.isPending}>
           {t('actions.saveChanges')}
         </Button>
       )}

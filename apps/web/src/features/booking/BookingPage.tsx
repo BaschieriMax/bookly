@@ -25,6 +25,8 @@ import { isApiError } from '@/services/apiClient'
 import type { MyAppointment, PublicService, PublicTenant } from '@/types/api'
 import { useCreateAppointment, useResendConfirmation } from './bookingApi'
 import { DatePicker } from './DatePicker'
+import { fieldClass } from '@/components/ui/fieldStyles'
+import { loginPath, paths, registerPath } from '@/app/paths'
 
 /**
  * Booking wizard (booking-domain UX): service → staff + day + time → confirm.
@@ -356,7 +358,7 @@ function ConfirmStep({ tenant, service, staffId, start, onSlotTaken, onBooked }:
     minute: '2-digit',
     timeZone: tenant.timeZone,
   }).format(new Date(new Date(start).getTime() + service.durationMinutes * 60_000))
-  const redirect = encodeURIComponent(`${location.pathname}${location.search}`)
+  const redirect = `${location.pathname}${location.search}`
 
   const submit = async () => {
     try {
@@ -409,14 +411,14 @@ function ConfirmStep({ tenant, service, staffId, start, onSlotTaken, onBooked }:
             <p>{t('loginToConfirm')}</p>
             <div className="flex flex-wrap gap-2">
               <Link
-                to={`/login?redirect=${redirect}`}
-                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-control bg-primary px-4 font-semibold text-primary-fg"
+                to={loginPath(redirect)}
+                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-control bg-primary px-4 font-semibold text-primary-fg transition-colors hover:bg-primary-hover"
               >
                 {t('auth:submit')}
               </Link>
               <Link
-                to={`/registrati?redirect=${redirect}`}
-                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-control border border-border-strong px-4 font-semibold"
+                to={registerPath(redirect)}
+                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-control border border-border-strong px-4 font-semibold transition-colors hover:bg-subtle"
               >
                 {t('auth:register')}
               </Link>
@@ -477,7 +479,7 @@ function ConfirmStep({ tenant, service, staffId, start, onSlotTaken, onBooked }:
               onChange={(event) => setNote(event.target.value)}
               placeholder={t('notePlaceholder')}
               aria-describedby="note-hint"
-              className="w-full resize-none rounded-control border border-border-strong bg-surface p-3 text-ink"
+              className={`w-full resize-none p-3 ${fieldClass()}`}
             />
             <span id="note-hint" className="text-[13px] text-muted">
               {t('noteHint')}
@@ -530,8 +532,8 @@ function Success({ tenant, appointment }: { tenant: PublicTenant; appointment: M
         })}
       </p>
       <Link
-        to="/account/appuntamenti"
-        className="mt-4 flex min-h-13 w-full items-center justify-center rounded-control bg-primary font-semibold text-primary-fg"
+        to={paths.myAppointments}
+        className="mt-4 flex min-h-13 w-full items-center justify-center rounded-control bg-primary font-semibold text-primary-fg transition-colors hover:bg-primary-hover"
       >
         {t('goToBookings')}
       </Link>

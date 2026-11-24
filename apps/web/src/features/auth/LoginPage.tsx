@@ -8,6 +8,8 @@ import { TextField } from '@/components/ui/TextField'
 import { isApiError } from '@/services/apiClient'
 import { useLogin } from './useMe'
 import { landingPath } from './userAreas'
+import { paths } from '@/app/paths'
+import { CheckboxField } from '@/components/ui/CheckboxField'
 
 const schema = z.object({
   email: z.string().min(1, 'emailRequired').email('emailInvalid'),
@@ -85,10 +87,7 @@ export default function LoginPage() {
           error={errors.password?.message ? t('validation.passwordRequired') : undefined}
           {...register('password')}
         />
-        <label className="flex min-h-11 items-center gap-2 text-sm">
-          <input type="checkbox" className="size-4 accent-primary" {...register('rememberMe')} />
-          {t('rememberMe')}
-        </label>
+        <CheckboxField label={t('rememberMe')} {...register('rememberMe')} />
         <Button type="submit" loading={loginMutation.isPending}>
           {loginMutation.isPending ? t('submitting') : t('submit')}
         </Button>
@@ -96,14 +95,17 @@ export default function LoginPage() {
 
       <div className="flex flex-col gap-2 text-sm">
         <Link
-          to="/password-dimenticata"
-          className="inline-flex min-h-11 items-center self-start font-semibold text-primary"
+          to={paths.forgotPassword}
+          className="inline-flex min-h-11 items-center self-start font-semibold text-primary-text underline-offset-4 hover:underline"
         >
           {t('forgotPassword')}
         </Link>
         <p className="text-muted">
           {t('noAccount')}{' '}
-          <Link to="/registrati" className="font-semibold text-primary">
+          <Link
+            to={paths.register}
+            className="font-semibold text-primary-text underline-offset-4 hover:underline"
+          >
             {t('register')}
           </Link>
         </p>

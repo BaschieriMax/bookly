@@ -15,7 +15,7 @@ import { formatDuration, formatPrice } from '@/lib/format'
 import type { AdminService, AdminStaff } from '@/types/api'
 import { useAdminServices, useAdminStaff, useDeleteService, useSaveService } from './adminApi'
 import { adminErrorMessage } from './adminErrors'
-import { AdminPageHeader, Badge, EmptyState, QueryState } from './AdminUi'
+import { AdminPageHeader, PageAction, Badge, EmptyState, QueryState } from './AdminUi'
 import {
   formatPriceInput,
   intField,
@@ -200,10 +200,7 @@ export default function ServicesPage() {
         title={t('services.title')}
         lead={t('services.lead')}
         action={
-          <Button onClick={() => setEditing('new')}>
-            <Plus aria-hidden="true" className="size-4" />
-            {t('services.new')}
-          </Button>
+          <PageAction icon={Plus} label={t('services.new')} onClick={() => setEditing('new')} />
         }
       />
 
@@ -216,9 +213,9 @@ export default function ServicesPage() {
             return (
               <li
                 key={service.id}
-                className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4 sm:flex-row sm:items-center sm:p-5"
+                className="flex items-start gap-1 rounded-card border border-border bg-surface py-3 pr-2 pl-4 sm:items-center sm:py-4 sm:pl-5"
               >
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <div className="flex min-w-0 flex-1 flex-col gap-1 pt-1 sm:pt-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-semibold">{service.name}</h2>
                     {!service.isActive && <Badge>{t('inactive')}</Badge>}
@@ -234,23 +231,23 @@ export default function ServicesPage() {
                     {names ? t('services.offeredBy', { names }) : t('services.offeredByNobody')}
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setEditing(service)}
-                    aria-label={`${t('actions.edit')} ${service.name}`}
-                  >
-                    <Pencil aria-hidden="true" className="size-4" />
-                    {t('actions.edit')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setToDelete(service)}
-                    aria-label={`${t('actions.delete')} ${service.name}`}
-                  >
-                    <Trash2 aria-hidden="true" className="size-4" />
-                  </Button>
-                </div>
+                {/* Icon buttons as in Staff: on phones they no longer take a row of their own. */}
+                <Button
+                  variant="ghost"
+                  className="shrink-0 px-3"
+                  onClick={() => setEditing(service)}
+                  aria-label={`${t('actions.edit')} ${service.name}`}
+                >
+                  <Pencil aria-hidden="true" className="size-4" />
+                </Button>
+                <Button
+                  variant="ghostDanger"
+                  className="shrink-0 px-3"
+                  onClick={() => setToDelete(service)}
+                  aria-label={`${t('actions.delete')} ${service.name}`}
+                >
+                  <Trash2 aria-hidden="true" className="size-4" />
+                </Button>
               </li>
             )
           })}

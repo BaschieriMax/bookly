@@ -1,4 +1,5 @@
 import { useId, type Ref, type SelectHTMLAttributes } from 'react'
+import { fieldClass, fieldLabelClass } from './fieldStyles'
 
 export interface SelectOption {
   value: string
@@ -29,8 +30,8 @@ export function SelectField({
   const describedBy = error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined
 
   return (
-    <div className={`flex flex-col gap-1.5 ${className}`}>
-      <label htmlFor={selectId} className="text-sm font-semibold">
+    <div className={`group flex flex-col gap-1.5 ${className}`}>
+      <label htmlFor={selectId} className={fieldLabelClass}>
         {label}
       </label>
       <select
@@ -38,7 +39,7 @@ export function SelectField({
         ref={ref}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        className={`min-h-11 rounded-control border bg-surface px-2 text-ink ${error ? 'border-danger' : 'border-border-strong'}`}
+        className={`min-h-11 px-2 ${fieldClass(!!error)}`}
         {...props}
       >
         {options.map((option) => (

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { useMe } from '@/features/auth/useMe'
 import type { PublicTenant } from '@/types/api'
+import { loginPath, paths, tenantPath } from '@/app/paths'
 
 export function TenantLogo({ tenant, size = 'md' }: { tenant: PublicTenant; size?: 'sm' | 'md' }) {
   const box = size === 'sm' ? 'size-10' : 'size-13'
@@ -48,7 +49,7 @@ export function TenantHeader({ tenant, backTo, subtitle }: TenantHeaderProps) {
         <Link
           to={backTo}
           aria-label={t('back')}
-          className="-ml-2 flex size-11 items-center justify-center rounded-control hover:bg-subtle"
+          className="-ml-2 flex size-11 items-center justify-center rounded-control transition-colors hover:bg-subtle"
         >
           <ChevronLeft aria-hidden="true" className="size-6" />
         </Link>
@@ -56,8 +57,8 @@ export function TenantHeader({ tenant, backTo, subtitle }: TenantHeaderProps) {
       {!backTo && <TenantLogo tenant={tenant} />}
       <div className="flex min-w-0 flex-1 flex-col">
         <Link
-          to={`/b/${tenant.slug}`}
-          className="truncate font-tenant-heading text-2xl leading-tight"
+          to={tenantPath(tenant.slug)}
+          className="truncate font-tenant-heading text-2xl leading-tight underline-offset-4 hover:underline"
         >
           {tenant.name}
         </Link>
@@ -65,12 +66,8 @@ export function TenantHeader({ tenant, backTo, subtitle }: TenantHeaderProps) {
       </div>
       {!backTo && (
         <Link
-          to={
-            me
-              ? '/account/appuntamenti'
-              : `/login?redirect=${encodeURIComponent(`/b/${tenant.slug}`)}`
-          }
-          className="flex min-h-11 items-center px-1 text-[15px] font-semibold"
+          to={me ? paths.myAppointments : loginPath(tenantPath(tenant.slug))}
+          className="flex min-h-11 items-center rounded-control px-2 text-[15px] font-semibold transition-colors hover:bg-subtle"
         >
           {me ? t('myBookings') : t('login')}
         </Link>

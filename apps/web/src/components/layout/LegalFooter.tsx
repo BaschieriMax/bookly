@@ -12,10 +12,16 @@ export function LegalFooter({ className = '' }: { className?: string }) {
         className="mx-auto flex max-w-3xl flex-wrap items-center gap-x-4 gap-y-1"
       >
         <span>© Bookly</span>
-        <Link to={paths.privacy} className="inline-flex min-h-11 items-center hover:text-ink">
+        <Link
+          to={paths.privacy}
+          className="inline-flex min-h-11 items-center underline-offset-4 transition-colors hover:text-ink hover:underline"
+        >
           {t('footer.privacy')}
         </Link>
-        <Link to={paths.terms} className="inline-flex min-h-11 items-center hover:text-ink">
+        <Link
+          to={paths.terms}
+          className="inline-flex min-h-11 items-center underline-offset-4 transition-colors hover:text-ink hover:underline"
+        >
           {t('footer.terms')}
         </Link>
       </nav>

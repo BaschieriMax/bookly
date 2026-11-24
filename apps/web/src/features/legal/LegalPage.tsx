@@ -1,6 +1,7 @@
 import { ChevronLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { paths } from '@/app/paths'
 
 interface LegalSection {
   title: string
@@ -18,7 +19,7 @@ export function LegalPage({ document }: { document: 'privacy' | 'terms' }) {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
       <Link
-        to="/"
+        to={paths.home}
         className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-control px-2 text-sm font-semibold text-muted hover:bg-subtle"
       >
         <ChevronLeft aria-hidden="true" className="size-4" />

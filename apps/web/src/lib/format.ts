@@ -102,3 +102,35 @@ export function fullDate(isoWithOffset: string): string {
     year: 'numeric',
   }).format(fromDateKey(isoWithOffset.slice(0, 10)))
 }
+
+/** "martedì 2 marzo" → "Martedì 2 marzo" (Intl writes Italian weekdays in lower case). */
+export function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+/** "mar 2 mar" for a yyyy-MM-dd key: the day in the phone calendar title. */
+export function compactDateOfKey(key: string): string {
+  return new Intl.DateTimeFormat('it-IT', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  }).format(fromDateKey(key))
+}
+
+/**
+ * Compact label of a week for phones: "2 – 8 mar", or "30 mar – 5 apr" across two months
+ * (yyyy-MM-dd keys, no time zone involved).
+ */
+export function weekRangeLabel(from: string, to: string): string {
+  const start = fromDateKey(from)
+  const end = fromDateKey(to)
+  const short = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'short' })
+  return start.getMonth() === end.getMonth()
+    ? `${start.getDate()} – ${short.format(end)}`
+    : `${short.format(start)} – ${short.format(end)}`
+}
+
+/** "mar" for a yyyy-MM-dd key: the weekday of the phone week strip. */
+export function weekdayShortOfKey(key: string): string {
+  return new Intl.DateTimeFormat('it-IT', { weekday: 'short' }).format(fromDateKey(key))
+}

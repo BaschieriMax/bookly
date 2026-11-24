@@ -8,6 +8,7 @@ import { useTenant } from './tenantApi'
 import { TenantContext } from './tenantContext'
 import { tenantThemeStyle } from './tenantTheme'
 import { TextLink } from '@/components/ui/TextLink'
+import { paths } from '@/app/paths'
 
 /** Public pages of a tenant, re-skinned with its brand (DEC-016). */
 export default function TenantLayout() {
@@ -37,7 +38,7 @@ export default function TenantLayout() {
             {t('common:retry')}
           </Button>
         )}
-        <TextLink to="/">Bookly</TextLink>
+        <TextLink to={paths.home}>Bookly</TextLink>
       </main>
     )
   }

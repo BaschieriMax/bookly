@@ -1,4 +1,5 @@
 import { useId, type InputHTMLAttributes, type Ref } from 'react'
+import { fieldClass, fieldLabelClass } from './fieldStyles'
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string
@@ -24,8 +25,8 @@ export function TextField({
     .join(' ')
 
   return (
-    <div className={`flex flex-col gap-1.5 ${className}`}>
-      <label htmlFor={inputId} className="text-sm font-semibold">
+    <div className={`group flex flex-col gap-1.5 ${className}`}>
+      <label htmlFor={inputId} className={fieldLabelClass}>
         {label}
       </label>
       <input
@@ -33,7 +34,7 @@ export function TextField({
         ref={ref}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy || undefined}
-        className={`min-h-11 w-full min-w-0 rounded-control border bg-surface px-3 text-ink read-only:bg-subtle read-only:text-muted ${error ? 'border-danger' : 'border-border-strong'}`}
+        className={`min-h-11 w-full min-w-0 px-3 read-only:bg-subtle read-only:text-muted read-only:hover:border-border-strong ${fieldClass(!!error)}`}
         {...props}
       />
       {hint && !error && (

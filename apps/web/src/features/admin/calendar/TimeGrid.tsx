@@ -1,3 +1,4 @@
+import { useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AdminAppointment, CalendarHours, CalendarTimeOff } from '@/types/api'
 import {
@@ -8,7 +9,7 @@ import {
   timeOffOnDay,
   workingIntervals,
 } from './calendarModel'
-import { SLOT_STEP } from './newAppointmentModel'
+import { SLOT_STEP, toTime } from './newAppointmentModel'
 import { statusBlock, type AppointmentStatus } from './statusStyles'
 
 export interface GridColumn {
@@ -20,7 +21,10 @@ export interface GridColumn {
   staffIds: string[]
   appointments: AdminAppointment[]
   timeOff: CalendarTimeOff[]
+  /** Draws the "now" line. */
   isToday: boolean
+  /** Header in the brand color: today's column of the week view. */
+  highlight: boolean
 }
 
 interface TimeGridProps {
@@ -32,9 +36,18 @@ interface TimeGridProps {
   onSelect: (appointment: AdminAppointment) => void
   /** Click on free space: start a new appointment there (minutes since midnight, 15-minute steps). */
   onCreateAt?: (column: GridColumn, minutes: number) => void
+  /** Whether a slot accepts a new appointment (not in the past): only those show the hover preview. */
+  canCreateAt?: (column: GridColumn, minutes: number) => boolean
 }
 
 const px = (minutes: number) => (minutes / 60) * HOUR_PX
+
+/** Slot (15-minute steps) under the pointer, in minutes since midnight. */
+function slotAt(event: ReactMouseEvent<HTMLElement>, rangeStart: number): number {
+  const offset = event.clientY - event.currentTarget.getBoundingClientRect().top
+  const minutes = rangeStart + (offset / HOUR_PX) * 60
+  return Math.floor(minutes / SLOT_STEP) * SLOT_STEP
+}
 
 /** Time grid (desktop): one column per staff member or per day, events laid out side by side. */
 export function TimeGrid({
@@ -45,8 +58,11 @@ export function TimeGrid({
   staffName,
   onSelect,
   onCreateAt,
+  canCreateAt = () => true,
 }: TimeGridProps) {
   const { t } = useTranslation('admin')
+  // Slot under the pointer: a dashed "+ 10:30" box shows where a click creates the appointment.
+  const [hover, setHover] = useState<{ column: string; minutes: number } | null>(null)
   const height = px(range.end - range.start)
   const hourMarks: number[] = []
   for (let m = range.start; m < range.end; m += 60) hourMarks.push(m)
@@ -66,7 +82,7 @@ export function TimeGrid({
         {columns.map((column) => (
           <div
             key={column.key}
-            className={`sticky top-0 z-20 truncate border-b border-l border-border bg-surface px-1 py-3 text-center text-sm font-semibold first-letter:uppercase ${column.isToday ? 'text-primary-text' : ''}`}
+            className={`sticky top-0 z-20 truncate border-b border-l border-border bg-surface px-1 py-3 text-center text-sm font-semibold first-letter:uppercase ${column.highlight ? 'text-primary-text' : ''}`}
           >
             {column.label}
           </div>
@@ -121,13 +137,31 @@ export function TimeGrid({
                 // "Nuovo appuntamento" button, so this layer stays out of the tab order.
                 <div
                   aria-hidden="true"
-                  className="absolute inset-0 cursor-pointer"
-                  onClick={(event) => {
-                    const offset = event.clientY - event.currentTarget.getBoundingClientRect().top
-                    const minutes = range.start + (offset / HOUR_PX) * 60
-                    onCreateAt(column, Math.floor(minutes / SLOT_STEP) * SLOT_STEP)
+                  className={`absolute inset-0 ${hover?.column === column.key ? 'cursor-pointer' : ''}`}
+                  onMouseMove={(event) => {
+                    const minutes = slotAt(event, range.start)
+                    const next = canCreateAt(column, minutes)
+                      ? { column: column.key, minutes }
+                      : null
+                    if (next?.column !== hover?.column || next?.minutes !== hover?.minutes) {
+                      setHover(next)
+                    }
                   }}
+                  onMouseLeave={() => setHover(null)}
+                  onClick={(event) => onCreateAt(column, slotAt(event, range.start))}
                 />
+              )}
+              {hover?.column === column.key && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-1 z-[5] flex items-start gap-1 rounded-control border-[1.5px] border-dashed border-primary bg-primary-soft/90 px-2 py-1 text-xs font-semibold text-primary-text"
+                  style={{
+                    top: px(hover.minutes - range.start),
+                    height: Math.min(px(SLOT_STEP * 2), px(range.end - hover.minutes)),
+                  }}
+                >
+                  + {toTime(hover.minutes)}
+                </div>
               )}
               {column.timeOff.map((off) => {
                 const part = timeOffOnDay(off, column.date)
@@ -168,7 +202,7 @@ export function TimeGrid({
                     <button
                       type="button"
                       onClick={() => onSelect(a)}
-                      className={`flex w-full flex-col justify-center overflow-hidden rounded-control border-l-4 px-2 py-0.5 text-left text-xs leading-tight shadow-sm hover:brightness-95 ${statusBlock[a.status] ?? statusBlock.Confirmed}`}
+                      className={`flex w-full flex-col justify-center overflow-hidden rounded-control border-l-4 px-2 py-0.5 text-left text-xs leading-tight shadow-sm transition-[filter,box-shadow] hover:shadow-md hover:brightness-95 ${statusBlock[a.status] ?? statusBlock.Confirmed}`}
                       style={{ height: Math.max(px(end - start), 22) }}
                     >
                       {end - start < 45 ? (

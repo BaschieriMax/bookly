@@ -13,6 +13,7 @@ import { adminErrorMessage } from '../adminErrors'
 import { useCancelByBusiness, useMarkAppointment, useMoveAppointment } from './calendarApi'
 import { dateOf, minutesOf, timeOf } from './calendarModel'
 import { StatusBadge } from './StatusBadge'
+import { telHref } from '@/lib/tel'
 
 type Mode = 'details' | 'move' | 'cancel'
 
@@ -146,8 +147,8 @@ export function AppointmentDialog({
               )}
               {appointment.customer.phone && (
                 <a
-                  href={`tel:${appointment.customer.phone.replaceAll(' ', '')}`}
-                  className="flex min-h-11 items-center gap-2 font-semibold text-primary-text"
+                  href={telHref(appointment.customer.phone)}
+                  className="flex min-h-11 items-center gap-2 font-semibold text-primary-text underline-offset-4 hover:underline"
                 >
                   <Phone aria-hidden="true" className="size-4" />
                   {appointment.customer.phone}
@@ -156,7 +157,7 @@ export function AppointmentDialog({
               {appointment.customer.email && (
                 <a
                   href={`mailto:${appointment.customer.email}`}
-                  className="flex min-h-11 items-center gap-2 font-semibold break-all text-primary-text"
+                  className="flex min-h-11 items-center gap-2 font-semibold break-all text-primary-text underline-offset-4 hover:underline"
                 >
                   <Mail aria-hidden="true" className="size-4 shrink-0" />
                   {appointment.customer.email}
@@ -181,7 +182,7 @@ export function AppointmentDialog({
           </dl>
 
           {(appointment.canMark || appointment.canMove || appointment.canCancel) && (
-            <div className="flex flex-wrap gap-2 border-t border-border pt-4">
+            <div className="grid grid-cols-2 gap-2 border-t border-border pt-4 *:last:odd:col-span-2 sm:flex sm:flex-wrap">
               {appointment.canMark && (
                 <>
                   <Button

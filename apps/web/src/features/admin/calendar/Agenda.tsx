@@ -54,7 +54,7 @@ export function Agenda({
                   <button
                     type="button"
                     onClick={() => onSelect(a)}
-                    className="flex w-full items-start gap-3 rounded-card border border-border bg-surface p-3 text-left hover:bg-subtle"
+                    className="flex w-full items-start gap-3 rounded-card border border-border bg-surface p-3 text-left transition-[border-color,box-shadow] hover:border-border-strong hover:shadow-sm"
                   >
                     <span className="w-14 shrink-0 pt-0.5 font-semibold tabular-nums">
                       {timeOf(a.start)}

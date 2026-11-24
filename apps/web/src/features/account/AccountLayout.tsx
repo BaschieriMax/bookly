@@ -18,7 +18,7 @@ export default function AccountLayout() {
   // Owners, staff and the platform admin also reach other areas from here.
   const hasOtherAreas = !!me && userAreas(me).some((link) => link.area !== 'account')
   const logOut = () =>
-    logout.mutate(undefined, { onSettled: () => void navigate('/', { replace: true }) })
+    logout.mutate(undefined, { onSettled: () => void navigate(paths.home, { replace: true }) })
 
   return (
     <div className="flex min-h-screen flex-col bg-bg">
@@ -61,7 +61,7 @@ export default function AccountLayout() {
           </NavLink>
         ))}
       </nav>
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-6 pb-28 sm:px-6 sm:pb-6">
         <Outlet />
       </main>
       <LegalFooter />

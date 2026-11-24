@@ -64,13 +64,18 @@ export function Dialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
-      <div aria-hidden="true" className="absolute inset-0 bg-ink/50" onClick={onClose} />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 animate-fade-in bg-ink/50"
+        onClick={onClose}
+      />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`relative flex max-h-[92vh] w-full flex-col rounded-t-card bg-surface sm:rounded-card ${size === 'wide' ? 'max-w-3xl' : 'max-w-lg'} ${fixedHeight ? 'h-[92vh] sm:h-[min(46rem,92vh)]' : ''}`}
+        // dvh: on iPhone the Safari bar would cover the bottom of a 92vh sheet.
+        className={`relative flex max-h-[92dvh] w-full animate-sheet-up flex-col rounded-t-card bg-surface sm:animate-fade-in sm:rounded-card ${size === 'wide' ? 'max-w-3xl' : 'max-w-lg'} ${fixedHeight ? 'h-[92dvh] sm:h-[min(46rem,92dvh)]' : ''}`}
       >
         <div
           className={`flex items-center justify-between gap-4 px-6 ${toolbar ? 'pt-4 pb-2' : 'border-b border-border py-4'}`}
@@ -86,7 +91,7 @@ export function Dialog({
             data-dialog-close
             onClick={onClose}
             aria-label={closeLabel}
-            className="inline-flex size-11 items-center justify-center rounded-control text-muted hover:bg-subtle"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-control text-muted transition-colors hover:bg-subtle hover:text-ink"
           >
             <X aria-hidden="true" className="size-5" />
           </button>
@@ -98,7 +103,9 @@ export function Dialog({
           {children}
         </div>
         {footer && (
-          <div className="flex flex-col-reverse gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-end">
+          // Phones: Annulla and the action side by side (1/3, 2/3) instead of two stacked rows;
+          // a lone button takes the whole row (DEC-041).
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2 border-t border-border px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] *:only:col-span-2 sm:flex sm:justify-end sm:pb-4">
             {footer}
           </div>
         )}
