@@ -70,13 +70,13 @@
     "fields": {
       "name": "Nome dell'attività",
       "slug": "Indirizzo della pagina",
-      "slugHint": "bookly.it/b/{{slug}} — solo lettere minuscole, numeri e trattini.",
+      "slugHint": "turnora.it/b/{{slug}} — solo lettere minuscole, numeri e trattini.",
       "timeZone": "Fuso orario",
       "owner": "Titolare",
       "ownerEmail": "Email del titolare",
       "ownerFirstName": "Nome",
       "ownerLastName": "Cognome",
-      "ownerHint": "Riceverà un link per scegliere la password (valido 7 giorni). Se ha già un account Bookly, lo usa."
+      "ownerHint": "Riceverà un link per scegliere la password (valido 7 giorni). Se ha già un account Turnora, lo usa."
     }
   },
   "navigation": {

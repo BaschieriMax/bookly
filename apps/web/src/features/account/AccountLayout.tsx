@@ -2,14 +2,14 @@ import { LogOut } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import { paths } from '@/app/paths'
-import { BooklyLogo } from '@/components/layout/BooklyLogo'
+import { BrandLogo } from '@/components/layout/BrandLogo'
 import { LegalFooter } from '@/components/layout/LegalFooter'
 import { AreaLinks } from '@/features/auth/AreaLinks'
 import { AreaMenu } from '@/features/auth/AreaMenu'
 import { useLogout, useMe } from '@/features/auth/useMe'
 import { userAreas } from '@/features/auth/userAreas'
 
-/** Customer area: global account, Bookly neutral brand (DEC-016). */
+/** Customer area: global account, neutral platform brand (DEC-016). */
 export default function AccountLayout() {
   const { t } = useTranslation(['common', 'account'])
   const logout = useLogout()
@@ -23,7 +23,7 @@ export default function AccountLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <header className="flex items-center justify-between gap-2 border-b border-border bg-surface px-4 py-2 sm:px-6">
-        <BooklyLogo />
+        <BrandLogo />
         <div className="flex items-center gap-1">
           {hasOtherAreas && (
             <>

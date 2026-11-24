@@ -1,4 +1,7 @@
-# Bookly
+# Turnora
+
+> Il nome interno del codice resta **Bookly** (namespace `Bookly.Api`, variabili `BOOKLY_*`,
+> account demo `@bookly.local`, repository `bookly`): cambia solo il marchio visibile, vedi DEC-042.
 
 Prenotazioni online multi-tenant per attività locali: barbieri, estetiste, piccoli negozi.
 Ogni attività ha la sua pagina di prenotazione con il proprio brand. I titolari gestiscono servizi, staff, orari e calendario.

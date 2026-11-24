@@ -1,4 +1,4 @@
-# Rilascio in produzione — Bookly
+# Rilascio in produzione — Turnora (nome interno: Bookly)
 
 Runbook di messa in produzione e di esercizio (DEC-032). Servizi: **Neon** (database), **Resend**
 (email), **Render** (app), **GitHub Actions** (migrazioni e deploy), **cron-job.org** (promemoria e
@@ -95,7 +95,7 @@ Verifica i limiti attuali sui siti dei provider prima di andare live con clienti
    non verifichi un dominio, Resend consegna solo a quell'indirizzo.
 2. **API Keys → Create API key**: permesso **Sending access**. Copiala subito (si vede una volta
    sola): sarà `Email__Password` su Render.
-3. Mittente provvisorio, senza dominio: `Bookly <onboarding@resend.dev>`. Col dominio vedi la
+3. Mittente provvisorio, senza dominio: `Turnora <onboarding@resend.dev>`. Col dominio vedi la
    sezione 8.
 
 ## 4. Render — servizio web
@@ -110,7 +110,7 @@ Verifica i limiti attuali sui siti dei provider prima di andare live con clienti
    | `ConnectionStrings__Default` | riga "App (runtime)" della tabella Neon |
    | `App__PublicBaseUrl` | `https://bookly.onrender.com`. Se Render assegna un altro indirizzo (es. `bookly-ab12.onrender.com`), correggila dopo la creazione |
    | `Email__Password` | API key di Resend |
-   | `Email__From` | `Bookly <onboarding@resend.dev>` |
+   | `Email__From` | `Turnora <onboarding@resend.dev>` |
    | `Platform__SuperAdminEmails__0` | la tua email (la stessa dell'account Resend) |
 
    Le altre (`ASPNETCORE_ENVIRONMENT`, `ReverseProxy__Enabled=true`, SMTP Resend, `Jobs__Secret`
@@ -221,7 +221,7 @@ CNAME, TXT e MX (e A o ALIAS per il dominio principale).
    `send` e un TXT `resend._domainkey`), poi **Verify**.
 3. Aggiungi un record DMARC: TXT su `_dmarc` con valore `v=DMARC1; p=none;` (poi `quarantine`
    quando i report sono puliti).
-4. Su Render: `Email__From` = `Bookly <no-reply@tuodominio.it>`.
+4. Su Render: `Email__From` = `Turnora <no-reply@tuodominio.it>`.
 
 Gli header HSTS includono i sottodomini: tutti i sottodomini web del dominio dovranno usare HTTPS.
 

@@ -159,7 +159,7 @@
       "notifyOnCustomerCancellationHint": "L'orario torna subito prenotabile: l'email ti dice quale."
     },
     "notifications": "Avvisi via email",
-    "notificationsHint": "Le email arrivano ai titolari e all'operatore dell'appuntamento, se ha un accesso a Bookly.",
+    "notificationsHint": "Le email arrivano ai titolari e all'operatore dell'appuntamento, se ha un accesso a Turnora.",
     "notificationsLegend": "Avvisami via email",
     "minutes": "{{count}} minuti"
   },
@@ -363,7 +363,7 @@
       "appointments": "Appuntamenti ({{count}})",
       "appointmentsLoading": "Appuntamenti",
       "since": "Nella rubrica dal {{date}}. I dati sono della tua attività: puoi correggerli quando vuoi.",
-      "accountNote": "Ha un account Bookly: nome, telefono ed email li gestisce lui dal suo profilo, dove può anche scaricare o cancellare i propri dati.",
+      "accountNote": "Ha un account Turnora: nome, telefono ed email li gestisce lui dal suo profilo, dove può anche scaricare o cancellare i propri dati.",
       "noValue": "—",
       "saved": "Dati del cliente aggiornati.",
       "download": "Scarica dati",

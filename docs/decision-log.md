@@ -1,4 +1,4 @@
-# Decision Log — Bookly
+# Decision Log — Turnora (nome interno: Bookly)
 
 Una voce per ogni decisione architetturale significativa. Le voci non si cancellano: se una decisione cambia, quella vecchia diventa `Superseded` e se ne aggiunge una nuova.
 
@@ -1301,6 +1301,50 @@ portata di pollice. Le modifiche non salvate si vedono subito anche in fondo a p
 Campi, bottoni e link hanno stati coerenti in tutta l'app e nei brand delle attività.
 La safe area di iPhone è già nei padding (env(safe-area-inset-bottom)) ma resta inattiva senza
 viewport-fit=cover (TD-012).
+
+Status:
+Approved (Massimo, 24/11/2026)
+```
+
+```text
+Decision:
+DEC-042 — Nuovo nome del prodotto: Turnora (solo il marchio visibile)
+
+Context:
+Il nome Bookly è già usato da altri prodotti. Il 24/11/2026 Massimo ha scelto Turnora
+(«turno» + «ora», suona come «tornerà») tra quattro candidati verificati sul web: nessuna app o
+software con quel nome; i più vicini sono Turno (pulizie per affitti brevi, USA) e Turnito
+(prenotazioni, America Latina). Domini e marchi registrati non sono verificabili dalla sandbox:
+li controlla Massimo (turnora.it / turnora.com, TMview e UIBM, classi 9 e 42).
+
+Decision:
+- Cambia solo ciò che vede chi usa l'app: logo e favicon, <title> e og:site_name (index.html e
+  TenantPageMeta), testi i18n (anche note legali e pagina pubblica), oggetti e testi delle email,
+  nome del file «Scarica dati» (turnora-dati-<data>.json), mittente di sviluppo, README e guide.
+- Marchio scelto con il prototipo Claude Design «Turnora – Logo e rinomina» (proposta B):
+  una freccia che gira attorno alle lancette, nel riquadro verde di sempre (#0f766e), accanto
+  alla scritta «turnora» in Space Grotesk. Il segno è il componente BrandMark (stroke
+  currentColor), usato da BrandLogo (ex BooklyLogo), dal fondo della pagina pubblica accanto a
+  «Prenotazioni gestite con Turnora» e disegnato con gli stessi tracciati in public/favicon.svg.
+  Sulla pagina pubblica il segno è senza riquadro e nel colore del testo, perché lì i token
+  primari sono quelli dell'attività.
+- «turnora» entra tra gli slug riservati; «bookly» resta riservato.
+- Restano «Bookly» di proposito: namespace e progetti (Bookly.Api, BooklyApiFactory), variabili
+  BOOKLY_*, token CSS --bk-*, header X-Bookly-Tenant, nomi dei cookie (__Host-bookly.auth,
+  __Host-bookly.af), nome applicativo di Data Protection, chiavi di localStorage, account demo
+  @bookly.local, file openapi/bookly-api.json, servizio Render e repository.
+
+Alternatives:
+Rinominare tutto, anche il codice interno (scartata da Massimo: tocca CI, segreti su GitHub e
+Render, cron-job.org, e cambiare cookie o nome di Data Protection disconnetterebbe tutti gli
+utenti); proposte di marchio A (calendario con la spunta, il segno di prima) e C (monogramma «t»).
+
+Motivation:
+Il cambio è tutto in superficie: nessuna migrazione, nessuna variabile d'ambiente nuova, nessun
+utente disconnesso. Il componente BrandMark/BrandLogo ha un nome neutro, così un futuro cambio di
+marchio tocca solo il suo contenuto.
+In produzione va aggiornata a mano la variabile Email__From su Render («Turnora <…>»), che
+decide il nome del mittente delle email.
 
 Status:
 Approved (Massimo, 24/11/2026)

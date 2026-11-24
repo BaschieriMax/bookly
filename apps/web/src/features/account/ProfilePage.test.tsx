@@ -61,7 +61,7 @@ describe('ProfilePage', () => {
           new HttpResponse('{"account":{}}', {
             headers: {
               'Content-Type': 'application/json',
-              'Content-Disposition': 'attachment; filename=bookly-dati-2026-11-18.json',
+              'Content-Disposition': 'attachment; filename=turnora-dati-2026-11-18.json',
             },
           }),
       ),
@@ -79,7 +79,7 @@ describe('ProfilePage', () => {
     expect((await screen.findAllByText('File scaricato.'))[0]).toBeInTheDocument()
     expect(createObjectURL).toHaveBeenCalledOnce()
     const anchor = click.mock.contexts[0] as HTMLAnchorElement
-    expect(anchor.download).toBe('bookly-dati-2026-11-18.json')
+    expect(anchor.download).toBe('turnora-dati-2026-11-18.json')
   })
 
   it('asks the password and deletes the account', async () => {

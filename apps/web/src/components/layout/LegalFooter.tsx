@@ -11,7 +11,7 @@ export function LegalFooter({ className = '' }: { className?: string }) {
         aria-label={t('footer.label')}
         className="mx-auto flex max-w-3xl flex-wrap items-center gap-x-4 gap-y-1"
       >
-        <span>© Bookly</span>
+        <span>© Turnora</span>
         <Link
           to={paths.privacy}
           className="inline-flex min-h-11 items-center underline-offset-4 transition-colors hover:text-ink hover:underline"

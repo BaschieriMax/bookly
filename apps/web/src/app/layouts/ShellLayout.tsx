@@ -2,7 +2,7 @@ import { Menu, X } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useNavigate } from 'react-router'
-import { BooklyLogo } from '@/components/layout/BooklyLogo'
+import { BrandLogo } from '@/components/layout/BrandLogo'
 import { Sidebar } from '@/components/navigation/Sidebar'
 import type { NavigationArea } from '@/components/navigation/navigationApi'
 import { AreaLinks } from '@/features/auth/AreaLinks'
@@ -86,7 +86,7 @@ export function ShellLayout({ area, sidebarHeader, sidebarFooter }: ShellLayoutP
           >
             <Menu aria-hidden="true" className="size-5" />
           </button>
-          <BooklyLogo to={area === 'admin' ? paths.admin.calendar : paths.platform.tenants} />
+          <BrandLogo to={area === 'admin' ? paths.admin.calendar : paths.platform.tenants} />
         </header>
         {/* Bottom room on phones for the floating page action and the save bar (DEC-041). */}
         <main className="flex-1 p-4 pb-28 sm:pb-4 md:p-6">

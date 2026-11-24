@@ -30,7 +30,7 @@ export function useDownloadExport() {
   return useMutation({
     mutationFn: async () => {
       const response = await apiClient.get<Blob>('/me/export', { responseType: 'blob' })
-      saveDownloadedFile(response, 'bookly-dati.json')
+      saveDownloadedFile(response, 'turnora-dati.json')
     },
   })
 }

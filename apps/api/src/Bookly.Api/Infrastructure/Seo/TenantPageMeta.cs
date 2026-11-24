@@ -44,7 +44,7 @@ public sealed class WebRootIndexHtmlProvider(IWebHostEnvironment environment) : 
 /// </summary>
 public static class TenantPageMeta
 {
-    private const string TitleTag = "<title>Bookly</title>";
+    private const string TitleTag = "<title>Turnora</title>";
 
     /// <summary>Encodes markup characters (&lt; &gt; &amp; quotes) but keeps accented letters readable.</summary>
     private static readonly HtmlEncoder Encoder = HtmlEncoder.Create(System.Text.Unicode.UnicodeRanges.All);
@@ -97,7 +97,7 @@ public static class TenantPageMeta
             $"<link rel=\"canonical\" href=\"{encoder.Encode(url)}\" />",
             "<meta property=\"og:type\" content=\"website\" />",
             "<meta property=\"og:locale\" content=\"it_IT\" />",
-            "<meta property=\"og:site_name\" content=\"Bookly\" />",
+            "<meta property=\"og:site_name\" content=\"Turnora\" />",
             $"<meta property=\"og:title\" content=\"{encoder.Encode(tenant.Name)}\" />",
             $"<meta property=\"og:description\" content=\"{encoder.Encode(description)}\" />",
             $"<meta property=\"og:url\" content=\"{encoder.Encode(url)}\" />",

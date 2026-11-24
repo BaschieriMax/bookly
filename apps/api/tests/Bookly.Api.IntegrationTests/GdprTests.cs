@@ -68,7 +68,7 @@ public sealed class GdprTests(PostgresFixture database) : IDisposable
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("attachment", response.Content.Headers.ContentDisposition?.DispositionType);
-        Assert.StartsWith("bookly-dati-", response.Content.Headers.ContentDisposition?.FileName, StringComparison.Ordinal);
+        Assert.StartsWith("turnora-dati-", response.Content.Headers.ContentDisposition?.FileName, StringComparison.Ordinal);
         var export = await JsonAsync(response);
         Assert.Equal(user.Email, export.GetProperty("account").GetProperty("email").GetString());
         var tenants = export.GetProperty("appointments").EnumerateArray().Select(a => a.GetProperty("tenant").GetString()).ToList();

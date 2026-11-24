@@ -70,7 +70,7 @@ public sealed class AuthTests(PostgresFixture database) : IDisposable
 
         Assert.Equal(HttpStatusCode.Accepted, first.StatusCode);
         Assert.Equal(HttpStatusCode.Accepted, second.StatusCode);
-        Assert.Contains(_factory.Emails.SentTo(email), m => m.Subject == "Hai già un account Bookly");
+        Assert.Contains(_factory.Emails.SentTo(email), m => m.Subject == "Hai già un account Turnora");
         await using var db = database.CreateDbContext();
         Assert.Equal(1, await db.Users.CountAsync(u => u.Email == email));
     }

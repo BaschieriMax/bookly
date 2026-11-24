@@ -9,14 +9,14 @@ internal static class EmailTemplates
         to,
         subject: "Conferma il tuo indirizzo email",
         greeting: firstName,
-        paragraph: "Grazie per esserti registrato su Bookly. Conferma la tua email per poter prenotare.",
+        paragraph: "Grazie per esserti registrato su Turnora. Conferma la tua email per poter prenotare.",
         actionLabel: "Conferma email",
         link: link,
         footer: "Il link scade tra 48 ore. Se non hai creato tu l'account, ignora questa email.");
 
     public static EmailMessage AlreadyRegistered(string to, string firstName, string resetLink) => Build(
         to,
-        subject: "Hai già un account Bookly",
+        subject: "Hai già un account Turnora",
         greeting: firstName,
         paragraph: "Qualcuno ha provato a registrarsi con questa email, ma esiste già un account. Se hai dimenticato la password puoi reimpostarla.",
         actionLabel: "Reimposta la password",
@@ -27,7 +27,7 @@ internal static class EmailTemplates
         to,
         subject: "Reimposta la tua password",
         greeting: firstName,
-        paragraph: "Abbiamo ricevuto una richiesta di reimpostazione della password del tuo account Bookly.",
+        paragraph: "Abbiamo ricevuto una richiesta di reimpostazione della password del tuo account Turnora.",
         actionLabel: "Scegli una nuova password",
         link: link,
         footer: "Il link scade tra 1 ora. Se non hai chiesto tu il cambio password, ignora questa email.");
@@ -54,10 +54,10 @@ internal static class EmailTemplates
 
     public static EmailMessage AccountDeleted(string to, string firstName, string homeLink) => Build(
         to,
-        subject: "Il tuo account Bookly è stato eliminato",
+        subject: "Il tuo account Turnora è stato eliminato",
         greeting: firstName,
         paragraph: "Come richiesto, abbiamo eliminato il tuo account: i tuoi dati personali sono stati cancellati e gli appuntamenti futuri annullati. Lo storico degli appuntamenti passati resta alle attività in forma anonima.",
-        actionLabel: "Torna su Bookly",
+        actionLabel: "Torna su Turnora",
         link: homeLink,
         footer: "Se non hai chiesto tu l'eliminazione, rispondi a questa email o contatta subito il supporto.");
 
@@ -87,21 +87,21 @@ internal static class EmailTemplates
 
     public static EmailMessage OwnerInvitation(string to, string firstName, string tenantName, string link) => Build(
         to,
-        subject: $"Sei stato invitato a gestire {tenantName} su Bookly",
+        subject: $"Sei stato invitato a gestire {tenantName} su Turnora",
         greeting: firstName,
-        paragraph: $"Sei il titolare di {tenantName} su Bookly. Scegli una password per attivare l'account e configurare servizi, staff e orari.",
+        paragraph: $"Sei il titolare di {tenantName} su Turnora. Scegli una password per attivare l'account e configurare servizi, staff e orari.",
         actionLabel: "Attiva l'account",
         link: link,
         footer: "Il link scade tra 7 giorni. Se non ti aspettavi questo invito, ignora questa email.");
 
     public static EmailMessage OwnerAdded(string to, string firstName, string tenantName, string link) => Build(
         to,
-        subject: $"Ora gestisci {tenantName} su Bookly",
+        subject: $"Ora gestisci {tenantName} su Turnora",
         greeting: firstName,
-        paragraph: $"Il tuo account Bookly è stato aggiunto come titolare di {tenantName}. Accedi con le tue solite credenziali.",
+        paragraph: $"Il tuo account Turnora è stato aggiunto come titolare di {tenantName}. Accedi con le tue solite credenziali.",
         actionLabel: "Apri l'area dell'attività",
         link: link,
-        footer: "Se non ti aspettavi questa email, contatta il supporto di Bookly.");
+        footer: "Se non ti aspettavi questa email, contatta il supporto di Turnora.");
 
     public static EmailMessage AppointmentMovedByBusiness(
         string to,
@@ -271,7 +271,7 @@ internal static class EmailTemplates
             to,
             subject: $"Attività sospesa: {tenantName}, {Count(cancelledAppointments, "appuntamento annullato", "appuntamenti annullati")}",
             greeting: firstName,
-            intro: $"L'attività {tenantName} è stata sospesa su Bookly: la pagina pubblica non è più raggiungibile e non si può prenotare. I dati restano conservati.",
+            intro: $"L'attività {tenantName} è stata sospesa su Turnora: la pagina pubblica non è più raggiungibile e non si può prenotare. I dati restano conservati.",
             items: [],
             outro:
             [
@@ -284,7 +284,7 @@ internal static class EmailTemplates
                 ? null
                 : (["Cliente", "Telefono", "Appuntamento"], [.. toCall.Select(c => (IReadOnlyList<string>)[c.Name, c.Phone ?? "—", c.When])]),
             action: null,
-            footer: "Per riattivare l'attività o per qualsiasi domanda, contatta il supporto di Bookly.");
+            footer: "Per riattivare l'attività o per qualsiasi domanda, contatta il supporto di Turnora.");
     }
 
     /// <summary>"1 cliente" / "3 clienti": counts without an article, which in Italian depends on the number.</summary>
