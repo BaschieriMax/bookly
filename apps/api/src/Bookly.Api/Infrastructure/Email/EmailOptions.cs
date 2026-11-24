@@ -23,7 +23,7 @@ public sealed class EmailOptions
 
     public string? Password { get; set; }
 
-    /// <summary>Sender, e.g. "Bookly &lt;no-reply@tuodominio.it&gt;".</summary>
+    /// <summary>Sender, e.g. "Turnora &lt;no-reply@tuodominio.it&gt;".</summary>
     [Required]
     public string From { get; set; } = string.Empty;
 

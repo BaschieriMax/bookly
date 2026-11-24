@@ -38,7 +38,7 @@ export default function TenantLayout() {
             {t('common:retry')}
           </Button>
         )}
-        <TextLink to={paths.home}>Bookly</TextLink>
+        <TextLink to={paths.home}>Turnora</TextLink>
       </main>
     )
   }

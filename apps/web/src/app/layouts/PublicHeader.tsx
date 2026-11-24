@@ -2,7 +2,7 @@ import { LogOut } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 import { paths } from '@/app/paths'
-import { BooklyLogo } from '@/components/layout/BooklyLogo'
+import { BrandLogo } from '@/components/layout/BrandLogo'
 import { AreaLinks } from '@/features/auth/AreaLinks'
 import { useLogout, useMe } from '@/features/auth/useMe'
 import { homePathFor } from '@/features/auth/userAreas'
@@ -22,7 +22,7 @@ export function PublicHeader() {
   return (
     <header className="border-b border-border bg-surface">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-2 px-4 py-2 sm:px-6">
-        <BooklyLogo />
+        <BrandLogo />
         {!isPending && (
           <nav aria-label={t('nav:siteMenu')} className="flex items-center gap-1">
             {me ? (

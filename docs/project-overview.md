@@ -1,4 +1,4 @@
-# Project Overview — Bookly
+# Project Overview — Turnora (nome interno: Bookly)
 
 Data: 2026-11-18 · Dimensione: **medio-grande** · Stato: **Approvato** (2026-11-18) · UI approvata (2026-11-18)
 Repository: `BaschieriMax/bookly` (monorepo)
@@ -7,7 +7,7 @@ Repository: `BaschieriMax/bookly` (monorepo)
 
 ## 1. PROJECT OVERVIEW
 
-Bookly è una web app **multi-tenant** per le prenotazioni online delle attività locali (barbieri, estetiste, piccoli negozi). Ogni attività ha una pagina pubblica (`/b/{slug}`) da cui i clienti registrati prenotano un servizio con un operatore. Il titolare gestisce servizi, staff, orari, assenze e calendario. Il super-admin della piattaforma (Massimo) attiva, sospende e configura le attività.
+Turnora (nome interno del codice: Bookly, DEC-042) è una web app **multi-tenant** per le prenotazioni online delle attività locali (barbieri, estetiste, piccoli negozi). Ogni attività ha una pagina pubblica (`/b/{slug}`) da cui i clienti registrati prenotano un servizio con un operatore. Il titolare gestisce servizi, staff, orari, assenze e calendario. Il super-admin della piattaforma (Massimo) attiva, sospende e configura le attività.
 
 Un'unica applicazione e un unico deploy servono più attività, con i dati isolati per tenant.
 

@@ -2,6 +2,7 @@ import { CalendarCheck, ChevronRight, Clock, MapPin, Phone } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { bookingPath, paths } from '@/app/paths'
+import { BrandMark } from '@/components/layout/BrandMark'
 import { PageSpinner } from '@/components/ui/PageSpinner'
 import { formatDuration, formatPrice } from '@/lib/format'
 import { useServices } from './tenantApi'
@@ -87,7 +88,10 @@ export default function TenantPage() {
       </section>
 
       <footer className="mt-auto flex flex-col gap-1.5 border-t border-border px-5 pt-5 pb-28 text-[13px] text-muted sm:px-8">
-        <span>{t('poweredBy')}</span>
+        <span className="flex items-center gap-1.5">
+          <BrandMark className="size-3.5 flex-none" strokeWidth={2.5} />
+          {t('poweredBy')}
+        </span>
         <span className="flex flex-wrap gap-x-4">
           <Link to={paths.privacy} className="inline-flex min-h-11 items-center underline">
             {t('privacy')}

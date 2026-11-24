@@ -28,7 +28,7 @@ public sealed partial class TenantProvisioningService(
     /// <summary>Slugs that would clash with app routes or be confusing in /b/{slug}.</summary>
     private static readonly HashSet<string> ReservedSlugs =
     [
-        "admin", "api", "app", "account", "b", "bookly", "login", "platform", "privacy", "prenota", "registrati", "static", "support", "www",
+        "admin", "api", "app", "account", "b", "bookly", "login", "platform", "privacy", "prenota", "registrati", "static", "support", "turnora", "www",
     ];
 
     public Task<IReadOnlyList<PlatformTenantDto>> ListAsync(CancellationToken cancellationToken) => QueryAsync(null, cancellationToken);

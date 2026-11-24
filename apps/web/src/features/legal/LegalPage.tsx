@@ -23,7 +23,7 @@ export function LegalPage({ document }: { document: 'privacy' | 'terms' }) {
         className="-ml-2 inline-flex min-h-11 items-center gap-1 rounded-control px-2 text-sm font-semibold text-muted hover:bg-subtle"
       >
         <ChevronLeft aria-hidden="true" className="size-4" />
-        Bookly
+        Turnora
       </Link>
       <article className="mt-4 flex flex-col gap-6">
         <header className="flex flex-col gap-3">

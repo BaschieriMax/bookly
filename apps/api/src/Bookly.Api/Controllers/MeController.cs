@@ -56,7 +56,7 @@ public sealed class MeController(
         var export = await privacy.ExportAsync(user, cancellationToken);
         Response.Headers.CacheControl = "no-store";
         var bytes = JsonSerializer.SerializeToUtf8Bytes(export, ExportJson);
-        return File(bytes, "application/json", $"bookly-dati-{export.ExportedAt:yyyy-MM-dd}.json");
+        return File(bytes, "application/json", $"turnora-dati-{export.ExportedAt:yyyy-MM-dd}.json");
     }
 
     /// <summary>Deletes (anonymises) the account after re-entering the password, then signs out.</summary>

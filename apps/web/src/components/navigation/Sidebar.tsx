@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router'
 import { paths } from '@/app/paths'
-import { BooklyLogo } from '@/components/layout/BooklyLogo'
+import { BrandLogo } from '@/components/layout/BrandLogo'
 import { iconRegistry } from './iconRegistry'
 import { useNavigation, type NavigationArea } from './navigationApi'
 import { translateLabel, usableItems } from './navigationItems'
@@ -30,7 +30,7 @@ export function Sidebar({ area, header, footer, onNavigate, onLogout }: SidebarP
 
   return (
     <div className="flex h-full flex-col gap-4 px-3 py-5">
-      <BooklyLogo to={areaHome[area]} className="px-2" onClick={onNavigate} />
+      <BrandLogo to={areaHome[area]} className="px-2" onClick={onNavigate} />
 
       {header}
 

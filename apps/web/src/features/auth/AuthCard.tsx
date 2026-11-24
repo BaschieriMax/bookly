@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-/** Shared frame of the authentication pages (Bookly neutral brand). */
+/** Shared frame of the authentication pages (neutral platform brand). */
 export function AuthCard({
   title,
   subtitle,

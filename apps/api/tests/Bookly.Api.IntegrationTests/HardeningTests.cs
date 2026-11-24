@@ -17,7 +17,7 @@ public sealed class HardeningTests(PostgresFixture database) : IDisposable
         <!doctype html>
         <html lang="it">
           <head>
-            <title>Bookly</title>
+            <title>Turnora</title>
             <script type="module" src="/assets/index.js"></script>
           </head>
           <body><div id="root"></div></body>

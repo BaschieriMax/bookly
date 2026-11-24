@@ -8,13 +8,13 @@
   },
   "privacy": {
     "title": "Informativa privacy e cookie",
-    "intro": "Questa informativa spiega come vengono trattati i dati personali di chi usa Bookly per prenotare o per gestire un'attività (artt. 13–14 del Regolamento UE 2016/679, \"GDPR\").",
+    "intro": "Questa informativa spiega come vengono trattati i dati personali di chi usa Turnora per prenotare o per gestire un'attività (artt. 13–14 del Regolamento UE 2016/679, \"GDPR\").",
     "sections": [
       {
         "title": "Chi tratta i tuoi dati",
         "paragraphs": [
-          "Per il tuo account Bookly il titolare del trattamento è [Ragione sociale], [indirizzo], email [email privacy].",
-          "Quando prenoti presso un'attività (per esempio un barbiere), è quell'attività il titolare dei dati della prenotazione: Bookly li tratta per suo conto come responsabile del trattamento (art. 28 GDPR), sulla base di un accordo con l'attività."
+          "Per il tuo account Turnora il titolare del trattamento è [Ragione sociale], [indirizzo], email [email privacy].",
+          "Quando prenoti presso un'attività (per esempio un barbiere), è quell'attività il titolare dei dati della prenotazione: Turnora li tratta per suo conto come responsabile del trattamento (art. 28 GDPR), sulla base di un accordo con l'attività."
         ]
       },
       {
@@ -65,7 +65,7 @@
       {
         "title": "Cookie e archiviazione nel browser",
         "paragraphs": [
-          "Bookly usa solo strumenti tecnici, necessari al funzionamento: per questo non serve un banner di consenso.",
+          "Turnora usa solo strumenti tecnici, necessari al funzionamento: per questo non serve un banner di consenso.",
           "Cookie di sessione dell'accesso (__Host-bookly.auth), cookie di protezione contro le richieste falsificate (XSRF-TOKEN e il cookie antiforgery) e, solo per chi gestisce un'attività, la memoria locale del browser che ricorda l'attività selezionata.",
           "Non usiamo cookie di profilazione, di statistica o di terze parti. Se in futuro ne aggiungessimo, chiederemmo prima il tuo consenso."
         ]
@@ -80,12 +80,12 @@
   },
   "terms": {
     "title": "Termini di servizio",
-    "intro": "Questi termini regolano l'uso di Bookly, la piattaforma che permette ai clienti di prenotare presso attività locali e alle attività di gestire le proprie prenotazioni. Il servizio è offerto da [Ragione sociale].",
+    "intro": "Questi termini regolano l'uso di Turnora, la piattaforma che permette ai clienti di prenotare presso attività locali e alle attività di gestire le proprie prenotazioni. Il servizio è offerto da [Ragione sociale].",
     "sections": [
       {
         "title": "Il servizio",
         "paragraphs": [
-          "Bookly è uno strumento tecnico: il servizio prenotato (per esempio un taglio) è fornito dall'attività, che ne è l'unica responsabile, così come di prezzi, orari e qualità della prestazione.",
+          "Turnora è uno strumento tecnico: il servizio prenotato (per esempio un taglio) è fornito dall'attività, che ne è l'unica responsabile, così come di prezzi, orari e qualità della prestazione.",
           "I prezzi mostrati sono indicativi e vengono pagati direttamente all'attività."
         ]
       },
@@ -107,9 +107,9 @@
       {
         "title": "Per le attività",
         "paragraphs": [
-          "L'attività è titolare dei dati dei propri clienti e Bookly ne è responsabile del trattamento: i rispettivi obblighi sono regolati da un accordo separato (art. 28 GDPR) [da allegare].",
+          "L'attività è titolare dei dati dei propri clienti e Turnora ne è responsabile del trattamento: i rispettivi obblighi sono regolati da un accordo separato (art. 28 GDPR) [da allegare].",
           "L'attività si impegna a usare i dati dei clienti solo per gestire gli appuntamenti e a non chiedere nelle note dati sanitari o di altre categorie particolari.",
-          "Bookly può sospendere un'attività in caso di uso improprio o di mancato rispetto di questi termini; i dati restano conservati."
+          "Turnora può sospendere un'attività in caso di uso improprio o di mancato rispetto di questi termini; i dati restano conservati."
         ]
       },
       {
@@ -121,7 +121,7 @@
       {
         "title": "Responsabilità e legge applicabile",
         "paragraphs": [
-          "Bookly è fornito \"così com'è\": facciamo il possibile per mantenerlo disponibile e sicuro, ma possono verificarsi interruzioni. [Limitazioni di responsabilità da definire con un professionista.]",
+          "Turnora è fornito \"così com'è\": facciamo il possibile per mantenerlo disponibile e sicuro, ma possono verificarsi interruzioni. [Limitazioni di responsabilità da definire con un professionista.]",
           "Si applica la legge italiana. Restano salvi i diritti inderogabili riconosciuti ai consumatori."
         ]
       }

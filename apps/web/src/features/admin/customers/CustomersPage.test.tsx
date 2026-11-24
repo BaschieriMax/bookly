@@ -287,7 +287,7 @@ describe('CustomersPage', () => {
     await userEvent.click(within(table).getByRole('button', { name: 'Mario Rossi' }))
     const dialog = await screen.findByRole('dialog', { name: /Mario Rossi/ })
 
-    expect(await within(dialog).findByText(/Ha un account Bookly/)).toBeInTheDocument()
+    expect(await within(dialog).findByText(/Ha un account Turnora/)).toBeInTheDocument()
     expect(within(dialog).queryByRole('textbox')).toBeNull()
     expect(within(dialog).queryByRole('button', { name: 'Scarica dati' })).toBeNull()
     expect(within(dialog).queryByRole('button', { name: 'Cancella dati' })).toBeNull()

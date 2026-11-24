@@ -71,7 +71,7 @@ test('a customer lands on their bookings and goes back to the landing page', asy
   await expect(page).toHaveURL(/\/account\/appuntamenti$/)
   await expect(page.getByRole('link', { name: 'Gestione attività' })).toHaveCount(0)
 
-  await page.getByRole('link', { name: 'bookly' }).click()
+  await page.getByRole('link', { name: 'turnora' }).click()
   await expect(page).toHaveURL(/\/$/)
   const menu = page.getByRole('navigation', { name: 'Menu del sito' })
   // Wide screens list every area; small ones show a single "La tua area" link.
