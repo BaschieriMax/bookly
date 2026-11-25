@@ -188,6 +188,55 @@ test('the customer card fits small screens on both tabs', async ({ page }, testI
   }
 })
 
+test('the appointment sheet fits small screens on every step (DEC-044)', async ({
+  page,
+}, testInfo) => {
+  const lastName = `Foglio${testInfo.project.name.replace(/\W/g, '')}${Date.now() % 100000}`
+  await login(page, demo.owner)
+  // A Wednesday far away, one per project and retry, so 09:00 is free.
+  const day = new Date()
+  day.setDate(
+    day.getDate() + 190 + 7 * (testInfo.project.name === 'mobile' ? 0 : 1) + 14 * testInfo.retry,
+  )
+  while (day.getDay() !== 3) day.setDate(day.getDate() + 1)
+  const date = day.toLocaleDateString('en-CA')
+  await addPhoneBooking(page, lastName, date)
+  for (const width of widths) {
+    await test.step(`${width}px`, async () => {
+      await page.setViewportSize({ width, height: 800 })
+      await page.goto(`/admin?data=${date}`)
+      // The agenda on phones, the grid from 768 px: only one of them is visible.
+      await page
+        .getByRole('button', { name: new RegExp(`E2e ${lastName}`) })
+        .filter({ visible: true })
+        .first()
+        .click()
+      const sheet = page.getByRole('dialog')
+      await expect(sheet.getByRole('button', { name: 'Sposta' })).toBeVisible()
+      await expectGoodLayout(page, `appointment details @ ${width}px`)
+      // A bottom sheet on phones, a full-height panel from 768 px: never taller than the screen
+      // (polled: it slides in for 220 ms).
+      await expect
+        .poll(async () => {
+          const box = (await sheet.boundingBox())!
+          return box.y + box.height
+        })
+        .toBeLessThanOrEqual(800 + 0.5)
+
+      await sheet.getByRole('button', { name: 'Sposta' }).click()
+      await expect(sheet.getByRole('group', { name: 'Mattina' })).toBeVisible()
+      await expectGoodLayout(page, `move step @ ${width}px`)
+
+      await sheet.getByRole('button', { name: 'Indietro' }).first().click()
+      await sheet.getByRole('button', { name: 'Annulla appuntamento' }).click()
+      await expect(sheet.getByRole('button', { name: 'Sì, annulla' })).toBeVisible()
+      await expectGoodLayout(page, `cancel step @ ${width}px`)
+      await page.keyboard.press('Escape')
+      await expect(sheet).toBeHidden()
+    })
+  }
+})
+
 test('the account menu keeps the header on one row and opens inside the screen', async ({
   page,
 }) => {

@@ -9,6 +9,7 @@ import {
   timeOffOnDay,
   workingIntervals,
 } from './calendarModel'
+import type { MovePreview } from './moveModel'
 import { SLOT_STEP, toTime } from './newAppointmentModel'
 import { statusBlock, type AppointmentStatus } from './statusStyles'
 
@@ -38,9 +39,16 @@ interface TimeGridProps {
   onCreateAt?: (column: GridColumn, minutes: number) => void
   /** Whether a slot accepts a new appointment (not in the past): only those show the hover preview. */
   canCreateAt?: (column: GridColumn, minutes: number) => boolean
+  /** Appointment open in the details panel: outlined, so it is clear which one it is. */
+  selectedId?: string | null
+  /** New time chosen in the "Sposta" step, drawn where it would go (DEC-044). */
+  preview?: MovePreview | null
 }
 
 const px = (minutes: number) => (minutes / 60) * HOUR_PX
+
+/** The appointment being moved: dashed where it is now, text still readable (not faded). */
+const MOVING_BLOCK = 'border-dashed border-border-strong bg-surface text-muted'
 
 /** Slot (15-minute steps) under the pointer, in minutes since midnight. */
 function slotAt(event: ReactMouseEvent<HTMLElement>, rangeStart: number): number {
@@ -59,6 +67,8 @@ export function TimeGrid({
   onSelect,
   onCreateAt,
   canCreateAt = () => true,
+  selectedId = null,
+  preview = null,
 }: TimeGridProps) {
   const { t } = useTranslation('admin')
   // Slot under the pointer: a dashed "+ 10:30" box shows where a click creates the appointment.
@@ -188,6 +198,7 @@ export function TimeGrid({
                 const lane = lanes.get(a.id) ?? { lane: 0, lanes: 1 }
                 const width = 100 / lane.lanes
                 const customer = `${a.customer.firstName} ${a.customer.lastName}`
+                const moving = preview?.appointmentId === a.id
                 return (
                   <div
                     key={a.id}
@@ -202,7 +213,7 @@ export function TimeGrid({
                     <button
                       type="button"
                       onClick={() => onSelect(a)}
-                      className={`flex w-full flex-col justify-center overflow-hidden rounded-control border-l-4 px-2 py-0.5 text-left text-xs leading-tight shadow-sm transition-[filter,box-shadow] hover:shadow-md hover:brightness-95 ${statusBlock[a.status] ?? statusBlock.Confirmed}`}
+                      className={`flex w-full flex-col justify-center overflow-hidden rounded-control border-l-4 px-2 py-0.5 text-left text-xs leading-tight shadow-sm transition-[filter,box-shadow] hover:shadow-md hover:brightness-95 ${moving ? MOVING_BLOCK : (statusBlock[a.status] ?? statusBlock.Confirmed)} ${a.id === selectedId ? 'ring-2 ring-primary' : ''}`}
                       style={{ height: Math.max(px(end - start), 22) }}
                     >
                       {end - start < 45 ? (
@@ -240,6 +251,21 @@ export function TimeGrid({
                   </div>
                 )
               })}
+              {preview &&
+                preview.date === column.date &&
+                column.staffIds.includes(preview.staffId) &&
+                preview.start < range.end && (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-1 z-[15] flex animate-fade-in flex-col justify-center overflow-hidden rounded-control border-l-4 border-primary bg-surface px-2 py-0.5 text-xs leading-tight font-semibold text-primary-text shadow-md ring-2 ring-primary"
+                    style={{
+                      top: px(Math.max(preview.start, range.start) - range.start),
+                      height: Math.max(px(preview.end - preview.start), 22),
+                    }}
+                  >
+                    {toTime(preview.start)} · {t('calendar.move.preview')}
+                  </div>
+                )}
               {column.isToday && nowMinutes >= range.start && nowMinutes <= range.end && (
                 <div
                   aria-hidden="true"

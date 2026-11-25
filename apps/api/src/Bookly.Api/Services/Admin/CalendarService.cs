@@ -528,14 +528,20 @@ public sealed class CalendarService(
             a.CancellationReason,
             a.Service.PriceCents,
             a.Service.PriceIsFrom,
-            ToCustomerDto(CustomerContact.Of(a)),
+            ToCustomerDto(a, CustomerContact.Of(a)),
             CanMove: confirmed && a.StartUtc > now,
             CanCancel: confirmed,
             CanMark: confirmed && a.StartUtc <= now);
     }
 
-    private static CalendarCustomerDto ToCustomerDto(CustomerContact c) =>
-        new(c.FirstName, c.LastName, c.Email, c.Phone, c.HasAccount);
+    private static CalendarCustomerDto ToCustomerDto(Appointment a, CustomerContact c) =>
+        new(c.FirstName, c.LastName, c.Email, c.Phone, c.HasAccount, RebookId(a));
+
+    /// <summary>Who "Prenota di nuovo" books for (DEC-044): the same rules as the customer search.</summary>
+    private static Guid? RebookId(Appointment a) =>
+        a.Customer is { } user ? (user.DeletedAt is null ? user.Id : null)
+        : a.TenantCustomer is { AnonymizedAt: null } entry ? entry.Id
+        : null;
 
     /// <summary>Customers with an account manage their bookings; the others get the business's page.</summary>
     private string CustomerLink(CustomerContact contact, Tenant tenant) =>

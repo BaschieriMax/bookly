@@ -107,6 +107,8 @@ public sealed class BusinessAppointmentTests(PostgresFixture database) : IDispos
             var entry = await db.TenantCustomers.IgnoreQueryFilters().SingleAsync(c => c.Id == appointment.TenantCustomerId);
             Assert.Equal(shop.Tenant.Id, entry.TenantId);
             Assert.Equal("3472223344", entry.PhoneDigits);
+            // "Prenota di nuovo" books for the same address-book entry (DEC-044).
+            Assert.Equal(entry.Id, customer.GetProperty("id").GetGuid());
         }
 
         var email = Assert.Single(_factory.Emails.SentTo("giulia@example.test"));

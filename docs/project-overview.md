@@ -43,7 +43,7 @@ Competenze tecniche basse per clienti e titolari: la UX deve essere semplice e g
 
 **J2 — Disdetta (cliente)**: Area personale → Appuntamenti → Disdici. È consentita solo entro la finestra di disdetta del tenant (es. fino a 12 ore prima).
 
-**J3 — Gestione agenda (titolare)**: Calendario giorno/settimana → appuntamento → sposta, annulla o segna no-show. Il cliente riceve un'email a ogni modifica.
+**J3 — Gestione agenda (titolare)**: Calendario giorno/settimana → appuntamento (pannello dal basso su telefono, laterale su desktop, DEC-044) → sposta scegliendo tra gli orari liberi, annulla con un motivo, segna completato o no-show, prenota di nuovo. Il cliente riceve un'email a ogni modifica.
 
 **J4 — Configurazione (titolare)**: Servizi (durata, buffer, prezzo) → Staff (servizi offerti) → Orari settimanali per operatore, con più fasce al giorno → Assenze e ferie.
 
@@ -310,7 +310,7 @@ Dark mode: **no per l'MVP** (ASSUNZIONE A6). I token sono comunque variabili CSS
 Breakpoint Tailwind standard (`sm 640`, `md 768`, `lg 1024`, `xl 1280`). Mobile-first.
 Punti critici:
 - **Griglia degli slot**: chip a 3 colonne su mobile, 5-6 su desktop.
-- **Calendario admin**: su mobile vista "giorno" a lista verticale; da `md` la griglia oraria; da `lg` la vista settimana.
+- **Calendario admin**: su mobile vista "giorno" a lista verticale; da `md` la griglia oraria; da `lg` la vista settimana. Il dettaglio di un appuntamento è un pannello dal basso sotto `md` e un pannello laterale da `md`, che lascia in vista la griglia (DEC-044).
 - **Tabelle admin** (servizi, staff): diventano card sotto `md`.
 - **Modali**: a schermo intero su mobile, centrate da `md`.
 

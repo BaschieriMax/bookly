@@ -19,6 +19,7 @@ import { AdminPageHeader, EmptyState, PageAction, QueryState } from '../AdminUi'
 import { useActiveMembership } from '../useAdminRole'
 import { Agenda } from './Agenda'
 import { AppointmentDialog } from './AppointmentDialog'
+import type { MovePreview } from './moveModel'
 import { useCalendar } from './calendarApi'
 import {
   DateNavigator,
@@ -80,6 +81,7 @@ export default function CalendarPage() {
   const { data: allStaff } = useAdminStaff()
   const [selected, setSelected] = useState<AdminAppointment | null>(null)
   const [creating, setCreating] = useState<NewAppointmentStart | null>(null)
+  const [preview, setPreview] = useState<MovePreview | null>(null)
 
   const timeZone = data?.timeZone ?? 'Europe/Rome'
   const today = todayIn(timeZone)
@@ -147,6 +149,25 @@ export default function CalendarPage() {
     update({ [STAFF_PARAM]: next.staffId, [CANCELLED_PARAM]: next.includeCancelled ? '1' : null })
   const openNew = () =>
     setCreating({ date: date < today ? today : date, staffId: staffId ?? undefined })
+  // "Prenota di nuovo" (DEC-044): same customer, service and staff member, from today.
+  const rebook = (appointment: AdminAppointment) => {
+    const { customer } = appointment
+    setSelected(null)
+    if (!customer.id) return
+    setCreating({
+      date: today,
+      staffId: appointment.staffId,
+      serviceId: appointment.serviceId,
+      customer: {
+        kind: customer.hasAccount ? 'Account' : 'AddressBook',
+        id: customer.id,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        phone: customer.phone,
+        email: customer.email,
+      },
+    })
+  }
 
   return (
     <section className="flex flex-col gap-4">
@@ -215,6 +236,8 @@ export default function CalendarPage() {
                 onSelect={setSelected}
                 canCreateAt={canCreateAt}
                 onCreateAt={createAt}
+                selectedId={selected?.id}
+                preview={preview}
               />
             </div>
           </>
@@ -224,7 +247,7 @@ export default function CalendarPage() {
       {creating && (
         <NewAppointmentDialog
           // Keyed: each opening starts from its own date, time and staff member.
-          key={`${creating.date}-${creating.time ?? ''}-${creating.staffId ?? ''}`}
+          key={`${creating.date}-${creating.time ?? ''}-${creating.staffId ?? ''}-${creating.customer?.id ?? ''}`}
           start={creating}
           timeZone={timeZone}
           onClose={() => setCreating(null)}
@@ -240,6 +263,8 @@ export default function CalendarPage() {
           timeZone={timeZone}
           canChooseStaff={isOwner}
           onClose={() => setSelected(null)}
+          onPreview={setPreview}
+          onRebook={rebook}
         />
       )}
     </section>

@@ -43,10 +43,32 @@ test('the owner enters a phone booking for a new customer from the calendar', as
   await expect(page.getByText('Appuntamento inserito.').first()).toBeVisible()
   await expect(dialog).toBeHidden()
   // The grid (desktop) or the agenda (phone) lists it; the other one is hidden.
-  await expect(
-    page
-      .getByText(new RegExp(`E2e ${lastName}`))
-      .filter({ visible: true })
-      .first(),
-  ).toBeVisible()
+  const listed = page
+    .getByRole('button', { name: new RegExp(`E2e ${lastName}`) })
+    .filter({ visible: true })
+    .first()
+  await expect(listed).toBeVisible()
+
+  // Details sheet (DEC-044): move it to one of the free times, then cancel it.
+  await listed.click()
+  const sheet = page.getByRole('dialog')
+  await expect(sheet).toHaveAccessibleName(/^Appuntamento 09:00/)
+  await sheet.getByRole('button', { name: 'Sposta' }).click()
+  await expect(sheet).toHaveAccessibleName('Sposta appuntamento')
+  const morning = sheet.getByRole('group', { name: 'Mattina' })
+  await morning.getByRole('button', { name: '11:00' }).click()
+  if (browserName !== 'firefox') await expectAccessible(page)
+  await sheet.getByRole('button', { name: /^Sposta a .* · 11:00$/ }).click()
+  await expect(page.getByText(/^Appuntamento spostato a .*, 11:00\.$/).first()).toBeVisible()
+  await expect(sheet).toBeHidden()
+
+  await listed.click()
+  await expect(sheet).toHaveAccessibleName(/^Appuntamento 11:00/)
+  await sheet.getByRole('button', { name: 'Annulla appuntamento' }).click()
+  await sheet.getByRole('button', { name: 'Chiusura imprevista' }).click()
+  await expect(sheet.getByLabel(/^Motivo/)).toHaveValue('Chiusura imprevista.')
+  await sheet.getByRole('button', { name: 'Sì, annulla' }).click()
+  await expect(page.getByText('Appuntamento annullato.').first()).toBeVisible()
+  // Cancelled appointments are hidden unless the filter shows them.
+  await expect(listed).toBeHidden()
 })

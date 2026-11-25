@@ -30,6 +30,7 @@ function appointment(overrides: Partial<AdminAppointment> = {}): AdminAppointmen
       email: 'mario@example.test',
       phone: '333 1234567',
       hasAccount: true,
+      id: 'acct-mario',
     },
     canMove: true,
     canCancel: true,
@@ -82,24 +83,103 @@ describe('CalendarPage', () => {
       }),
     )
     expect(requested).toContain('2099-03-02..2099-03-02')
-    const dialog = await screen.findByRole('dialog', { name: 'Appuntamento' })
+    const dialog = await screen.findByRole('dialog', { name: 'Appuntamento 10:00 – 10:30' })
     expect(within(dialog).getByRole('link', { name: '333 1234567' })).toHaveAttribute(
       'href',
       'tel:3331234567',
     )
-    expect(within(dialog).getByText('Sfumatura bassa')).toBeInTheDocument()
-    expect(within(dialog).getByText("Più 10 min di pausa per l'operatore.")).toBeInTheDocument()
+    expect(within(dialog).getByRole('link', { name: 'Chiama Mario Rossi' })).toBeInTheDocument()
+    expect(within(dialog).getByText('«Sfumatura bassa»')).toBeInTheDocument()
+    expect(within(dialog).getByText('+10 min di pausa')).toBeInTheDocument()
+    expect(within(dialog).getByText('Taglio · 30 min · 25 €')).toBeInTheDocument()
+    // A future appointment is moved or cancelled, not marked (DEC-044).
     expect(within(dialog).queryByRole('button', { name: 'Completato' })).not.toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Annulla appuntamento' })).toBeInTheDocument()
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Sposta' }))
-    const moveDialog = await screen.findByRole('dialog', { name: 'Sposta appuntamento' })
-    const time = within(moveDialog).getByLabelText('Nuovo orario')
-    await userEvent.clear(time)
-    await userEvent.type(time, '11:00')
-    await userEvent.click(within(moveDialog).getByRole('button', { name: 'Sposta' }))
+    expect(dialog).toHaveAccessibleName('Sposta appuntamento')
+    expect(within(dialog).getByRole('heading', { name: 'Sposta appuntamento' })).toHaveFocus()
+    // Days without working hours cannot be picked.
+    expect(within(dialog).getByRole('button', { name: 'lun 2 marzo' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(within(dialog).getByRole('button', { name: 'mar 3 marzo, chiuso' })).toBeDisabled()
 
-    expect((await screen.findAllByText('Appuntamento spostato.'))[0]).toBeInTheDocument()
+    // Free times only: inside 09:00–13:00 with the 10-minute buffer, not the current 10:00.
+    const morning = await within(dialog).findByRole('group', { name: 'Mattina' })
+    const times = within(morning)
+      .getAllByRole('button')
+      .map((b) => b.textContent)
+    expect(times[0]).toBe('09:00')
+    expect(times).not.toContain('10:00')
+    expect(times.at(-1)).toBe('12:15')
+    const submit = within(dialog).getByRole('button', { name: 'Scegli un orario' })
+    expect(submit).toBeDisabled()
+
+    await userEvent.click(within(morning).getByRole('button', { name: '11:00' }))
+    // The desktop grid shows where it would go.
+    expect(screen.getByText('11:00 · Nuovo orario')).toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Sposta a lun 2 · 11:00' }))
+
+    expect(
+      (await screen.findAllByText('Appuntamento spostato a lun 2 mar, 11:00.'))[0],
+    ).toBeInTheDocument()
     expect(moveBody).toEqual({ date: '2099-03-02', time: '11:00', staffId: null })
+    expect(screen.queryByText('11:00 · Nuovo orario')).not.toBeInTheDocument()
+  })
+
+  it('moves to another staff member who offers the service', async () => {
+    asOwner()
+    let moveBody: unknown = null
+    server.use(
+      http.get('/api/admin/staff', () =>
+        HttpResponse.json([
+          ...adminStaff,
+          { ...adminStaff[0]!, id: LUCA, displayName: 'Luca', sortOrder: 2 },
+          { ...adminStaff[0]!, id: 'other', displayName: 'Senza taglio', serviceIds: [] },
+        ]),
+      ),
+      http.get('/api/admin/calendar', ({ request }) => {
+        const url = new URL(request.url)
+        const result = calendar(url.searchParams.get('from')!, url.searchParams.get('to')!, [
+          appointment(),
+        ])
+        return HttpResponse.json({
+          ...result,
+          workingHours: [
+            ...result.workingHours,
+            { staffId: LUCA, dayOfWeek: 1, start: '15:00:00', end: '18:00:00' },
+          ],
+        })
+      }),
+      http.post('/api/admin/appointments/:id/move', async ({ request }) => {
+        moveBody = await request.json()
+        return HttpResponse.json(appointment())
+      }),
+    )
+    renderApp('/admin?data=2099-03-02')
+
+    await userEvent.click((await screen.findAllByRole('button', { name: /Taglio/ }))[0]!)
+    await userEvent.click(await screen.findByRole('button', { name: 'Sposta' }))
+    const dialog = screen.getByRole('dialog', { name: 'Sposta appuntamento' })
+    const staff = await within(dialog).findByRole('group', { name: 'Operatore' })
+    expect(
+      within(staff)
+        .getAllByRole('button')
+        .map((b) => b.textContent),
+    ).toEqual(['Barbiere 1', 'Luca'])
+
+    await userEvent.click(within(dialog).getByRole('button', { name: '09:00' }))
+    await userEvent.click(within(staff).getByRole('button', { name: 'Luca' }))
+    // Another staff member: the chosen time is cleared and the afternoon hours are offered.
+    expect(within(dialog).getByRole('button', { name: 'Scegli un orario' })).toBeDisabled()
+    expect(within(dialog).queryByRole('group', { name: 'Mattina' })).not.toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: '15:30' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Sposta a lun 2 · 15:30' }))
+
+    await screen.findAllByText('Appuntamento spostato a lun 2 mar, 15:30.')
+    expect(moveBody).toEqual({ date: '2099-03-02', time: '15:30', staffId: LUCA })
   })
 
   it('explains a conflict when moving onto another appointment', async () => {
@@ -120,11 +200,14 @@ describe('CalendarPage', () => {
     await userEvent.click((await screen.findAllByRole('button', { name: /Taglio/ }))[0]!)
     await userEvent.click(await screen.findByRole('button', { name: 'Sposta' }))
     const moveDialog = await screen.findByRole('dialog', { name: 'Sposta appuntamento' })
-    await userEvent.click(within(moveDialog).getByRole('button', { name: 'Sposta' }))
+    await userEvent.click(await within(moveDialog).findByRole('button', { name: '11:00' }))
+    await userEvent.click(within(moveDialog).getByRole('button', { name: /Sposta a/ }))
 
     expect(
       (await screen.findAllByText("C'è già un altro appuntamento in quell'orario."))[0],
     ).toBeInTheDocument()
+    // The step stays open to pick another time.
+    expect(screen.getByRole('dialog', { name: 'Sposta appuntamento' })).toBeInTheDocument()
   })
 
   it('marks a started appointment and cancels with a reason', async () => {
@@ -146,6 +229,7 @@ describe('CalendarPage', () => {
                 email: null,
                 phone: null,
                 hasAccount: true,
+                id: 'acct-luigi',
               },
             }),
           ]),
@@ -165,22 +249,73 @@ describe('CalendarPage', () => {
     await userEvent.click(
       await screen.findByRole('button', { name: /Mario Rossi, fino alle .*, Anna/ }),
     )
-    let dialog = await screen.findByRole('dialog', { name: 'Appuntamento' })
+    let dialog = await screen.findByRole('dialog', { name: /^Appuntamento/ })
+    // Started: "Com'è andata?" instead of moving it (DEC-044).
+    expect(within(dialog).getByText('È iniziato alle 10:00')).toBeInTheDocument()
+    expect(within(dialog).queryByRole('button', { name: 'Sposta' })).not.toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Non presentato' }))
-    expect((await screen.findAllByText('Stato aggiornato.'))[0]).toBeInTheDocument()
+    expect((await screen.findAllByText('Segnato come non presentato.'))[0]).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: /Luigi Verdi, fino alle .*, Anna/ }))
-    dialog = await screen.findByRole('dialog', { name: 'Appuntamento' })
+    dialog = await screen.findByRole('dialog', { name: /^Appuntamento/ })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Annulla appuntamento' }))
-    dialog = await screen.findByRole('dialog', { name: 'Annulla appuntamento' })
-    await userEvent.type(within(dialog).getByLabelText(/Motivo/), 'Chiusura')
+    expect(dialog).toHaveAccessibleName('Annulla appuntamento')
+    // No email address: no promise of an email.
+    expect(within(dialog).getByText(/L'annullamento non si può revocare/)).not.toHaveTextContent(
+      'email',
+    )
+    const reason = within(dialog).getByLabelText(/Motivo/)
+    await userEvent.type(reason, 'Chiusura')
+    // A frequent reason replaces what was typed.
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Operatore assente' }))
+    expect(reason).toHaveValue('Operatore assente.')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Sì, annulla' }))
 
     expect((await screen.findAllByText('Appuntamento annullato.'))[0]).toBeInTheDocument()
     expect(calls).toEqual([
       { path: 'appt-1/no-show', body: null },
-      { path: 'appt-2/cancel', body: { reason: 'Chiusura' } },
+      { path: 'appt-2/cancel', body: { reason: 'Operatore assente.' } },
     ])
+  })
+
+  it('shows a closed appointment read only and books it again for the same customer', async () => {
+    asOwner()
+    server.use(
+      http.get('/api/admin/calendar', ({ request }) => {
+        const url = new URL(request.url)
+        return HttpResponse.json(
+          calendar(url.searchParams.get('from')!, url.searchParams.get('to')!, [
+            appointment({
+              status: 'Completed',
+              canMove: false,
+              canCancel: false,
+              canMark: false,
+            }),
+          ]),
+        )
+      }),
+    )
+    renderApp('/admin?data=2099-03-02')
+
+    await userEvent.click((await screen.findAllByRole('button', { name: /Taglio/ }))[0]!)
+    const dialog = await screen.findByRole('dialog', { name: /^Appuntamento/ })
+    expect(within(dialog).getByText('Il servizio è stato svolto.')).toBeInTheDocument()
+    expect(within(dialog).queryByRole('button', { name: 'Sposta' })).not.toBeInTheDocument()
+    expect(
+      within(dialog).queryByRole('button', { name: 'Annulla appuntamento' }),
+    ).not.toBeInTheDocument()
+
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: 'Prenota di nuovo per Mario' }),
+    )
+
+    const created = await screen.findByRole('dialog', { name: 'Nuovo appuntamento' })
+    expect(
+      await within(created).findByRole('button', { name: /Mario Rossi/, pressed: true }),
+    ).toBeInTheDocument()
+    expect(within(created).getByLabelText('Servizio')).toHaveValue(
+      '11111111-1111-4111-8111-111111111111',
+    )
   })
 
   it('navigates by week and keeps the state in the URL', async () => {
