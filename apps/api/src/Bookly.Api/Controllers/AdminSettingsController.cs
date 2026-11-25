@@ -31,11 +31,11 @@ public sealed class AdminSettingsController(TenantSettingsService settings) : Co
 
     [HttpPut("brand/logo")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(TenantSettingsService.MaxLogoBytes + 16 * 1024)]
+    [RequestSizeLimit(TenantSettingsService.MaxLogoBytes + TenantSettingsService.MaxHomeIconBytes + 32 * 1024)]
     [ProducesResponseType<TenantBrandSettingsDto>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
-    public async Task<IResult> SaveLogo(IFormFile logo, CancellationToken cancellationToken) =>
-        (await settings.SaveLogoAsync(logo, cancellationToken)).ToResult();
+    public async Task<IResult> SaveLogo(IFormFile logo, IFormFile? icon, CancellationToken cancellationToken) =>
+        (await settings.SaveLogoAsync(logo, icon, cancellationToken)).ToResult();
 
     [HttpDelete("brand/logo")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

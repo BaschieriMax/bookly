@@ -38,11 +38,15 @@ export function primaryTextContrast(primaryColor: string | null, ground: string)
   return contrastRatio(primary, background['--bk-color-bg'])
 }
 
+/** Colours and fonts are all the theme reads; the rest of the brand (logo, icon) may come along. */
+type ThemeBrand = Pick<PublicTenant['brand'], 'primaryColor' | 'ground' | 'headingFont'> &
+  Partial<PublicTenant['brand']>
+
 /**
  * CSS variables that re-skin the public pages with the tenant brand (DEC-016, DEC-018).
  * Only token values change: components keep using bg-primary, text-ink, font-tenant-heading...
  */
-export function tenantThemeStyle(brand: PublicTenant['brand']): CSSProperties {
+export function tenantThemeStyle(brand: ThemeBrand): CSSProperties {
   const ground = brand.ground === 'Dark' ? grounds.Dark : grounds.Light
   const primary = isHexColor(brand.primaryColor) ? brand.primaryColor : DEFAULT_PRIMARY
   const primaryText =

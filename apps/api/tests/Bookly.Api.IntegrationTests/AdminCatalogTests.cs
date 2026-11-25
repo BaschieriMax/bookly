@@ -318,12 +318,79 @@ public sealed class AdminCatalogTests(PostgresFixture database) : IDisposable
         Assert.Equal(HttpStatusCode.NoContent, removed.StatusCode);
     }
 
-    private static async Task<HttpResponseMessage> UploadLogoAsync(ApiSession session, byte[] bytes, string contentType)
+    [Fact]
+    public async Task Logo_upload_can_carry_a_home_screen_icon_served_with_a_manifest()
+    {
+        var shop = await ArrangeShopAsync();
+        using var session = await TestUsers.LoginAsync(_factory, shop.Owner);
+        var slug = shop.Tenant.Slug;
+
+        // Wrong size: the browser always sends 256×256.
+        using var wrongSize = await UploadLogoAsync(session, PngBytes(1024), "image/png", IconPng(512));
+        Assert.Equal(HttpStatusCode.BadRequest, wrongSize.StatusCode);
+        Assert.Equal("admin.invalid_logo", await CodeAsync(wrongSize));
+
+        using var withIcon = await UploadLogoAsync(session, PngBytes(1024), "image/png", IconPng(256));
+        Assert.Equal(HttpStatusCode.OK, withIcon.StatusCode);
+
+        var publicInfo = await session.Client.GetFromJsonAsync<JsonElement>($"/api/public/tenants/{slug}");
+        Assert.True(publicInfo.GetProperty("brand").GetProperty("hasHomeIcon").GetBoolean());
+
+        using var icon = await session.Client.GetAsync($"/api/public/tenants/{slug}/icon");
+        Assert.Equal(HttpStatusCode.OK, icon.StatusCode);
+        Assert.Equal("image/png", icon.Content.Headers.ContentType?.MediaType);
+        Assert.Equal(IconPng(256), await icon.Content.ReadAsByteArrayAsync());
+
+        using var manifest = await session.Client.GetAsync($"/api/public/tenants/{slug}/manifest.webmanifest");
+        Assert.Equal(HttpStatusCode.OK, manifest.StatusCode);
+        Assert.Equal("application/manifest+json", manifest.Content.Headers.ContentType?.MediaType);
+        var body = await JsonAsync(manifest);
+        Assert.Equal(shop.Tenant.Name, body.GetProperty("name").GetString());
+        Assert.Equal(shop.Tenant.Name, body.GetProperty("short_name").GetString());
+        Assert.Equal($"/b/{slug}", body.GetProperty("start_url").GetString());
+        Assert.Equal($"/b/{slug}", body.GetProperty("scope").GetString());
+        Assert.Equal("browser", body.GetProperty("display").GetString());
+        var only = Assert.Single(body.GetProperty("icons").EnumerateArray());
+        Assert.Equal($"/api/public/tenants/{slug}/icon", only.GetProperty("src").GetString());
+        Assert.False(only.TryGetProperty("purpose", out _));
+
+        // A new logo without an icon must not keep the icon of the old one.
+        using var withoutIcon = await UploadLogoAsync(session, PngBytes(2048), "image/png");
+        Assert.Equal(HttpStatusCode.OK, withoutIcon.StatusCode);
+        using var gone = await session.Client.GetAsync($"/api/public/tenants/{slug}/icon");
+        Assert.Equal(HttpStatusCode.NotFound, gone.StatusCode);
+        var fallback = await session.Client.GetFromJsonAsync<JsonElement>($"/api/public/tenants/{slug}/manifest.webmanifest");
+        Assert.Equal("/icon-192.png", fallback.GetProperty("icons")[0].GetProperty("src").GetString());
+        Assert.Equal("maskable", fallback.GetProperty("icons")[2].GetProperty("purpose").GetString());
+
+        using var unknown = await session.Client.GetAsync("/api/public/tenants/non-esiste/manifest.webmanifest");
+        Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
+    }
+
+    private static async Task<HttpResponseMessage> UploadLogoAsync(ApiSession session, byte[] bytes, string contentType, byte[]? icon = null)
     {
         var file = new ByteArrayContent(bytes);
         file.Headers.ContentType = new MediaTypeHeaderValue(contentType);
         var form = new MultipartFormDataContent { { file, "logo", "logo.png" } };
+        if (icon is not null)
+        {
+            var iconFile = new ByteArrayContent(icon);
+            iconFile.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+            form.Add(iconFile, "icon", "icon.png");
+        }
+
         return await session.SendContentAsync(HttpMethod.Put, "/api/admin/brand/logo", form);
+    }
+
+    /// <summary>PNG signature + IHDR of a square image: all the server checks about the icon.</summary>
+    private static byte[] IconPng(uint size)
+    {
+        var bytes = new byte[64];
+        new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 13 }.CopyTo(bytes, 0);
+        "IHDR"u8.CopyTo(bytes.AsSpan(12));
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(16), size);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(20), size);
+        return bytes;
     }
 
     private static byte[] PngBytes(int length)

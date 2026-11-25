@@ -13,6 +13,10 @@ export const tenantKeys = {
 
 const base = (slug: string) => `/public/tenants/${encodeURIComponent(slug)}`
 
+/** Home-screen icon and manifest of a business (DEC-043): full paths, for <link> tags. */
+export const tenantIconUrl = (slug: string) => `/api${base(slug)}/icon`
+export const tenantManifestUrl = (slug: string) => `/api${base(slug)}/manifest.webmanifest`
+
 export function useTenant(slug: string) {
   return useQuery({
     queryKey: tenantKeys.tenant(slug),

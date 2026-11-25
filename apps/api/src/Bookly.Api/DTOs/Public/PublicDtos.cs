@@ -1,6 +1,22 @@
 namespace Bookly.Api.DTOs.Public;
 
-public sealed record TenantBrandDto(string? PrimaryColor, string Ground, string HeadingFont, bool HasLogo);
+public sealed record TenantBrandDto(string? PrimaryColor, string Ground, string HeadingFont, bool HasLogo, bool HasHomeIcon);
+
+/// <summary>Web app manifest of a tenant page (DEC-043): name, scope and home-screen icons.</summary>
+public sealed record WebAppManifestDto(
+    string Name,
+    [property: System.Text.Json.Serialization.JsonPropertyName("short_name")] string ShortName,
+    string Lang,
+    [property: System.Text.Json.Serialization.JsonPropertyName("start_url")] string StartUrl,
+    string Scope,
+    string Display,
+    IReadOnlyList<WebAppManifestIconDto> Icons);
+
+public sealed record WebAppManifestIconDto(
+    string Src,
+    string Sizes,
+    string Type,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? Purpose);
 
 public sealed record PublicTenantDto(
     string Slug,

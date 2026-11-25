@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using Bookly.Api.Data;
 using Bookly.Api.DTOs.Admin;
 using Bookly.Api.Entities;
@@ -10,6 +11,11 @@ namespace Bookly.Api.Services.Admin;
 public sealed class TenantSettingsService(AppDbContext db, AdminContext admin, TimeProvider timeProvider)
 {
     public const int MaxLogoBytes = 200 * 1024;
+
+    /// <summary>Side of the home-screen icon the browser makes from the logo (DEC-043).</summary>
+    public const int HomeIconSize = 256;
+
+    public const int MaxHomeIconBytes = 256 * 1024;
 
     public async Task<TenantSettingsDto> GetSettingsAsync(CancellationToken cancellationToken)
     {
@@ -59,32 +65,48 @@ public sealed class TenantSettingsService(AppDbContext db, AdminContext admin, T
     /// <summary>
     /// Stores the logo after checking size and the real file signature (not just the declared
     /// content type): only PNG and WebP, never SVG (script injection), max 200 KB (assumption A9).
+    /// The optional icon is the home-screen version the browser made from it (DEC-043): it must be
+    /// a 256×256 PNG. A logo sent without it clears the old icon, which would show the old logo.
     /// </summary>
-    public async Task<ServiceResult<TenantBrandSettingsDto>> SaveLogoAsync(IFormFile file, CancellationToken cancellationToken)
+    public async Task<ServiceResult<TenantBrandSettingsDto>> SaveLogoAsync(IFormFile file, IFormFile? icon, CancellationToken cancellationToken)
     {
         if (file.Length is 0 or > MaxLogoBytes)
         {
             return InvalidLogo();
         }
 
-        using var buffer = new MemoryStream();
-        await file.CopyToAsync(buffer, cancellationToken);
-        var bytes = buffer.ToArray();
+        var bytes = await ReadAllAsync(file, cancellationToken);
         var contentType = DetectImageType(bytes);
         if (contentType is null)
         {
             return InvalidLogo();
         }
 
+        byte[]? iconBytes = null;
+        if (icon is not null)
+        {
+            if (icon.Length is 0 or > MaxHomeIconBytes)
+            {
+                return InvalidLogo();
+            }
+
+            iconBytes = await ReadAllAsync(icon, cancellationToken);
+            if (!IsPngOfSize(iconBytes, HomeIconSize))
+            {
+                return InvalidLogo();
+            }
+        }
+
         var logo = await db.TenantLogos.SingleOrDefaultAsync(l => l.TenantId == admin.TenantId, cancellationToken);
         if (logo is null)
         {
-            db.TenantLogos.Add(new TenantLogo { TenantId = admin.TenantId, ContentType = contentType, Data = bytes, UpdatedAt = timeProvider.GetUtcNow() });
+            db.TenantLogos.Add(new TenantLogo { TenantId = admin.TenantId, ContentType = contentType, Data = bytes, IconData = iconBytes, UpdatedAt = timeProvider.GetUtcNow() });
         }
         else
         {
             logo.ContentType = contentType;
             logo.Data = bytes;
+            logo.IconData = iconBytes;
             logo.UpdatedAt = timeProvider.GetUtcNow();
         }
 
@@ -107,6 +129,24 @@ public sealed class TenantSettingsService(AppDbContext db, AdminContext admin, T
             && bytes[..4].SequenceEqual("RIFF"u8)
             && bytes.Slice(8, 4).SequenceEqual("WEBP"u8);
         return isWebp ? "image/webp" : null;
+    }
+
+    /// <summary>PNG signature followed by an IHDR chunk with the given width and height.</summary>
+    internal static bool IsPngOfSize(ReadOnlySpan<byte> bytes, int size)
+    {
+        ReadOnlySpan<byte> png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+        return bytes.Length >= 24
+            && bytes.StartsWith(png)
+            && bytes.Slice(12, 4).SequenceEqual("IHDR"u8)
+            && BinaryPrimitives.ReadUInt32BigEndian(bytes.Slice(16, 4)) == size
+            && BinaryPrimitives.ReadUInt32BigEndian(bytes.Slice(20, 4)) == size;
+    }
+
+    private static async Task<byte[]> ReadAllAsync(IFormFile file, CancellationToken cancellationToken)
+    {
+        using var buffer = new MemoryStream();
+        await file.CopyToAsync(buffer, cancellationToken);
+        return buffer.ToArray();
     }
 
     private static ServiceResult<TenantBrandSettingsDto> InvalidLogo() =>

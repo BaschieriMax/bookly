@@ -1349,3 +1349,47 @@ decide il nome del mittente delle email.
 Status:
 Approved (Massimo, 24/11/2026)
 ```
+
+```text
+Decision:
+DEC-043 — Icona e nome sulla schermata Home (iPhone e Android)
+
+Context:
+Aggiungendo Turnora alla schermata Home, iOS usava uno screenshot della pagina come icona
+(c'era solo la favicon SVG) e Android non trovava un manifest. iOS rende nere le parti trasparenti
+dell'icona, e i loghi delle attività sono spesso PNG trasparenti. Il server non elabora immagini:
+salva il logo così com'è (DEC su loghi PNG/WebP, max 200 KB).
+
+Decision (scelte da Massimo il 25/11/2026):
+- Apertura in Safari/Chrome normale (display "browser"): niente modalità app a schermo intero,
+  che toglierebbe il tasto indietro, separerebbe il login da Safari e richiederebbe la safe area
+  (TD-012). Si può rivalutare nella revisione UI/UX.
+- Turnora: apple-touch-icon.png (180), icon-192.png, icon-512.png (anche maskable), quadrati
+  verdi pieni con il segno bianco al 56%, generati da apps/web/scripts/generate-icons.mjs
+  (`npm run icons`) con gli stessi tracciati di BrandMark e favicon.svg. public/manifest.webmanifest
+  senza start_url (vale la pagina aggiunta) e scope "/".
+- Pagina pubblica /b/{slug}: nome e icona dell'attività. Quando il titolare carica il logo, il
+  browser crea un PNG 256×256 senza trasparenza (logo opaco a tutto quadrato; logo trasparente al
+  76% su bianco, o su #18181b se è chiaro) e lo invia insieme al logo (campo facoltativo "icon").
+  Il server controlla firma PNG e misure (IHDR 256×256, max 256 KB) e lo salva in
+  TenantLogos.IconData (migrazione AddTenantLogoIcon). Un logo inviato senza icona cancella quella
+  vecchia. Nuovi endpoint pubblici: /api/public/tenants/{slug}/icon e
+  /api/public/tenants/{slug}/manifest.webmanifest (nome dell'attività, start_url e scope
+  /b/{slug}, icona dell'attività o quelle di Turnora). PublicTenantDto.brand.hasHomeIcon.
+- TenantPageMeta sostituisce apple-touch-icon, manifest e apple-mobile-web-app-title di index.html
+  (stringhe in ShellTags, controllate da IndexHtmlContractTests); useHomeScreenMeta fa lo stesso
+  nella navigazione interna e rimette quelli di Turnora uscendo dalla pagina.
+
+Alternatives:
+Icona creata dal server con SkiaSharp (scartata: libreria nativa nel container e immagini degli
+utenti lette dal server); sempre l'icona Turnora anche per le attività; modalità app a schermo
+intero.
+
+Consequences:
+I loghi caricati prima di questa modifica non hanno icona: la Home mostra l'icona Turnora con il
+nome dell'attività finché il titolare non ricarica il logo. Se il browser non riesce a disegnare
+il logo, il logo si salva comunque, senza icona.
+
+Status:
+Approved (Massimo, 25/11/2026)
+```

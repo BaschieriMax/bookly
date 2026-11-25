@@ -17,6 +17,9 @@ public sealed class HardeningTests(PostgresFixture database) : IDisposable
         <!doctype html>
         <html lang="it">
           <head>
+            <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+            <link rel="manifest" href="/manifest.webmanifest" />
+            <meta name="apple-mobile-web-app-title" content="Turnora" />
             <title>Turnora</title>
             <script type="module" src="/assets/index.js"></script>
           </head>
@@ -80,8 +83,27 @@ public sealed class HardeningTests(PostgresFixture database) : IDisposable
         Assert.Contains("Via Emilia 1, Modena", html, StringComparison.Ordinal);
         Assert.Contains($"<link rel=\"canonical\" href=\"https://app.bookly.test/b/{tenant.Slug}\" />", html, StringComparison.Ordinal);
         Assert.Contains($"content=\"https://app.bookly.test/api/public/tenants/{tenant.Slug}/logo\"", html, StringComparison.Ordinal);
+        // DEC-043: home screen. The logo has no icon yet, so the Turnora icon stays.
+        Assert.Contains("<meta name=\"apple-mobile-web-app-title\" content=\"Barber &amp; &lt;Co&gt;\" />", html, StringComparison.Ordinal);
+        Assert.Contains($"<link rel=\"manifest\" href=\"/api/public/tenants/{tenant.Slug}/manifest.webmanifest\" />", html, StringComparison.Ordinal);
+        Assert.Contains("<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png\" />", html, StringComparison.Ordinal);
         Assert.Contains("<script type=\"module\" src=\"/assets/index.js\"></script>", html, StringComparison.Ordinal);
         Assert.Contains("Content-Security-Policy", response.Headers.Select(h => h.Key));
+    }
+
+    [Fact]
+    public async Task Tenant_pages_point_the_home_screen_icon_to_the_business_icon()
+    {
+        await using var db = database.CreateDbContext();
+        var tenant = await TestData.AddTenantAsync(db);
+        db.TenantLogos.Add(new TenantLogo { TenantId = tenant.Id, ContentType = "image/png", Data = [0x89, 0x50], IconData = [0x89, 0x50], UpdatedAt = DateTimeOffset.UtcNow });
+        await db.SaveChangesAsync();
+        using var client = ClientWithShell();
+
+        var html = await client.GetStringAsync($"/b/{tenant.Slug}");
+
+        Assert.Contains($"<link rel=\"apple-touch-icon\" href=\"/api/public/tenants/{tenant.Slug}/icon\" />", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("/apple-touch-icon.png", html, StringComparison.Ordinal);
     }
 
     [Fact]

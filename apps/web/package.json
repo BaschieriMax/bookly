@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "gen:api": "openapi-typescript openapi/bookly-api.json -o src/types/api.gen.ts",
+    "icons": "node scripts/generate-icons.mjs",
     "e2e": "playwright test"
   },
   "dependencies": {

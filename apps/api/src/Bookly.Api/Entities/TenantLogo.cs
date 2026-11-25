@@ -9,5 +9,11 @@ public class TenantLogo
 
     public required byte[] Data { get; set; }
 
+    /// <summary>
+    /// Home-screen icon made by the browser from the logo (DEC-043): a 256×256 PNG on a solid
+    /// background. Null for logos uploaded before it existed or when the browser could not make it.
+    /// </summary>
+    public byte[]? IconData { get; set; }
+
     public DateTimeOffset UpdatedAt { get; set; }
 }

@@ -121,7 +121,13 @@ export const demoTenant: PublicTenant = {
   timeZone: 'Europe/Rome',
   cancellationWindowHours: 12,
   bookingHorizonDays: 60,
-  brand: { primaryColor: '#e8b05a', ground: 'Dark', headingFont: 'Script', hasLogo: false },
+  brand: {
+    primaryColor: '#e8b05a',
+    ground: 'Dark',
+    headingFont: 'Script',
+    hasLogo: false,
+    hasHomeIcon: false,
+  },
 }
 
 export const demoServices: PublicService[] = [

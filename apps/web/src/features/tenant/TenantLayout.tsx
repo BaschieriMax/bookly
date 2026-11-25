@@ -7,6 +7,7 @@ import { isApiError } from '@/services/apiClient'
 import { useTenant } from './tenantApi'
 import { TenantContext } from './tenantContext'
 import { tenantThemeStyle } from './tenantTheme'
+import { useHomeScreenMeta } from './useHomeScreenMeta'
 import { TextLink } from '@/components/ui/TextLink'
 import { paths } from '@/app/paths'
 
@@ -15,6 +16,7 @@ export default function TenantLayout() {
   const { slug = '' } = useParams()
   const { t } = useTranslation(['booking', 'common'])
   const { data: tenant, isPending, error, refetch, isRefetching } = useTenant(slug)
+  useHomeScreenMeta(tenant)
 
   if (isPending) {
     return <PageSpinner />

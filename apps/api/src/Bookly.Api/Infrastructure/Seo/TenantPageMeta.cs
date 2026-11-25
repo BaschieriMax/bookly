@@ -40,12 +40,12 @@ public sealed class WebRootIndexHtmlProvider(IWebHostEnvironment environment) : 
 /// <summary>
 /// Q4 / DEC-031: the public page of a tenant (/b/{slug}/...) is served with its own title,
 /// description and Open Graph tags, so shared links show a preview and search engines index the
-/// business name. Everything else in the shell is unchanged; the SPA takes over in the browser.
+/// business name. DEC-043: adding the page to the home screen shows the business name and its
+/// icon (Turnora's when it has none). Everything else in the shell is unchanged; the SPA takes over
+/// in the browser (useHomeScreenMeta keeps the same tags on client-side navigation).
 /// </summary>
 public static class TenantPageMeta
 {
-    private const string TitleTag = "<title>Turnora</title>";
-
     /// <summary>Encodes markup characters (&lt; &gt; &amp; quotes) but keeps accented letters readable.</summary>
     private static readonly HtmlEncoder Encoder = HtmlEncoder.Create(System.Text.Unicode.UnicodeRanges.All);
 
@@ -71,14 +71,14 @@ public static class TenantPageMeta
 
         var tenant = await db.Tenants.AsNoTracking()
             .Where(t => t.Slug == slug && t.Status == TenantStatus.Active)
-            .Select(t => new { t.Slug, t.Name, t.Address, HasLogo = t.Logo != null })
+            .Select(t => new { t.Slug, t.Name, t.Address, HasLogo = t.Logo != null, HasIcon = t.Logo != null && t.Logo.IconData != null })
             .SingleOrDefaultAsync(cancellationToken);
 
         context.Response.Headers.CacheControl = "no-cache";
         if (tenant is null)
         {
             // Unknown or suspended: the SPA shows its "not found" page; crawlers get a real 404.
-            var notFound = html.Replace(TitleTag, $"{TitleTag}\n    <meta name=\"robots\" content=\"noindex\" />", StringComparison.Ordinal);
+            var notFound = html.Replace(ShellTags.Title, $"{ShellTags.Title}\n    <meta name=\"robots\" content=\"noindex\" />", StringComparison.Ordinal);
             return Results.Content(notFound, "text/html; charset=utf-8", statusCode: StatusCodes.Status404NotFound);
         }
 
@@ -108,7 +108,15 @@ public static class TenantPageMeta
             tags.Add($"<meta property=\"og:image\" content=\"{encoder.Encode($"{baseUrl}/api/public/tenants/{Uri.EscapeDataString(tenant.Slug)}/logo")}\" />");
         }
 
-        var page = html.Replace(TitleTag, string.Join("\n    ", tags), StringComparison.Ordinal);
+        var page = html
+            .Replace(ShellTags.Title, string.Join("\n    ", tags), StringComparison.Ordinal)
+            .Replace(ShellTags.AppTitle, $"<meta name=\"apple-mobile-web-app-title\" content=\"{encoder.Encode(tenant.Name)}\" />", StringComparison.Ordinal)
+            .Replace(ShellTags.Manifest, $"<link rel=\"manifest\" href=\"{encoder.Encode(ShellTags.TenantManifestUrl(tenant.Slug))}\" />", StringComparison.Ordinal);
+        if (tenant.HasIcon)
+        {
+            page = page.Replace(ShellTags.AppleTouchIcon, $"<link rel=\"apple-touch-icon\" href=\"{encoder.Encode(ShellTags.TenantIconUrl(tenant.Slug))}\" />", StringComparison.Ordinal);
+        }
+
         return Results.Content(page, "text/html; charset=utf-8");
     }
 }
