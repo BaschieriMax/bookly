@@ -3,6 +3,7 @@ using Bookly.Api.Data;
 using Bookly.Api.DTOs.Public;
 using Bookly.Api.Entities;
 using Bookly.Api.Infrastructure.Http;
+using Bookly.Api.Infrastructure.Seo;
 using Bookly.Api.Services.Availability;
 using Bookly.Api.Tenancy;
 using Microsoft.AspNetCore.Authorization;
@@ -35,7 +36,10 @@ public sealed class PublicTenantsController(
             return TenantNotFound();
         }
 
-        var hasLogo = await db.TenantLogos.AnyAsync(l => l.TenantId == tenant.Id, cancellationToken);
+        var logo = await db.TenantLogos.AsNoTracking()
+            .Where(l => l.TenantId == tenant.Id)
+            .Select(l => new { HasIcon = l.IconData != null })
+            .SingleOrDefaultAsync(cancellationToken);
         return Ok(new PublicTenantDto(
             tenant.Slug,
             tenant.Name,
@@ -44,7 +48,7 @@ public sealed class PublicTenantsController(
             tenant.TimeZone,
             tenant.CancellationWindowHours,
             tenant.BookingHorizonDays,
-            new TenantBrandDto(tenant.BrandPrimaryColor, tenant.BrandGround.ToString(), tenant.BrandHeadingFont.ToString(), hasLogo)));
+            new TenantBrandDto(tenant.BrandPrimaryColor, tenant.BrandGround.ToString(), tenant.BrandHeadingFont.ToString(), logo is not null, logo?.HasIcon == true)));
     }
 
     [HttpGet("logo")]
@@ -72,6 +76,64 @@ public sealed class PublicTenantsController(
         }
 
         return File(logo.Data, logo.ContentType, lastModified: logo.UpdatedAt, entityTag: etag);
+    }
+
+    /// <summary>Home-screen icon made from the logo (DEC-043): 256×256 PNG, never transparent.</summary>
+    [HttpGet("icon")]
+    [Produces("image/png")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status304NotModified)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Icon(string slug, CancellationToken cancellationToken)
+    {
+        var tenant = await tenants.ResolveAsync(slug, cancellationToken);
+        var icon = tenant is null
+            ? null
+            : await db.TenantLogos.AsNoTracking()
+                .Where(l => l.TenantId == tenant.Id && l.IconData != null)
+                .Select(l => new { l.IconData, l.UpdatedAt })
+                .SingleOrDefaultAsync(cancellationToken);
+        if (icon?.IconData is null)
+        {
+            return NotFound();
+        }
+
+        var etag = new EntityTagHeaderValue($"\"{icon.UpdatedAt.UtcTicks:x}\"");
+        Response.Headers.CacheControl = "public, no-cache";
+        if (Request.Headers.IfNoneMatch.ToString() == etag.Tag.ToString())
+        {
+            return StatusCode(StatusCodes.Status304NotModified);
+        }
+
+        return File(icon.IconData, "image/png", lastModified: icon.UpdatedAt, entityTag: etag);
+    }
+
+    /// <summary>
+    /// Web app manifest of the tenant page (DEC-043): adding /b/{slug} to the home screen shows the
+    /// business name and its icon (Turnora's when it has none) and opens the page in the browser.
+    /// </summary>
+    [HttpGet("manifest.webmanifest")]
+    [ProducesResponseType<WebAppManifestDto>(StatusCodes.Status200OK, "application/manifest+json")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Manifest(string slug, CancellationToken cancellationToken)
+    {
+        var tenant = await tenants.ResolveAsync(slug, cancellationToken);
+        if (tenant is null)
+        {
+            return TenantNotFound();
+        }
+
+        var hasIcon = await db.TenantLogos.AnyAsync(l => l.TenantId == tenant.Id && l.IconData != null, cancellationToken);
+        var path = ShellTags.TenantPath(tenant.Slug);
+        IReadOnlyList<WebAppManifestIconDto> icons = hasIcon
+            ? [new WebAppManifestIconDto(ShellTags.TenantIconUrl(tenant.Slug), "256x256", "image/png", null)]
+            : ShellTags.DefaultIcons;
+
+        Response.Headers.CacheControl = "no-cache";
+        return new JsonResult(new WebAppManifestDto(tenant.Name, tenant.Name, "it", path, path, "browser", icons))
+        {
+            ContentType = "application/manifest+json",
+        };
     }
 
     [HttpGet("services")]

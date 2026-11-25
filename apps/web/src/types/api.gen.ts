@@ -1042,6 +1042,8 @@ export interface paths {
                 content: {
                     "multipart/form-data": {
                         logo?: components["schemas"]["IFormFile"];
+                    } & {
+                        icon?: components["schemas"]["IFormFile"];
                     };
                 };
             };
@@ -2861,6 +2863,111 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/public/tenants/{slug}/icon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                        "image/png": unknown;
+                    };
+                };
+                /** @description Not Modified */
+                304: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                        "image/png": unknown;
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "image/png": components["schemas"]["ProblemDetails"];
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/public/tenants/{slug}/manifest.webmanifest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slug: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/manifest+json": components["schemas"]["WebAppManifestDto"];
+                        "application/json": unknown;
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/public/tenants/{slug}/services": {
         parameters: {
             query?: never;
@@ -3616,6 +3723,7 @@ export interface components {
             ground: string;
             headingFont: string;
             hasLogo: boolean;
+            hasHomeIcon: boolean;
         };
         TenantBrandSettingsDto: {
             primaryColor: null | string;
@@ -3675,6 +3783,21 @@ export interface components {
             errors?: {
                 [key: string]: string[];
             };
+        };
+        WebAppManifestDto: {
+            name: string;
+            short_name: string;
+            lang: string;
+            start_url: string;
+            scope: string;
+            display: string;
+            icons: components["schemas"]["WebAppManifestIconDto"][];
+        };
+        WebAppManifestIconDto: {
+            src: string;
+            sizes: string;
+            type: string;
+            purpose: null | string;
         };
         WorkingIntervalDto: {
             /** Format: int32 */

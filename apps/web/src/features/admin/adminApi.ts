@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { authKeys } from '@/features/auth/authApi'
 import { apiClient } from '@/services/apiClient'
+import { createHomeScreenIcon } from '@/lib/homeScreenIcon'
 import { useActiveTenantStore } from '@/stores/activeTenantStore'
 import type {
   AdminService,
@@ -219,6 +220,12 @@ export function useUploadLogo() {
   return useBrandMutation(async (file: File) => {
     const form = new FormData()
     form.append('logo', file)
+    // DEC-043: the home-screen version of the logo, made here because the server does not
+    // process images. Without it the business keeps Turnora's icon on the home screen.
+    const icon = await createHomeScreenIcon(file)
+    if (icon) {
+      form.append('icon', icon, 'icon.png')
+    }
     return (await apiClient.put<TenantBrandSettings>('/admin/brand/logo', form)).data
   })
 }

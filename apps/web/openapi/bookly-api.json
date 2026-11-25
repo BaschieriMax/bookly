@@ -1111,11 +1111,24 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "properties": {
-                  "logo": {
-                    "$ref": "#/components/schemas/IFormFile"
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "logo": {
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "icon": {
+                        "$ref": "#/components/schemas/IFormFile"
+                      }
+                    }
                   }
-                }
+                ]
               }
             }
           },
@@ -2790,6 +2803,90 @@
                 }
               },
               "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/tenants/{slug}/icon": {
+      "get": {
+        "tags": [
+          "PublicTenants"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { },
+              "image/png": { }
+            }
+          },
+          "304": {
+            "description": "Not Modified",
+            "content": {
+              "application/json": { },
+              "image/png": { }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": { }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/tenants/{slug}/manifest.webmanifest": {
+      "get": {
+        "tags": [
+          "PublicTenants"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/manifest+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAppManifestDto"
+                }
+              },
+              "application/json": { }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
             }
           }
         }
@@ -5126,7 +5223,8 @@
           "primaryColor",
           "ground",
           "headingFont",
-          "hasLogo"
+          "hasLogo",
+          "hasHomeIcon"
         ],
         "type": "object",
         "properties": {
@@ -5143,6 +5241,9 @@
             "type": "string"
           },
           "hasLogo": {
+            "type": "boolean"
+          },
+          "hasHomeIcon": {
             "type": "boolean"
           }
         }
@@ -5375,6 +5476,70 @@
                 "type": "string"
               }
             }
+          }
+        }
+      },
+      "WebAppManifestDto": {
+        "required": [
+          "name",
+          "short_name",
+          "lang",
+          "start_url",
+          "scope",
+          "display",
+          "icons"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "short_name": {
+            "type": "string"
+          },
+          "lang": {
+            "type": "string"
+          },
+          "start_url": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "display": {
+            "type": "string"
+          },
+          "icons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebAppManifestIconDto"
+            }
+          }
+        }
+      },
+      "WebAppManifestIconDto": {
+        "required": [
+          "src",
+          "sizes",
+          "type",
+          "purpose"
+        ],
+        "type": "object",
+        "properties": {
+          "src": {
+            "type": "string"
+          },
+          "sizes": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

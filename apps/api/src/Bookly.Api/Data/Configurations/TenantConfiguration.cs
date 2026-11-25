@@ -47,6 +47,7 @@ internal sealed class TenantLogoConfiguration : IEntityTypeConfiguration<TenantL
         {
             t.HasCheckConstraint("CK_TenantLogos_ContentType", "\"ContentType\" IN ('image/png', 'image/webp')");
             t.HasCheckConstraint("CK_TenantLogos_Size", "octet_length(\"Data\") <= 204800");
+            t.HasCheckConstraint("CK_TenantLogos_IconSize", "octet_length(\"IconData\") <= 262144");
         });
     }
 }

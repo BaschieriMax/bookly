@@ -788,6 +788,9 @@ namespace Bookly.Api.Data.Migrations
                         .IsRequired()
                         .HasColumnType("bytea");
 
+                    b.Property<byte[]>("IconData")
+                        .HasColumnType("bytea");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -796,6 +799,8 @@ namespace Bookly.Api.Data.Migrations
                     b.ToTable("TenantLogos", t =>
                         {
                             t.HasCheckConstraint("CK_TenantLogos_ContentType", "\"ContentType\" IN ('image/png', 'image/webp')");
+
+                            t.HasCheckConstraint("CK_TenantLogos_IconSize", "octet_length(\"IconData\") <= 262144");
 
                             t.HasCheckConstraint("CK_TenantLogos_Size", "octet_length(\"Data\") <= 204800");
                         });
