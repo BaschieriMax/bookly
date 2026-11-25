@@ -255,9 +255,10 @@ export function TimeGrid({
                 preview.date === column.date &&
                 column.staffIds.includes(preview.staffId) &&
                 preview.start < range.end && (
+                  // No fade-in: a half-transparent block fails the contrast check while it plays.
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-x-1 z-[15] flex animate-fade-in flex-col justify-center overflow-hidden rounded-control border-l-4 border-primary bg-surface px-2 py-0.5 text-xs leading-tight font-semibold text-primary-text shadow-md ring-2 ring-primary"
+                    className="pointer-events-none absolute inset-x-1 z-[15] flex flex-col justify-center overflow-hidden rounded-control border-l-4 border-primary bg-surface px-2 py-0.5 text-xs leading-tight font-semibold text-primary-text shadow-md ring-2 ring-primary"
                     style={{
                       top: px(Math.max(preview.start, range.start) - range.start),
                       height: Math.max(px(preview.end - preview.start), 22),
