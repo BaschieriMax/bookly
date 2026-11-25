@@ -3345,7 +3345,8 @@
           "lastName",
           "email",
           "phone",
-          "hasAccount"
+          "hasAccount",
+          "id"
         ],
         "type": "object",
         "properties": {
@@ -3369,6 +3370,13 @@
           },
           "hasAccount": {
             "type": "boolean"
+          },
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },

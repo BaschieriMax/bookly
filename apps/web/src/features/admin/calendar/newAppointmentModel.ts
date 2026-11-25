@@ -34,6 +34,8 @@ export interface SlotInput {
   time: string
   durationMinutes: number
   bufferMinutes: number
+  /** The appointment being moved: it does not clash with itself (DEC-044). */
+  ignoreId?: string
 }
 
 export interface SlotCheck {
@@ -54,6 +56,7 @@ export function checkSlot({
   time,
   durationMinutes,
   bufferMinutes,
+  ignoreId,
 }: SlotInput): SlotCheck {
   if (!calendar || calendar.from > date || calendar.to < date) {
     return { clash: null, outsideHours: false }
@@ -63,6 +66,7 @@ export function checkSlot({
 
   const clashing = calendar.appointments.find(
     (a) =>
+      (ignoreId === undefined || a.id !== ignoreId) &&
       a.staffId === staffId &&
       !isCancelled(a.status) &&
       dateOf(a.start) === date &&

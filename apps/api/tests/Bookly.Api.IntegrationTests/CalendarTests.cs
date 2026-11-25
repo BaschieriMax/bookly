@@ -80,6 +80,8 @@ public sealed class CalendarTests(PostgresFixture database) : IDisposable
         Assert.Equal("2027-03-02T10:00:00+01:00", appointment.GetProperty("start").GetString());
         Assert.Equal("2027-03-02T10:40:00+01:00", appointment.GetProperty("blockedUntil").GetString());
         Assert.Equal(shop.Customer.Email, appointment.GetProperty("customer").GetProperty("email").GetString());
+        // "Prenota di nuovo" books for the same account (DEC-044).
+        Assert.Equal(shop.Customer.Id, appointment.GetProperty("customer").GetProperty("id").GetGuid());
         Assert.True(appointment.GetProperty("canMove").GetBoolean());
         Assert.False(appointment.GetProperty("canMark").GetBoolean());
 

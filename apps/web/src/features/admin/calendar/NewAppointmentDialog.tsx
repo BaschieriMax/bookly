@@ -11,7 +11,7 @@ import { TextAreaField } from '@/components/ui/TextAreaField'
 import { TextField } from '@/components/ui/TextField'
 import { formatDuration, formatPrice, todayIn } from '@/lib/format'
 import { isApiError } from '@/services/apiClient'
-import type { CreateBusinessAppointmentRequest } from '@/types/api'
+import type { CreateBusinessAppointmentRequest, CustomerSearchResult } from '@/types/api'
 import { useAdminServices, useAdminStaff } from '../adminApi'
 import { adminErrorMessage } from '../adminErrors'
 import { customerSchema } from '../customers/customerSchema'
@@ -27,11 +27,16 @@ import {
 } from './CustomerPicker'
 import { checkSlot, nextSlot, timeOptions, toTime } from './newAppointmentModel'
 
-/** Where the dialog was opened from: the button (date only) or an empty spot of the grid. */
+/**
+ * Where the dialog was opened from: the button (date only), an empty spot of the grid, or
+ * "Prenota di nuovo" on a past appointment (service and customer too, DEC-044).
+ */
 export interface NewAppointmentStart {
   date: string
   time?: string
   staffId?: string
+  serviceId?: string
+  customer?: CustomerSearchResult
 }
 
 interface NewAppointmentDialogProps {
@@ -58,7 +63,7 @@ export function NewAppointmentDialog({ start, timeZone, onClose }: NewAppointmen
   const activeServices = services
     .filter((s) => s.isActive && s.staffIds.length > 0)
     .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
-  const [chosenServiceId, setServiceId] = useState<string | null>(null)
+  const [chosenServiceId, setServiceId] = useState<string | null>(start.serviceId ?? null)
   const service =
     activeServices.find((s) => s.id === chosenServiceId) ??
     activeServices.find((s) => !start.staffId || s.staffIds.includes(start.staffId)) ??
@@ -77,7 +82,9 @@ export function NewAppointmentDialog({ start, timeZone, onClose }: NewAppointmen
       (start.date === todayIn(timeZone) ? toTime(nextSlot(nowMinutesIn(timeZone))) : '09:00'),
   )
   const [note, setNote] = useState('')
-  const [customer, setCustomer] = useState<CustomerChoice | null>(null)
+  const [customer, setCustomer] = useState<CustomerChoice | null>(
+    start.customer ? { kind: 'existing', customer: start.customer } : null,
+  )
   const [notify, setNotify] = useState(true)
   const [outsideConfirmed, setOutsideConfirmed] = useState(false)
   const [serverSaysOutside, setServerSaysOutside] = useState(false)

@@ -2,8 +2,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Bookly.Api.DTOs.Admin;
 
-/// <summary>HasAccount false: the customer is in the business's address book (DEC-037).</summary>
-public sealed record CalendarCustomerDto(string FirstName, string LastName, string? Email, string? Phone, bool HasAccount);
+/// <summary>
+/// HasAccount false: the customer is in the business's address book (DEC-037). Id is the account
+/// or the address-book entry to book again with (DEC-044); null once the account is deleted or
+/// the entry erased, because a new appointment can no longer be made for them.
+/// </summary>
+public sealed record CalendarCustomerDto(string FirstName, string LastName, string? Email, string? Phone, bool HasAccount, Guid? Id);
 
 /// <summary>An appointment as the business sees it. Instants carry the tenant's offset.</summary>
 public sealed record AdminAppointmentDto(

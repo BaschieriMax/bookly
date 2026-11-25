@@ -1,7 +1,15 @@
 import type { ButtonHTMLAttributes, Ref } from 'react'
 import { LoaderCircle } from 'lucide-react'
 
-type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'ghostDanger'
+type Variant =
+  | 'primary'
+  | 'secondary'
+  | 'danger'
+  | 'dangerSolid'
+  | 'success'
+  | 'warning'
+  | 'ghost'
+  | 'ghostDanger'
 
 // Hover only on enabled buttons: a disabled "Salva" must not look clickable (DEC-041).
 const variants: Record<Variant, string> = {
@@ -9,6 +17,11 @@ const variants: Record<Variant, string> = {
   secondary:
     'border border-border-strong bg-surface text-ink enabled:hover:border-ink/60 enabled:hover:bg-subtle',
   danger: 'border border-danger bg-surface text-danger enabled:hover:bg-danger-soft',
+  // Final confirmation of something that cannot be undone ("Sì, annulla").
+  dangerSolid: 'bg-danger text-white enabled:hover:brightness-90',
+  // Outcome of an appointment (DEC-044): "Completato" and "Non presentato".
+  success: 'bg-success text-white enabled:hover:brightness-90',
+  warning: 'border border-warning bg-warning-soft text-warning enabled:hover:brightness-95',
   ghost: 'text-ink enabled:hover:bg-subtle',
   // Icon buttons that delete something: neutral at rest, red on hover.
   ghostDanger: 'text-muted enabled:hover:bg-danger-soft enabled:hover:text-danger',

@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useId, useRef, type ReactNode } from 'react'
+import { useModal } from './useModal'
 
 interface DialogProps {
   open: boolean
@@ -37,28 +38,7 @@ export function Dialog({
 }: DialogProps) {
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
-  const onCloseRef = useRef(onClose)
-
-  useEffect(() => {
-    onCloseRef.current = onClose
-  }, [onClose])
-
-  useEffect(() => {
-    if (!open) return
-    const previous = document.activeElement as HTMLElement | null
-    const first = panelRef.current?.querySelector<HTMLElement>(
-      'input:not([type=hidden]), select, textarea, button:not([data-dialog-close])',
-    )
-    first?.focus()
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onCloseRef.current()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      previous?.focus()
-    }
-  }, [open])
+  useModal(open, panelRef, onClose)
 
   if (!open) return null
 

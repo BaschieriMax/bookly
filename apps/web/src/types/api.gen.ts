@@ -3203,6 +3203,8 @@ export interface components {
             email: null | string;
             phone: null | string;
             hasAccount: boolean;
+            /** Format: uuid */
+            id: null | string;
         };
         CalendarDto: {
             timeZone: string;

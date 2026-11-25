@@ -43,6 +43,8 @@ export function CustomerPicker({ value, onChange, errors }: CustomerPickerProps)
   const isNew = value?.kind === 'new'
   const results = debounced.trim().length >= CUSTOMER_QUERY_MIN ? (search.data ?? []) : []
   const selectedId = value?.kind === 'existing' ? value.customer.id : null
+  const pinned =
+    value?.kind === 'existing' && !results.some((r) => r.id === selectedId) ? value.customer : null
 
   const startNew = () => onChange({ kind: 'new', input: { ...EMPTY, ...splitSearch(query) } })
   const setField = (field: keyof NewCustomerInput, text: string) =>
@@ -56,6 +58,8 @@ export function CustomerPicker({ value, onChange, errors }: CustomerPickerProps)
 
       {!isNew && (
         <>
+          {/* Chosen before any search ("Prenota di nuovo", DEC-044): shown until replaced. */}
+          {pinned && <CustomerOption customer={pinned} selected onToggle={() => onChange(null)} />}
           <div className="relative">
             <Search
               aria-hidden="true"
@@ -78,48 +82,17 @@ export function CustomerPicker({ value, onChange, errors }: CustomerPickerProps)
             <div aria-live="polite" aria-busy={search.isFetching}>
               {results.length > 0 ? (
                 <ul aria-label={t('calendar.new.results')} className="flex flex-col gap-2">
-                  {results.map((customer) => {
-                    const selected = customer.id === selectedId
-                    const contact = [customer.phone, customer.email].filter(Boolean).join(' · ')
-                    return (
-                      <li key={`${customer.kind}-${customer.id}`}>
-                        <button
-                          type="button"
-                          aria-pressed={selected}
-                          onClick={() => onChange(selected ? null : { kind: 'existing', customer })}
-                          className="flex min-h-14 w-full items-center gap-3 rounded-control border border-border px-3 py-2 text-left hover:bg-subtle aria-pressed:border-primary aria-pressed:bg-primary-soft"
-                        >
-                          <span className="flex min-w-0 flex-1 flex-col">
-                            <span className="font-semibold">
-                              {customer.firstName} {customer.lastName}
-                            </span>
-                            {contact && (
-                              <span className="truncate text-sm text-muted">{contact}</span>
-                            )}
-                          </span>
-                          <span
-                            className={`shrink-0 rounded-pill px-2 py-0.5 text-xs font-semibold ${
-                              customer.kind === 'Account'
-                                ? 'bg-primary-soft text-primary-text'
-                                : 'bg-subtle text-muted'
-                            }`}
-                          >
-                            {t(
-                              customer.kind === 'Account'
-                                ? 'calendar.new.kindAccount'
-                                : 'calendar.new.kindAddressBook',
-                            )}
-                          </span>
-                          {selected && (
-                            <Check
-                              aria-hidden="true"
-                              className="size-5 shrink-0 text-primary-text"
-                            />
-                          )}
-                        </button>
-                      </li>
-                    )
-                  })}
+                  {results.map((customer) => (
+                    <li key={`${customer.kind}-${customer.id}`}>
+                      <CustomerOption
+                        customer={customer}
+                        selected={customer.id === selectedId}
+                        onToggle={(selected) =>
+                          onChange(selected ? null : { kind: 'existing', customer })
+                        }
+                      />
+                    </li>
+                  ))}
                 </ul>
               ) : (
                 !search.isFetching && (
@@ -193,5 +166,42 @@ export function CustomerPicker({ value, onChange, errors }: CustomerPickerProps)
         </>
       )}
     </section>
+  )
+}
+
+interface CustomerOptionProps {
+  customer: CustomerSearchResult
+  selected: boolean
+  /** Called with the state before the click: true means "deselect". */
+  onToggle: (selected: boolean) => void
+}
+
+function CustomerOption({ customer, selected, onToggle }: CustomerOptionProps) {
+  const { t } = useTranslation('admin')
+  const contact = [customer.phone, customer.email].filter(Boolean).join(' · ')
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={() => onToggle(selected)}
+      className="flex min-h-14 w-full items-center gap-3 rounded-control border border-border px-3 py-2 text-left hover:bg-subtle aria-pressed:border-primary aria-pressed:bg-primary-soft"
+    >
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="font-semibold">
+          {customer.firstName} {customer.lastName}
+        </span>
+        {contact && <span className="truncate text-sm text-muted">{contact}</span>}
+      </span>
+      <span
+        className={`shrink-0 rounded-pill px-2 py-0.5 text-xs font-semibold ${
+          customer.kind === 'Account' ? 'bg-primary-soft text-primary-text' : 'bg-subtle text-muted'
+        }`}
+      >
+        {t(
+          customer.kind === 'Account' ? 'calendar.new.kindAccount' : 'calendar.new.kindAddressBook',
+        )}
+      </span>
+      {selected && <Check aria-hidden="true" className="size-5 shrink-0 text-primary-text" />}
+    </button>
   )
 }

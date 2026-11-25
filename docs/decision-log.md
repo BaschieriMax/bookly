@@ -1393,3 +1393,59 @@ il logo, il logo si salva comunque, senza icona.
 Status:
 Approved (Massimo, 25/11/2026)
 ```
+
+```text
+Decision:
+DEC-044 — Dettaglio appuntamento: pannello con azioni per stato e orari liberi
+
+Context:
+Il dettaglio aperto dal calendario era un dialog centrato con quattro bottoni sempre mescolati
+(Completato, Non presentato, Sposta, Annulla). Per spostare si scrivevano data e ora a mano e
+l'errore (orario occupato o fuori turno) arrivava solo dopo l'invio. Su telefono il dialog copriva
+tutto, su desktop nascondeva il calendario. Prototipo approvato da Massimo in Claude Design
+(«Turnora – Dettaglio appuntamento», 25/11/2026).
+
+Decision:
+- Componente Sheet (components/ui/Sheet.tsx): pannello dal basso con maniglia sotto 768 px,
+  pannello laterale a tutta altezza (28rem) da 768 px, con lo sfondo leggero per lasciare in vista
+  il calendario. Escape e sfondo chiudono; il comportamento comune con Dialog è nell'hook useModal.
+  Ogni passo porta il focus sul proprio titolo, che dà il nome al pannello.
+- Dettaglio: orario grande, data, servizio con durata e prezzo, operatore con la pausa, card del
+  cliente con i tasti Chiama ed Email, nota del cliente. Le azioni seguono lo stato che l'API
+  calcola già (canMove, canCancel, canMark):
+  - futuro: [Annulla] e [Sposta];
+  - iniziato o passato: «Com'è andata?» con [Completato] (verde) e [Non presentato] (arancio),
+    più il link «Annulla appuntamento»;
+  - completato, non presentato o annullato: sola lettura con un riquadro che spiega lo stato e
+    «Prenota di nuovo per {nome}».
+- Sposta: striscia di 14 giorni (frecce per gli altri; i giorni senza orario dell'operatore sono
+  disattivati), operatori che offrono il servizio (il titolare tutti, un operatore solo sé stesso)
+  e gli orari liberi ogni 15 minuti, divisi in Mattina e Pomeriggio. Sono calcolati nel browser
+  dal calendario del giorno scelto (moveModel.freeSlots con checkSlot, che ora ignora
+  l'appuntamento spostato): dentro l'orario di lavoro con la pausa, fuori dalle assenze, senza
+  sovrapposizioni, non nel passato. Durata e pausa restano quelle prenotate, come fa l'API. Il
+  bottone dice dove va («Sposta a ven 28 · 15:30»). Su desktop la griglia mostra il blocco
+  «Nuovo orario» e l'appuntamento attuale tratteggiato; da 1280 px, finché il pannello è aperto,
+  la pagina del calendario lascia 28rem a destra, così la griglia resta visibile accanto. L'API
+  resta l'arbitro: un 409 lascia aperto il passo per scegliere un altro orario.
+- Annulla: riepilogo, motivo con tre motivi frequenti a un tocco, avviso che non si può revocare
+  (e che il cliente riceverà un'email solo se ha un indirizzo).
+- Prenota di nuovo: apre «Nuovo appuntamento» con servizio, operatore e cliente già scelti.
+  Per questo CalendarCustomerDto ha un nuovo campo Id (account o voce di rubrica), null per un
+  account cancellato o una voce anonimizzata, gli stessi casi che la ricerca clienti esclude.
+  CustomerPicker mostra il cliente già scelto anche senza una ricerca.
+- Button: varianti dangerSolid, success e warning.
+
+Alternatives:
+Calcolare gli orari liberi con un endpoint nuovo (scartato: il calendario del giorno ha già
+orari, assenze e appuntamenti, e l'API ricontrolla tutto); campi data e ora come prima con
+l'avviso preventivo del nuovo appuntamento (meno immediato); lasciare il dialog centrato anche su
+desktop (copre il calendario).
+
+Consequences:
+Il numero di visite del cliente previsto nel prototipo non c'è: l'API del calendario non lo
+fornisce (resta nella scheda cliente). Nessuna migrazione.
+
+Status:
+Approved (Massimo, 25/11/2026)
+```
