@@ -1425,8 +1425,9 @@ Decision:
   l'appuntamento spostato): dentro l'orario di lavoro con la pausa, fuori dalle assenze, senza
   sovrapposizioni, non nel passato. Durata e pausa restano quelle prenotate, come fa l'API. Il
   bottone dice dove va («Sposta a ven 28 · 15:30»). Su desktop la griglia mostra il blocco
-  «Nuovo orario» e l'appuntamento attuale tratteggiato. L'API resta l'arbitro: un 409 lascia
-  aperto il passo per scegliere un altro orario.
+  «Nuovo orario» e l'appuntamento attuale tratteggiato; da 1280 px, finché il pannello è aperto,
+  la pagina del calendario lascia 28rem a destra, così la griglia resta visibile accanto. L'API
+  resta l'arbitro: un 409 lascia aperto il passo per scegliere un altro orario.
 - Annulla: riepilogo, motivo con tre motivi frequenti a un tocco, avviso che non si può revocare
   (e che il cliente riceverà un'email solo se ha un indirizzo).
 - Prenota di nuovo: apre «Nuovo appuntamento» con servizio, operatore e cliente già scelti.

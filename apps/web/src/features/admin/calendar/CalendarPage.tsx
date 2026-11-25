@@ -170,7 +170,11 @@ export default function CalendarPage() {
   }
 
   return (
-    <section className="flex flex-col gap-4">
+    // From 1280 px the page makes room for the details panel (28rem, DEC-044): the grid stays in
+    // view next to it, with the preview of a move.
+    <section
+      className={`flex flex-col gap-4 transition-[padding] duration-200 ${selected ? 'xl:pr-[28rem]' : ''}`}
+    >
       <AdminPageHeader
         title={t('calendar.title')}
         action={<PageAction icon={Plus} label={t('calendar.new.open')} onClick={openNew} />}
