@@ -14,7 +14,7 @@ import {
   weekRangeLabel,
 } from '@/lib/format'
 import type { AdminAppointment } from '@/types/api'
-import { useAdminStaff } from '../adminApi'
+import { useAdminServices, useAdminStaff } from '../adminApi'
 import { AdminPageHeader, EmptyState, PageAction, QueryState } from '../AdminUi'
 import { useActiveMembership } from '../useAdminRole'
 import { Agenda } from './Agenda'
@@ -79,6 +79,8 @@ export default function CalendarPage() {
   const { from, to } = rangeFor(view, date)
   const { data, isPending, error } = useCalendar({ from, to, staffId, includeCancelled })
   const { data: allStaff } = useAdminStaff()
+  // Not used here: loaded with the calendar so "Nuovo appuntamento" opens with its form ready.
+  useAdminServices()
   const [selected, setSelected] = useState<AdminAppointment | null>(null)
   const [creating, setCreating] = useState<NewAppointmentStart | null>(null)
   const [preview, setPreview] = useState<MovePreview | null>(null)
