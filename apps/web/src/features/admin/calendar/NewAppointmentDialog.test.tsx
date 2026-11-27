@@ -1,5 +1,6 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { QueryClient } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import type { AdminAppointment, AdminStaff, Calendar, CustomerSearchResult } from '@/types/api'
@@ -66,16 +67,22 @@ const found: CustomerSearchResult[] = [
   },
 ]
 
+let queryClient: QueryClient
+
 function arrange({
   customers = found,
   me = ownerMe,
   staff = adminStaff,
   services = adminServices,
+  servicesReady = Promise.resolve(),
 } = {}) {
   const posted: unknown[] = []
   server.use(
     http.get('/api/auth/me', () => HttpResponse.json(me)),
-    http.get('/api/admin/services', () => HttpResponse.json(services)),
+    http.get('/api/admin/services', async () => {
+      await servicesReady
+      return HttpResponse.json(services)
+    }),
     http.get('/api/admin/staff', () => HttpResponse.json(staff)),
     http.get('/api/admin/calendar', () => HttpResponse.json(day)),
     http.get('/api/admin/customers', ({ request }) => {
@@ -89,7 +96,7 @@ function arrange({
       return HttpResponse.json(booked, { status: 201 })
     }),
   )
-  renderApp('/admin?data=2099-03-02')
+  queryClient = renderApp('/admin?data=2099-03-02').queryClient
   return posted
 }
 
@@ -206,6 +213,61 @@ describe('NewAppointmentDialog', () => {
       within(dialog).getByText('Scegli un cliente o inseriscine uno nuovo.'),
     ).toBeInTheDocument()
     expect(posted).toHaveLength(0)
+  })
+
+  it('opens with the form ready when the calendar has already loaded the services', async () => {
+    arrange()
+    const open = await screen.findByRole(
+      'button',
+      { name: 'Nuovo appuntamento' },
+      { timeout: 5000 },
+    )
+    // The calendar asks for the services itself, before anyone opens the dialog.
+    await waitFor(() =>
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ predicate: (q) => q.queryKey.at(-1) === 'services' })[0]?.state.status,
+      ).toBe('success'),
+    )
+
+    await userEvent.click(open)
+    const dialog = screen.getByRole('dialog', { name: 'Nuovo appuntamento' })
+    expect(within(dialog).queryByRole('status')).not.toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Barbiere 1', pressed: true })).toBeVisible()
+  })
+
+  it('shows a spinner, not the "add a service" hint, while the services are loading', async () => {
+    let release = () => {}
+    arrange({ servicesReady: new Promise<void>((resolve) => (release = resolve)) })
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Nuovo appuntamento' }, { timeout: 5000 }),
+    )
+    const dialog = await screen.findByRole('dialog', { name: 'Nuovo appuntamento' })
+
+    expect(within(dialog).getByRole('status')).toHaveTextContent('Caricamento…')
+    expect(within(dialog).queryByText(/Prima aggiungi un servizio/)).not.toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Salva appuntamento' })).toBeDisabled()
+
+    release()
+    expect(
+      await within(dialog).findByRole('button', { name: 'Barbiere 1', pressed: true }),
+    ).toBeInTheDocument()
+    expect(within(dialog).queryByRole('status')).not.toBeInTheDocument()
+    expect(within(dialog).queryByText(/Prima aggiungi un servizio/)).not.toBeInTheDocument()
+  })
+
+  it('asks for a service only once the services have arrived and none can be booked', async () => {
+    arrange({ services: [{ ...adminServices[0]!, staffIds: [] }] })
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Nuovo appuntamento' }, { timeout: 5000 }),
+    )
+    const dialog = await screen.findByRole('dialog', { name: 'Nuovo appuntamento' })
+
+    expect(
+      await within(dialog).findByText('Prima aggiungi un servizio attivo con almeno un operatore.'),
+    ).toBeInTheDocument()
+    expect(within(dialog).queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('lets a staff member book only for themselves', async () => {
